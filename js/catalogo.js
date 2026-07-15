@@ -552,7 +552,7 @@
     });
 
     return [
-      'Olá, gostaria de fazer um pedido. Fiz um carrinho de itens pelo site, gostaria de prosseguir com a compra.',
+      'Olá, quero fazer um pedido. Fiz um carrinho de itens pelo site, gostaria de prosseguir com a compra.',
       '',
       'Segue abaixo os itens selecionados:',
       ...linhas

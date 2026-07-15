@@ -65,10 +65,10 @@
 .catalogo-order {
   position: fixed;
   right: 18px;
-  bottom: 86px;
+  bottom: 138px;
   z-index: 1060;
   width: min(420px, calc(100vw - 32px));
-  max-height: min(680px, calc(100vh - 130px));
+  max-height: min(680px, calc(100vh - 182px));
   display: flex;
   flex-direction: column;
   padding: 18px;
@@ -180,7 +180,7 @@
 .catalogo-order-toggle {
   position: fixed;
   right: 18px;
-  bottom: 24px;
+  bottom: 76px;
   z-index: 1059;
   display: inline-flex;
   align-items: center;
@@ -560,14 +560,14 @@
 
   .catalogo-order {
     right: 12px;
-    bottom: 82px;
+    bottom: 134px;
     width: calc(100vw - 24px);
-    max-height: calc(100vh - 112px);
+    max-height: calc(100vh - 164px);
   }
 
   .catalogo-order-toggle {
     right: 12px;
-    bottom: 18px;
+    bottom: 72px;
   }
 
   .produto-title {
