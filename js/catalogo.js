@@ -8,6 +8,7 @@
   const PAGE_SIZE_OPTIONS = [20, 40, 80];
   const SEARCH_DEBOUNCE_MS = 250;
   const PEDIDO_PREVIEW_MS = 500;
+  const PEDIDO_MAX_QUANTIDADE = 100;
   const PEDIDO_STORAGE_KEY = 'dipsul_catalogo_pedido_v1';
   const PEDIDO_WHATSAPP_NUMERO = '5555991434780';
   const CATEGORIAS_ORDEM = [
@@ -119,7 +120,31 @@
     const quantidade = parseInt(valor, 10);
 
     if (!Number.isFinite(quantidade) || quantidade < 1) return 1;
-    return Math.min(quantidade, 999);
+    return Math.min(quantidade, PEDIDO_MAX_QUANTIDADE);
+  }
+
+  function limitarCampoQuantidade(input) {
+    const digitos = String(input.value || '').replace(/\D/g, '').slice(0, 3);
+
+    if (!digitos) {
+      input.value = '';
+      return;
+    }
+
+    input.value = String(normalizarQuantidade(digitos));
+  }
+
+  function configurarCampoQuantidade(input) {
+    input.min = '1';
+    input.max = String(PEDIDO_MAX_QUANTIDADE);
+    input.step = '1';
+    input.inputMode = 'numeric';
+    input.setAttribute('maxlength', '3');
+
+    input.addEventListener('input', () => limitarCampoQuantidade(input));
+    input.addEventListener('change', () => {
+      input.value = String(normalizarQuantidade(input.value));
+    });
   }
 
   function carregarPedidoSalvo() {
@@ -431,11 +456,8 @@
     quantityInput.type = 'number';
     quantityInput.id = quantityId;
     quantityInput.className = 'form-control catalogo-product-quantity';
-    quantityInput.min = '1';
-    quantityInput.max = '999';
-    quantityInput.step = '1';
     quantityInput.value = '1';
-    quantityInput.inputMode = 'numeric';
+    configurarCampoQuantidade(quantityInput);
 
     const addButton = document.createElement('button');
     addButton.type = 'button';
@@ -459,7 +481,7 @@
     const codigo = String(produto.codigo);
     const itemAtual = state.pedido.get(codigo);
     const quantidadeAtual = itemAtual ? itemAtual.quantidade : 0;
-    const novaQuantidade = Math.min(quantidadeAtual + normalizarQuantidade(quantidade), 999);
+    const novaQuantidade = Math.min(quantidadeAtual + normalizarQuantidade(quantidade), PEDIDO_MAX_QUANTIDADE);
 
     state.pedido.set(codigo, {
       codigo,
@@ -549,11 +571,8 @@
         quantity.type = 'number';
         quantity.id = `pedido-quantidade-${item.codigo}`;
         quantity.className = 'form-control catalogo-order-quantity';
-        quantity.min = '1';
-        quantity.max = '999';
-        quantity.step = '1';
         quantity.value = String(item.quantidade);
-        quantity.inputMode = 'numeric';
+        configurarCampoQuantidade(quantity);
 
         quantity.addEventListener('change', () => {
           atualizarQuantidadePedido(item.codigo, quantity.value);
@@ -580,7 +599,7 @@
     }
 
     if (elements.orderBadge) {
-      elements.orderBadge.textContent = String(totalUnidades);
+      elements.orderBadge.textContent = String(itens.length);
     }
 
     if (elements.orderClear) elements.orderClear.disabled = !itens.length;
