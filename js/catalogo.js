@@ -613,7 +613,11 @@
 
     const mensagem = montarMensagemPedido();
     const url = `https://wa.me/${PEDIDO_WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagem)}`;
-    window.location.href = url;
+    const novaJanela = window.open(url, '_blank', 'noopener,noreferrer');
+
+    if (!novaJanela) {
+      window.location.href = url;
+    }
   }
 
   function renderizarProdutos() {
