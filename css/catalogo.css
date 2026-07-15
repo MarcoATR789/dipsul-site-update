@@ -357,6 +357,14 @@
 
 .catalogo-product-add {
   min-height: 38px;
+  background: #2b3c67;
+  border-color: #2b3c67;
+}
+
+.catalogo-product-add:hover,
+.catalogo-product-add:focus {
+  background: #223154;
+  border-color: #223154;
 }
 
 .catalogo-pagination {
