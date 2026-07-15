@@ -1,0 +1,536 @@
+/* CONTAINER DE MEMBROS (MANTER 4 POR LINHA) */
+.team {
+  --member-gap: clamp(12px, 2.5vw, 32px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--member-gap);
+  justify-content: center;
+  padding: clamp(12px, 2.5vw, 28px);
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* CADA MEMBRO OCUPA 1/4 DA LARGURA - SUBTRAI 3 GAPS PARA CALCULAR CORRETAMENTE O ESPAÇO */
+.member {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: clamp(14px, 1.6vw, 24px);
+  flex: 0 0 calc((100% - 3 * var(--member-gap)) / 4);
+  max-width: calc((100% - 3 * var(--member-gap)) / 4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  will-change: transform, box-shadow;
+  box-sizing: border-box;
+}
+
+/* EFEITO DE APROXIMAÇÃO AO PASSAR O MOUSE */
+.member:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(26, 35, 126, 0.18);
+}
+
+/* WRAPPER PARA CONTROLAR A POSIÇÃO/RECORTE DA IMAGEM (TAMANHO RESPONSIVO) */
+.cover-wrapper {
+  position: relative;
+  width: clamp(110px, 18vw, 150px);
+  height: clamp(110px, 18vw, 150px);
+  margin: 0 auto clamp(12px, 1.6vw, 16px);
+  overflow: hidden;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+/* IMAGEM DE FUNDO / COVER */
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+/* FOTO DO MEMBRO (CIRCULAR E CENTRALIZADA NO COVER-WRAPPER) */
+.photo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(64px, 38%, 96px);
+  height: clamp(64px, 38%, 96px);
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #2b3c67;
+  transition: transform 0.28s ease, border-color 0.28s;
+  box-sizing: border-box;
+}
+
+@media (min-width: 961px) {
+  .member .cover-wrapper {
+   width: clamp(130px, 20vw, 180px);
+   height: clamp(130px, 20vw, 180px);
+  }
+
+  .member .photo {
+   width: clamp(92px, 44%, 140px);
+   height: clamp(92px, 44%, 140px);
+   transform: translate(-50%, -50%) scale(1);
+   z-index: 2;
+  }
+
+  .member {
+   z-index: 1;
+  }
+}
+
+@media (max-width: 960px) and (min-width: 601px) {
+  .member .cover-wrapper {
+   width: clamp(120px, 22vw, 160px);
+   height: clamp(120px, 22vw, 160px);
+  }
+
+  .member .photo {
+   width: clamp(88px, 40%, 120px);
+   height: clamp(88px, 40%, 120px);
+   z-index: 2;
+  }
+
+  .member {
+   flex: 0 0 calc((100% - 1 * var(--member-gap)) / 2);
+   max-width: calc((100% - 1 * var(--member-gap)) / 2);
+  }
+}
+
+@media (max-width: 600px) {
+  .member {
+   flex: 0 0 100%;
+   max-width: 100%;
+  }
+  .cover-wrapper {
+   width: 100px;
+   height: 100px;
+  }
+  .photo {
+   width: 72px;
+   height: 72px;
+  }
+  .chat-link {
+   width: 100%;
+   text-align: center;
+  }
+}
+
+/* EFEITO HOVER NA FOTO */
+.member:hover .photo,
+.photo:hover {
+  transform: translate(-50%, -50%) scale(1.09);
+  border-color: #24315a;
+}
+
+/* BOTÃO DE CHAT */
+.chat-link {
+  display: inline-block;
+  margin-top: 8px;
+  padding: clamp(8px, 1.6vw, 12px) clamp(14px, 3vw, 20px);
+  background: linear-gradient(90deg, #1a237e 60%, #3949ab 100%);
+  color: #fff;
+  border-radius: 25px;
+  font-size: clamp(0.9rem, 1.6vw, 1rem);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.28s, box-shadow 0.28s, transform 0.28s;
+  box-shadow: 0 2px 8px rgba(26, 35, 126, 0.18);
+}
+
+/* EFEITO DE APROXIMAÇÃO NO BOTÃO DE CHAT */
+.chat-link:hover {
+  background: linear-gradient(90deg, #3949ab 60%, #1a237e 100%);
+  box-shadow: 0 6px 16px rgba(26, 35, 126, 0.26);
+  transform: translateY(-3px);
+}
+
+/* MODAL RESPONSIVO (IMAGENS LADO A LADO) */
+.info-modal {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: none;
+  overflow: auto;
+  padding: clamp(12px, 2.5vw, 28px);
+  box-sizing: border-box;
+  background: rgba(7, 20, 36, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: clamp(4%, 8vh, 8%) auto;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  width: min(94vw, 620px);
+  max-width: 620px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.32);
+  box-sizing: border-box;
+  display: block;
+}
+
+.seller-modal-header {
+  padding: 30px 48px 24px;
+  text-align: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, #072740 0%, #2b3c67 100%);
+}
+
+.seller-modal-header span {
+  display: block;
+  margin-bottom: 8px;
+  color: #b9d7ff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.seller-modal-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(1.7rem, 4vw, 2.45rem);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.seller-contact-list {
+  display: grid;
+  gap: 12px;
+  padding: 24px 32px 8px;
+}
+
+.seller-contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid #e5edf6;
+  border-radius: 8px;
+  background: #f8fbff;
+  text-align: left;
+}
+
+.seller-contact-item span {
+  color: #637083;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.seller-contact-item strong {
+  color: #1f2933;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.seller-actions {
+  display: grid;
+  gap: 10px;
+  padding: 20px 32px 32px;
+}
+
+.seller-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(7, 39, 64, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.seller-action:hover,
+.seller-action:focus {
+  color: #ffffff;
+  text-decoration: none;
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+  box-shadow: 0 12px 24px rgba(7, 39, 64, 0.24);
+  outline: none;
+}
+
+.seller-action i {
+  width: 22px;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.seller-action--whatsapp {
+  background: #25d366;
+}
+
+.seller-action--email {
+  background: #007bff;
+}
+
+.seller-action--phone {
+  background: #5f6f7a;
+}
+
+/* WRAPPER PARA COLOCAR IMAGENS LADO A LADO */
+.modal-images {
+  display: flex;
+  gap: clamp(8px, 2vw, 16px);
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+/* REGRAS DE IMAGENS DENTRO DO WRAPPER */
+.modal-images img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  box-sizing: border-box;
+  border-radius: 8px;
+  flex: 1 1 clamp(120px, 40%, 260px);
+  max-width: 48%;
+}
+
+/* FOTO TELEVENDAS */
+.modal-photo {
+  border-radius: 50%;
+  flex: 0 0 clamp(96px, 18vw, 150px);
+  max-width: clamp(96px, 18vw, 150px);
+  width: auto;
+  height: auto;
+  object-fit: cover;
+}
+
+/* CAPA PODE OCUPAR MAIS LARGURA QUE A FOTO CIRCULAR */
+.modal-cover {
+  border-radius: 8px;
+  flex: 1 1 clamp(140px, 40%, 340px);
+  max-width: calc(100% - clamp(96px, 18vw, 150px) - 12px);
+  width: auto;
+  height: auto;
+  object-fit: cover;
+}
+
+/* BOTÃO DE FECHAR */
+.info-modal .close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  color: #dc3545;
+  font-size: 34px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1;
+  background: transparent;
+  border: none;
+  padding: 0;
+  opacity: 1;
+  text-shadow: none;
+}
+
+/* EFEITO DE APROXIMAÇÃO NO BOTÃO DE FECHAR */
+.info-modal .close:hover,
+.info-modal .close:focus {
+  color: #b02a37;
+  text-decoration: none;
+  outline: none;
+  opacity: 1;
+}
+
+/* AJUSTE PARA TELAS MUITO PEQUENAS */
+@media (max-width: 480px) {
+  .modal-content {
+   width: 100%;
+  }
+
+  .seller-modal-header {
+   padding: 28px 48px 22px;
+  }
+
+  .seller-contact-list,
+  .seller-actions {
+   padding-left: 18px;
+   padding-right: 18px;
+  }
+
+  .seller-contact-item {
+   align-items: flex-start;
+   flex-direction: column;
+   gap: 6px;
+  }
+
+  .seller-contact-item strong {
+   text-align: left;
+   word-break: break-word;
+  }
+
+  .modal-images {
+   flex-direction: column;
+   gap: 10px;
+  }
+  .modal-images img,
+  .modal-cover,
+  .modal-photo {
+   max-width: 100%;
+   flex: 1 1 100%;
+   border-radius: 8px;
+  }
+  .modal-photo {
+   border-radius: 50%;
+   width: clamp(72px, 18vw, 120px);
+   margin: 0 auto;
+  }
+}
+
+@media (min-width: 961px) {
+  .member .photo {
+    transform: translate(-50%, -50%) scale(1.6);
+    z-index: 3;
+  }
+
+  .member:hover .photo {
+    transform: translate(-50%, -50%) scale(1.744);
+    border-color: #24315a;
+  }
+
+  .member {
+    z-index: 2;
+  }
+}
+
+@media (max-width: 960px) and (min-width: 601px) {
+  .member .photo {
+    transform: translate(-50%, -50%) scale(1.6);
+    z-index: 3;
+  }
+
+  .member:hover .photo {
+    transform: translate(-50%, -50%) scale(1.744);
+    border-color: #24315a;
+  }
+}
+
+@media (max-width: 600px) {
+  .member .photo {
+    transform: translate(-50%, -50%) scale(1);
+    z-index: 2;
+  }
+}
+
+.member-description {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  .team {
+    align-items: stretch;
+  }
+
+  .member {
+    flex: 0 0 100%;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    text-align: left;
+  }
+
+  .member .cover-wrapper {
+    width: clamp(96px, 28vw, 128px);
+    height: clamp(96px, 28vw, 128px);
+    margin: 0;
+  }
+
+  .member .photo,
+  .member:hover .photo {
+    width: clamp(70px, 18vw, 92px);
+    height: clamp(70px, 18vw, 92px);
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .member .info {
+    flex: 1;
+    min-width: 0;
+    margin-top: 0 !important;
+  }
+
+  .member-description {
+    display: block;
+    margin: 4px 0 8px;
+    color: #556877;
+    font-size: 0.9rem;
+    line-height: 1.35;
+  }
+
+  .member .email {
+    display: block;
+    word-break: break-word;
+  }
+}
+
+/* INICIO TELEVENDAS */
+#televendas {
+  font-weight: 700;
+  color: #007bff;
+}
+
+#televendas .televendas-section .team {
+  color: #007bff;
+  text-decoration: none;
+}
+
+#televendas .header {
+  margin-top: 48px;
+  margin-bottom: 24px;
+  padding-top: 48px;
+}
+
+#televendas .header h2 {
+  font-size: 36px;
+  font-weight: 800;
+  color: #004a99;
+  text-align: center;
+}
+
+#televendas .header p {
+  max-width:600px;
+  margin:0 auto;
+  text-align: center;
+  color: #444;
+}
+
+#televendas .team-member {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+#televendas .team-member small {
+  color: #999;
+  margin-top: 1rem;
+  width: 100%;
+  display: block;
+  font-size: 12px;
+}
+/* FIM TELEVENDAS */

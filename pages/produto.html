@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produto - Dipsul</title>
+    <meta id="produto-meta-description" name="description" content="Detalhes do produto no catálogo da Dipsul Distribuidora.">
+    <link id="produto-canonical" rel="canonical" href="produto.html">
+
+    <!-- ICONE DO SITE -->
+    <link rel="icon" href="../img/favicon.png">
+
+    <!-- CSS BASE -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/televendas.css">
+    <link rel="stylesheet" href="../css/catalogo.css">
+
+    <!-- BOOTSTRAP CSS -->
+    <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
+
+    <!-- LIBRARY CSS -->
+    <link rel="stylesheet" href="../lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../lib/animate/animate.min.css">
+    <link rel="stylesheet" href="../lib/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="../lib/owlcarousel/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="../lib/lightbox/css/lightbox.min.css">
+</head>
+
+<body>
+
+    <!-- INICIO BARRA DE NAVEGAÇÃO FIXA -->
+    <header id="header" class="fixed-top">
+        <div class="container">
+            <div class="logo float-left">
+                <a href="../index.html#intro" class="scrollto">
+                <img src="../img/logo.png" alt="Logo Dipsul" class="img-fluid">
+                </a>
+            </div>
+            <nav class="main-nav float-right d-none d-lg-block">
+                <ul>
+                <li><a href="../index.html#intro">Home</a></li>
+                <li><a href="../index.html#about">Sobre</a></li>
+                <li><a href="../index.html#services">Serviços</a></li>
+                <li><a href="../index.html#clients">Parceiros</a></li>
+                <li><a href="../index.html#curriculum">Localização</a></li>
+                    <li>
+                    <a href="../pages/catalogo.html" class="focus catalogo-nav-link">Catálogo</a>
+                    </li>
+                    <li>
+                    <a href="../pages/televendas.html" class="focus catalogo-nav-link">Canal de Vendas</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <!-- FIM BARRA DE NAVEGAÇÃO FIXA -->
+
+    <!-- INICIO DO PRODUTO -->
+    <main class="container catalogo-main produto-main">
+        <nav class="produto-breadcrumb" aria-label="Navegação do produto">
+            <a id="produto-back-link" href="catalogo.html">Voltar ao catálogo</a>
+        </nav>
+
+        <section id="produto-loading" class="catalogo-state" role="status">
+            Carregando produto...
+        </section>
+
+        <section id="produto-error" class="catalogo-state catalogo-state--error" hidden>
+            <p>Não foi possível carregar este produto.</p>
+            <a class="btn btn-primary" href="catalogo.html">Voltar ao catálogo</a>
+        </section>
+
+        <article id="produto-detail" class="produto-detail" hidden>
+            <div class="produto-image-panel">
+                <img id="produto-image" src="../img/catalogo/sem-imagem.webp" alt="" width="520" height="520" decoding="async">
+            </div>
+
+            <div class="produto-info-panel">
+                <span id="produto-code" class="catalogo-product-code"></span>
+                <h1 id="produto-title" class="produto-title"></h1>
+                <p id="produto-category" class="produto-category"></p>
+
+                <div class="produto-actions">
+                    <a id="produto-back-button" class="btn btn-outline-secondary" href="catalogo.html">Voltar ao catálogo</a>
+                    <button type="button" id="produto-copy" class="btn btn-primary">Copiar link</button>
+                    <button type="button" id="produto-share" class="btn btn-primary">Compartilhar</button>
+                </div>
+
+                <p id="produto-feedback" class="produto-feedback" aria-live="polite"></p>
+            </div>
+        </article>
+
+        <script id="produto-jsonld" type="application/ld+json"></script>
+    </main>
+    <!-- FIM DO PRODUTO -->
+
+    <!-- INICIO RODAPÉ DA PAGINA -->
+    <footer id="footer" class="catalogo-footer">
+
+    <div class="footer-top catalogo-footer-top">
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="footer-info">
+                    <h3>Dipsul</h3>
+                    <p>
+                    Fundada em 1992, a Dipsul Distribuidora nasceu como uma distribuidora de produtos agropecuários. Com muito esforço, e observando as oportunidades que o mercado apresentou, firmou-se como uma das principais distribuidoras desse ramo.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Links Úteis</h4>
+                    <ul>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#intro"> Home</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#about"> Sobre</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#services"> Serviços</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#clients"> Parceiros</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#curriculum"> Localização</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../pages/catalogo.html"> Catálogo</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../pages/televendas.html"> Canal de Vendas</a></li>
+                    </ul>
+                </div>
+
+                <!-- CONTATOS - ajustado para ser responsivo -->
+                <div class="col-lg-6 col-md-12 footer-contacts" aria-label="Contatos e redes sociais">
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Matriz</h4>
+                    <p>
+                        Rodovia SC-370<br>
+                        Nº 3486<br>
+                        Tubarão - SC<br>
+                        Cep 88708-800<br>
+                        <strong>Telefone:</strong> (48) 3301-0700<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Filial RS</h4>
+                    <p>
+                        Rua Dr. Amaury Daudt Lampert<br>
+                        Nº 703<br>
+                        Montenegro - RS<br>
+                        Cep 95780-000<br>
+                        <strong>Telefone:</strong> (48) 9 8842-7017<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Filial PR</h4>
+                    <p>
+                        Rua Rafael Puchetti<br>
+                        Nº 865<br>
+                        São Jose dos Pinhais - PR<br>
+                        Cep 83020-330<br>
+                        <strong>Telefone:</strong> (48) 9 8842-4992<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-social mb-3">
+                    <h4>Redes Sociais</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/dipsul.distribuidora/" class="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/dipsul.distribuidora/" class="instagram" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
+                        <a href="https://br.linkedin.com/company/dipsul-distribuidora/" class="linkedin" target="_blank" rel="noopener"><i class="fa fa-linkedin"></i></a>
+                    </div>
+                    </div>
+                </div>
+                <!-- FIM CONTATOS -->
+
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid catalogo-footer-spacer"></div>
+        <div class="copyright">
+        &copy; Copyright <strong>Dipsul Distribuidora LTDA</strong>. Todos os direitos Reservados <br>
+        <a href="https://cnpj.biz/85222446000113" target="_blank" rel="noopener noreferrer">CNPJ: 85.222.446/0001-13</a>
+      </div>
+
+        <div class="credits">
+            Desenvolvido na base de: <a href="https://bootstrapmade.com/" target="_blank" rel="noopener noreferrer">BootstrapMade</a>
+        </div>
+    </div>
+
+    </footer>
+    <!-- FIM RODAPÉ DA PAGINA -->
+
+    <!-- INICIO BOTÃO DE RETORNO -->
+    <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
+    <!-- FIM BOTÃO DE RETORNO -->
+
+    <!-- JAVA SCRIPT LIBRARIES -->
+    <script src="../lib/jquery/jquery.min.js"></script>
+    <script src="../lib/jquery/jquery-migrate.min.js"></script>
+    <script src="../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../lib/easing/easing.min.js"></script>
+    <script src="../lib/mobile-nav/mobile-nav.js"></script>
+    <script src="../lib/wow/wow.min.js"></script>
+    <script src="../lib/waypoints/waypoints.min.js"></script>
+    <script src="../lib/counterup/counterup.min.js"></script>
+    <script src="../lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="../lib/isotope/isotope.pkgd.min.js"></script>
+    <script src="../lib/lightbox/js/lightbox.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/clients.js"></script>
+    <script src="../js/curriculum.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="../js/vagas.js"></script>
+    <script src="../js/cookies.js"></script>
+    <script src="../js/televendas.js"></script>
+    <script src="../data/catalogo/produtos.js"></script>
+    <script src="../js/produto.js"></script>
+
+</body>
+<!-- FIM DO BODY -->
+
+</html>

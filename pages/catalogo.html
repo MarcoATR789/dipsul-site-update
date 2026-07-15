@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Dipsul</title>
+    <meta name="description" content="Consulte o catálogo de produtos da Dipsul Distribuidora por código, descrição ou categoria.">
+    <link rel="canonical" href="catalogo.html">
+
+    <!-- ICONE DO SITE -->
+    <link rel="icon" href="../img/favicon.png">
+
+    <!-- CSS BASE -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/televendas.css">
+    <link rel="stylesheet" href="../css/catalogo.css">
+
+    <!-- BOOTSTRAP CSS -->
+    <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
+
+    <!-- LIBRARY CSS -->
+    <link rel="stylesheet" href="../lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../lib/animate/animate.min.css">
+    <link rel="stylesheet" href="../lib/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="../lib/owlcarousel/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="../lib/lightbox/css/lightbox.min.css">
+</head>
+
+<body>
+
+    <!-- INICIO BARRA DE NAVEGAÇÃO FIXA -->   
+    <header id="header" class="fixed-top">
+        <div class="container">
+            <div class="logo float-left">
+                <a href="../index.html#intro" class="scrollto">
+                <img src="../img/logo.png" alt="Logo Dipsul" class="img-fluid">
+                </a>
+            </div>
+            <nav class="main-nav float-right d-none d-lg-block">
+                <ul>
+                <li><a href="../index.html#intro">Home</a></li>
+                <li><a href="../index.html#about">Sobre</a></li>
+                <li><a href="../index.html#services">Serviços</a></li>
+                <li><a href="../index.html#clients">Parceiros</a></li>
+                <li><a href="../index.html#curriculum">Localização</a></li>
+                    <li>
+                    <a href="../pages/catalogo.html" class="focus catalogo-nav-link">Catálogo</a>
+                    </li>
+                    <li>
+                    <a href="../pages/televendas.html" class="focus catalogo-nav-link">Canal de Vendas</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <!-- FIM BARRA DE NAVEGAÇÃO FIXA -->
+
+    <!-- INICIO DO CATALOGO -->
+        <main class="container catalogo-main">
+            <div class="text-center mb-4"></div>
+            <h1 class="catalogo-title">CATÁLOGO<br> <span>DIPSUL DISTRIBUIDORA</span></h1>
+
+            <section class="catalogo-shop" aria-labelledby="catalogo-filtros-title">
+                <h2 id="catalogo-filtros-title" class="sr-only">Filtros do catálogo.</h2>
+
+                <form id="catalogo-filters" class="catalogo-controls" role="search">
+                    <div class="catalogo-field catalogo-field--search">
+                        <label for="catalogo-search">Buscar produto:</label>
+                        <input
+                            type="search"
+                            id="catalogo-search"
+                            class="form-control"
+                            placeholder="Código, descrição ou categoria."
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="catalogo-field">
+                        <label for="catalogo-category-select">Categoria:</label>
+                        <select id="catalogo-category-select" class="form-control catalogo-category-select">
+                            <option value="">Todas as categorias</option>
+                        </select>
+                    </div>
+
+                    <div class="catalogo-field catalogo-field--small">
+                        <label for="catalogo-page-size">Itens por página:</label>
+                        <select id="catalogo-page-size" class="form-control">
+                            <option value="20">20</option>
+                            <option value="40" selected>40</option>
+                            <option value="80">80</option>
+                        </select>
+                    </div>
+
+                    <div class="catalogo-actions">
+                        <button type="button" id="catalogo-clear" class="btn btn-outline-secondary">
+                            Limpar filtros
+                        </button>
+                    </div>
+                </form>
+
+                <div class="catalogo-summary">
+                    <p id="catalogo-results-count" class="text-muted mb-0">Carregando produtos...</p>
+                </div>
+
+                <div id="catalogo-loading" class="catalogo-state" role="status">
+                    Carregando catálogo...
+                </div>
+
+                <div id="catalogo-empty" class="catalogo-state catalogo-state--empty" hidden>
+                    Nenhum produto encontrado.
+                </div>
+
+                <div id="catalogo-error" class="catalogo-state catalogo-state--error" hidden>
+                    <p>Não foi possível carregar o catálogo.</p>
+                    <button type="button" id="catalogo-retry" class="btn btn-primary">
+                        Tentar novamente.
+                    </button>
+                </div>
+
+                <section
+                    id="catalogo-products"
+                    class="catalogo-products"
+                    aria-label="Produtos do catálogo"
+                ></section>
+
+                <nav
+                    id="catalogo-pagination"
+                    class="catalogo-pagination"
+                    aria-label="Paginação do catálogo"
+                ></nav>
+
+                <div id="catalogo-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+                <noscript>
+                    <div class="catalogo-state catalogo-state--error">
+                        Para visualizar o catálogo de produtos, ative o JavaScript no navegador.
+                    </div>
+                </noscript>
+
+                <aside id="catalogo-order-panel" class="catalogo-order" aria-labelledby="catalogo-order-title" aria-hidden="true" inert>
+                    <div class="catalogo-order-header">
+                        <div>
+                            <h2 id="catalogo-order-title">Lista de pedido</h2>
+                            <p id="catalogo-order-summary" class="text-muted mb-0">Nenhum item selecionado.</p>
+                        </div>
+                        <button type="button" id="catalogo-order-close" class="catalogo-order-close" aria-label="Fechar lista de pedido">
+                            &times;
+                        </button>
+                    </div>
+                    <div id="catalogo-order-items" class="catalogo-order-items" aria-label="Itens selecionados"></div>
+                    <div class="catalogo-order-actions">
+                        <button type="button" id="catalogo-order-clear" class="btn btn-outline-secondary btn-sm" disabled>
+                            Limpar lista
+                        </button>
+                        <button type="button" id="catalogo-order-send" class="btn btn-primary btn-sm" disabled>
+                            Finalizar pelo WhatsApp
+                        </button>
+                    </div>
+                </aside>
+
+                <button type="button" id="catalogo-order-toggle" class="catalogo-order-toggle" aria-controls="catalogo-order-panel" aria-expanded="false">
+                    <span>Pedido</span>
+                    <strong id="catalogo-order-badge">0</strong>
+                </button>
+            </section>
+
+        </main>
+        <!-- FIM DO CATALOGO -->
+
+    <!-- INICIO RODAPÉ DA PAGINA -->
+    <footer id="footer" class="catalogo-footer">
+    
+    <div class="footer-top catalogo-footer-top">
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="footer-info">
+                    <h3>Dipsul</h3>
+                    <p>
+                    Fundada em 1992, a Dipsul Distribuidora nasceu como uma distribuidora de produtos agropecuários. Com muito esforço, e observando as oportunidades que o mercado apresentou, firmou-se como uma das principais distribuidoras desse ramo.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Links Úteis</h4>
+                    <ul>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#intro"> Home</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#about"> Sobre</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#services"> Serviços</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#clients"> Parceiros</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../index.html#curriculum"> Localização</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../pages/catalogo.html"> Catálogo</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../pages/televendas.html"> Canal de Vendas</a></li>
+                    </ul>
+                </div>
+
+                <!-- CONTATOS - ajustado para ser responsivo -->
+                <div class="col-lg-6 col-md-12 footer-contacts" aria-label="Contatos e redes sociais">
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Matriz</h4>
+                    <p>
+                        Rodovia SC-370<br>
+                        Nº 3486<br>
+                        Tubarão - SC<br>
+                        Cep 88708-800<br>
+                        <strong>Telefone:</strong> (48) 3301-0700<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Filial RS</h4>
+                    <p>
+                        Rua Dr. Amaury Daudt Lampert<br>
+                        Nº 703<br>
+                        Montenegro - RS<br>
+                        Cep 95780-000<br>
+                        <strong>Telefone:</strong> (48) 9 8842-7017<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Filial PR</h4>
+                    <p>
+                        Rua Rafael Puchetti<br>
+                        Nº 865<br>
+                        São Jose dos Pinhais - PR<br>
+                        Cep 83020-330<br>
+                        <strong>Telefone:</strong> (48) 9 8842-4992<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-social mb-3">
+                    <h4>Redes Sociais</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/dipsul.distribuidora/" class="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/dipsul.distribuidora/" class="instagram" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
+                        <a href="https://br.linkedin.com/company/dipsul-distribuidora/" class="linkedin" target="_blank" rel="noopener"><i class="fa fa-linkedin"></i></a>
+                    </div>
+                    </div>
+                </div>
+                <!-- FIM CONTATOS -->
+
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid catalogo-footer-spacer"></div>
+        <div class="copyright">
+        &copy; Copyright <strong>Dipsul Distribuidora LTDA</strong>. Todos os direitos Reservados <br>
+        <a href="https://cnpj.biz/85222446000113" target="_blank" rel="noopener noreferrer">CNPJ: 85.222.446/0001-13</a>
+      </div>
+
+        <div class="credits">
+            Desenvolvido na base de: <a href="https://bootstrapmade.com/" target="_blank" rel="noopener noreferrer">BootstrapMade</a>
+        </div>
+    </div>
+
+    </footer>
+    <!-- FIM RODAPÉ DA PAGINA -->
+
+    <!-- INICIO BOTÃO DE RETORNO -->
+    <a href="#" class="back-to-top"><i class="fa fa-chevron-up"></i></a>
+    <!-- FIM BOTÃO DE RETORNO -->
+
+    <!-- JAVA SCRIPT LIBRARIES -->
+    <script src="../lib/jquery/jquery.min.js"></script>
+    <script src="../lib/jquery/jquery-migrate.min.js"></script>
+    <script src="../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../lib/easing/easing.min.js"></script>
+    <script src="../lib/mobile-nav/mobile-nav.js"></script>
+    <script src="../lib/wow/wow.min.js"></script>
+    <script src="../lib/waypoints/waypoints.min.js"></script>
+    <script src="../lib/counterup/counterup.min.js"></script>
+    <script src="../lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="../lib/isotope/isotope.pkgd.min.js"></script>
+    <script src="../lib/lightbox/js/lightbox.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/clients.js"></script>
+    <script src="../js/curriculum.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="../js/vagas.js"></script>
+    <script src="../js/cookies.js"></script>
+    <script src="../js/televendas.js"></script>
+    <script src="../data/catalogo/produtos.js"></script>
+    <script src="../js/catalogo.js"></script>
+
+</body>
+<!-- FIM DO BODY -->
+
+</html>
