@@ -139,6 +139,7 @@
   display: grid;
   gap: 10px;
   margin-top: 16px;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 2px;
 }
@@ -559,10 +560,11 @@
   }
 
   .catalogo-order {
+    top: auto;
     right: 15px;
     bottom: 134px;
     width: calc(100vw - 30px);
-    max-height: calc(100vh - 164px);
+    max-height: calc(100vh - 210px);
   }
 
   .catalogo-order-toggle {
