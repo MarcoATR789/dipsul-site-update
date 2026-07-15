@@ -116,6 +116,12 @@ h6 {
   z-index: 11;
 }
 
+.back-to-top:hover,
+.back-to-top:focus {
+  background: #0067d5;
+  color: #fff;
+}
+
 .back-to-top i {
   padding-top: 12px;
   color: #fff;

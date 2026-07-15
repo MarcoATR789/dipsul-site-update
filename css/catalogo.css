@@ -64,7 +64,7 @@
 
 .catalogo-order {
   position: fixed;
-  right: 18px;
+  right: 15px;
   bottom: 138px;
   z-index: 1060;
   width: min(420px, calc(100vw - 32px));
@@ -179,7 +179,7 @@
 
 .catalogo-order-toggle {
   position: fixed;
-  right: 18px;
+  right: 15px;
   bottom: 76px;
   z-index: 1059;
   display: inline-flex;
@@ -559,14 +559,14 @@
   }
 
   .catalogo-order {
-    right: 12px;
+    right: 15px;
     bottom: 134px;
-    width: calc(100vw - 24px);
+    width: calc(100vw - 30px);
     max-height: calc(100vh - 164px);
   }
 
   .catalogo-order-toggle {
-    right: 12px;
+    right: 15px;
     bottom: 72px;
   }
 
