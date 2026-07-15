@@ -135,6 +135,17 @@
   min-height: 38px;
 }
 
+#catalogo-order-send {
+  background-color: #25d366;
+  border-color: #25d366;
+}
+
+#catalogo-order-send:hover,
+#catalogo-order-send:focus {
+  background-color: #1ebe5d;
+  border-color: #1ebe5d;
+}
+
 .catalogo-order-items {
   display: grid;
   gap: 10px;
