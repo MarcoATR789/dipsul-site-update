@@ -340,8 +340,13 @@
 
 .catalogo-product-action {
   margin-top: auto;
-  color: #007bff;
+  color: #2b3c67;
   font-weight: 700;
+}
+
+.catalogo-product-link:hover .catalogo-product-action,
+.catalogo-product-link:focus .catalogo-product-action {
+  color: #223154;
 }
 
 .catalogo-product-order {
@@ -355,15 +360,15 @@
   min-height: 38px;
 }
 
-.catalogo-product-add {
+.btn.catalogo-product-add {
   min-height: 38px;
-  background: #2b3c67;
+  background-color: #2b3c67;
   border-color: #2b3c67;
 }
 
-.catalogo-product-add:hover,
-.catalogo-product-add:focus {
-  background: #223154;
+.btn.catalogo-product-add:hover,
+.btn.catalogo-product-add:focus {
+  background-color: #223154;
   border-color: #223154;
 }
 
@@ -431,8 +436,13 @@
 }
 
 .produto-breadcrumb a {
-  color: #007bff;
+  color: #2b3c67;
   font-weight: 700;
+}
+
+.produto-breadcrumb a:hover,
+.produto-breadcrumb a:focus {
+  color: #223154;
 }
 
 .produto-detail {
