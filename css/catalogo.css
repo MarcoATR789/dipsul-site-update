@@ -564,7 +564,8 @@
     right: 15px;
     bottom: 134px;
     width: calc(100vw - 30px);
-    max-height: calc(100vh - 210px);
+    max-height: calc(100vh - 270px);
+    max-height: calc(100dvh - 270px);
   }
 
   .catalogo-order-toggle {
