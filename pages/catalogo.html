@@ -148,6 +148,32 @@
                         </button>
                     </div>
                     <div id="catalogo-order-items" class="catalogo-order-items" aria-label="Itens selecionados"></div>
+                    <div class="catalogo-order-customer">
+                        <div class="catalogo-order-field">
+                            <label for="catalogo-order-cnpj">CNPJ</label>
+                            <input
+                                type="text"
+                                id="catalogo-order-cnpj"
+                                class="form-control"
+                                inputmode="numeric"
+                                maxlength="18"
+                                autocomplete="off"
+                                placeholder="00.000.000/0000-00"
+                            >
+                        </div>
+                        <div class="catalogo-order-field">
+                            <label for="catalogo-order-company">Nome da empresa</label>
+                            <input
+                                type="text"
+                                id="catalogo-order-company"
+                                class="form-control"
+                                maxlength="120"
+                                autocomplete="organization"
+                                placeholder="Razão social ou nome fantasia"
+                            >
+                        </div>
+                        <p id="catalogo-order-feedback" class="catalogo-order-feedback" aria-live="polite"></p>
+                    </div>
                     <div class="catalogo-order-actions">
                         <button type="button" id="catalogo-order-clear" class="btn btn-outline-secondary btn-sm" disabled>
                             Limpar lista
@@ -284,7 +310,6 @@
     <script src="../js/vagas.js"></script>
     <script src="../js/cookies.js"></script>
     <script src="../js/televendas.js"></script>
-    <script src="../data/catalogo/produtos.js"></script>
     <script src="../js/catalogo.js"></script>
 
 </body>

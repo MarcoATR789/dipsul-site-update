@@ -226,19 +226,6 @@
     }
 
     try {
-      if (window.location.protocol === 'file:' && Array.isArray(window.CATALOGO_PRODUTOS)) {
-        const produtoLocal = window.CATALOGO_PRODUTOS.find((item) => String(item.codigo) === codigo);
-
-        if (!produtoLocal) {
-          mostrarErro(`Produto não encontrado: ${codigo}`);
-          return;
-        }
-
-        mostrarProduto(produtoLocal);
-        configurarAcoes(produtoLocal);
-        return;
-      }
-
       const response = await fetch(CATALOGO_DATA_URL, { cache: 'no-cache' });
 
       if (!response.ok) {
@@ -261,21 +248,6 @@
       mostrarProduto(produto);
       configurarAcoes(produto);
     } catch (error) {
-      if (Array.isArray(window.CATALOGO_PRODUTOS)) {
-        console.warn('Fetch do JSON falhou; usando fallback JS do catálogo.', error);
-
-        const produtoFallback = window.CATALOGO_PRODUTOS.find((item) => String(item.codigo) === codigo);
-
-        if (!produtoFallback) {
-          mostrarErro(`Produto não encontrado: ${codigo}`);
-          return;
-        }
-
-        mostrarProduto(produtoFallback);
-        configurarAcoes(produtoFallback);
-        return;
-      }
-
       mostrarErro('Erro ao carregar produto:', error);
     }
   }

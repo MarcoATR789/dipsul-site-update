@@ -10,7 +10,9 @@
   const PEDIDO_PREVIEW_MS = 500;
   const PEDIDO_MAX_QUANTIDADE = 100;
   const PEDIDO_STORAGE_KEY = 'dipsul_catalogo_pedido_v1';
-  const PEDIDO_WHATSAPP_NUMERO = '5555991434780';
+  const SUPABASE_URL = 'https://ypsfvlajycinrhmwykn.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0lRHqPKNvLuSjrfICsdZ8g_A8gluaXX';
+  const SUPABASE_PEDIDO_RPC = 'catalogo_registrar_pedido';
   const CATEGORIAS_ORDEM = [
     'medicamentos-veterinarios',
     'minerais',
@@ -71,6 +73,9 @@
     pagination: document.getElementById('catalogo-pagination'),
     orderSummary: document.getElementById('catalogo-order-summary'),
     orderItems: document.getElementById('catalogo-order-items'),
+    orderCnpj: document.getElementById('catalogo-order-cnpj'),
+    orderCompany: document.getElementById('catalogo-order-company'),
+    orderFeedback: document.getElementById('catalogo-order-feedback'),
     orderClear: document.getElementById('catalogo-order-clear'),
     orderSend: document.getElementById('catalogo-order-send'),
     orderPanel: document.getElementById('catalogo-order-panel'),
@@ -82,6 +87,7 @@
 
   let pedidoPreviewTimer = null;
   let pedidoAbertoAutomatico = false;
+  let pedidoEnviando = false;
 
   function normalizar(valor) {
     return String(valor || '')
@@ -145,6 +151,60 @@
     input.addEventListener('change', () => {
       input.value = String(normalizarQuantidade(input.value));
     });
+  }
+
+  function obterDigitos(valor) {
+    return String(valor || '').replace(/\D/g, '');
+  }
+
+  function formatarCnpj(valor) {
+    const digitos = obterDigitos(valor).slice(0, 14);
+
+    return digitos
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2');
+  }
+
+  function cnpjValido(valor) {
+    const cnpj = obterDigitos(valor);
+
+    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+
+    const calcularDigito = (base) => {
+      const pesos = base.length === 12
+        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      const soma = base.split('').reduce((total, digito, index) => total + Number(digito) * pesos[index], 0);
+      const resto = soma % 11;
+
+      return resto < 2 ? '0' : String(11 - resto);
+    };
+
+    const primeiro = calcularDigito(cnpj.slice(0, 12));
+    const segundo = calcularDigito(cnpj.slice(0, 12) + primeiro);
+
+    return cnpj.endsWith(`${primeiro}${segundo}`);
+  }
+
+  function configurarCampoCnpj() {
+    if (!elements.orderCnpj) return;
+
+    elements.orderCnpj.addEventListener('input', () => {
+      elements.orderCnpj.value = formatarCnpj(elements.orderCnpj.value);
+    });
+  }
+
+  function definirFeedbackPedido(texto, erro = false) {
+    if (elements.orderFeedback) {
+      elements.orderFeedback.textContent = texto || '';
+      elements.orderFeedback.classList.toggle('is-error', Boolean(erro));
+    }
+
+    if (elements.live && texto) {
+      elements.live.textContent = texto;
+    }
   }
 
   function carregarPedidoSalvo() {
@@ -603,10 +663,65 @@
     }
 
     if (elements.orderClear) elements.orderClear.disabled = !itens.length;
-    if (elements.orderSend) elements.orderSend.disabled = !itens.length;
+    if (elements.orderSend) elements.orderSend.disabled = pedidoEnviando || !itens.length;
   }
 
-  function montarMensagemPedido() {
+  function obterClientePedido() {
+    const cnpj = obterDigitos(elements.orderCnpj && elements.orderCnpj.value);
+    const empresa = normalizarTextoCliente(elements.orderCompany && elements.orderCompany.value);
+
+    if (!cnpjValido(cnpj)) {
+      throw new Error('Informe um CNPJ válido.');
+    }
+
+    if (empresa.length < 2) {
+      throw new Error('Informe o nome da empresa.');
+    }
+
+    return { cnpj, empresa };
+  }
+
+  function normalizarTextoCliente(valor) {
+    return String(valor || '').replace(/\s+/g, ' ').trim();
+  }
+
+  async function registrarPedidoSupabase(cliente) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${SUPABASE_PEDIDO_RPC}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        p_cnpj: cliente.cnpj,
+        p_empresa: cliente.empresa
+      })
+    });
+
+    if (!response.ok) {
+      let mensagem = 'Não foi possível selecionar o televendas. Tente novamente.';
+
+      try {
+        const erro = await response.json();
+        mensagem = erro.message || mensagem;
+      } catch (error) {
+        mensagem = response.statusText || mensagem;
+      }
+
+      throw new Error(mensagem);
+    }
+
+    const dados = await response.json();
+    const resultado = Array.isArray(dados) ? dados[0] : dados;
+
+    if (!resultado || !resultado.televendas_whatsapp) {
+      throw new Error('O Supabase não retornou um número de WhatsApp.');
+    }
+
+    return resultado;
+  }
+
+  function montarMensagemPedido(cliente) {
     const itens = obterItensPedido();
     const linhas = itens.map((item, index) => {
       return `${index + 1}- (${item.quantidade}Uni) ${item.descricao} - ${item.codigo}`;
@@ -615,24 +730,48 @@
     return [
       'Olá, quero fazer um pedido. Fiz um carrinho de itens pelo site, gostaria de prosseguir com a compra.',
       '',
+      `Empresa: ${cliente.empresa}`,
+      `CNPJ: ${formatarCnpj(cliente.cnpj)}`,
+      '',
       'Segue abaixo os itens selecionados:',
       ...linhas
     ].join('\n');
   }
 
-  function enviarPedidoWhatsApp() {
+  function definirEnvioPedidoAtivo(ativo) {
+    if (!elements.orderSend) return;
+
+    pedidoEnviando = ativo;
+    elements.orderSend.disabled = pedidoEnviando || !obterItensPedido().length;
+    elements.orderSend.textContent = ativo ? 'Selecionando televendas...' : 'Finalizar pelo WhatsApp';
+  }
+
+  async function enviarPedidoWhatsApp() {
     const itens = obterItensPedido();
 
     if (!itens.length) {
-      if (elements.live) {
-        elements.live.textContent = 'Selecione ao menos um item para finalizar o pedido.';
-      }
+      definirFeedbackPedido('Selecione ao menos um item para finalizar o pedido.', true);
       return;
     }
 
-    const mensagem = montarMensagemPedido();
-    const url = `https://wa.me/${PEDIDO_WHATSAPP_NUMERO}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    try {
+      const cliente = obterClientePedido();
+
+      definirEnvioPedidoAtivo(true);
+      definirFeedbackPedido('Selecionando televendas...');
+
+      const atendimento = await registrarPedidoSupabase(cliente);
+      const mensagem = montarMensagemPedido(cliente);
+      const numero = obterDigitos(atendimento.televendas_whatsapp);
+      const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
+      definirFeedbackPedido(`Pedido direcionado para ${atendimento.televendas_nome}.`);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      definirFeedbackPedido(error.message || 'Não foi possível finalizar o pedido.', true);
+    } finally {
+      definirEnvioPedidoAtivo(false);
+    }
   }
 
   function renderizarProdutos() {
@@ -752,14 +891,6 @@
     state.abortController = new AbortController();
     mostrarCarregando();
 
-    if (window.location.protocol === 'file:' && Array.isArray(window.CATALOGO_PRODUTOS)) {
-      state.produtos = window.CATALOGO_PRODUTOS;
-      state.carregado = true;
-      montarCategorias();
-      renderizar();
-      return;
-    }
-
     try {
       const response = await fetch(CATALOGO_DATA_URL, {
         signal: state.abortController.signal,
@@ -782,15 +913,6 @@
       renderizar();
     } catch (error) {
       if (error.name === 'AbortError') return;
-
-      if (Array.isArray(window.CATALOGO_PRODUTOS)) {
-        console.warn('Fetch do JSON falhou; usando fallback JS do catálogo.', error);
-        state.produtos = window.CATALOGO_PRODUTOS;
-        state.carregado = true;
-        montarCategorias();
-        renderizar();
-        return;
-      }
 
       mostrarErro(error);
     }
@@ -844,6 +966,9 @@
     elements.orderSend.addEventListener('click', enviarPedidoWhatsApp);
     elements.orderToggle.addEventListener('click', alternarPainelPedido);
     elements.orderClose.addEventListener('click', fecharPainelPedido);
+    configurarCampoCnpj();
+    if (elements.orderCnpj) elements.orderCnpj.addEventListener('input', () => definirFeedbackPedido(''));
+    if (elements.orderCompany) elements.orderCompany.addEventListener('input', () => definirFeedbackPedido(''));
     elements.retry.addEventListener('click', () => {
       state.carregado = false;
       carregarCatalogo();

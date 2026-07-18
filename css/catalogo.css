@@ -135,6 +135,38 @@
   min-height: 38px;
 }
 
+.catalogo-order-customer {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e0e7ef;
+}
+
+.catalogo-order-field label {
+  display: block;
+  margin-bottom: 4px;
+  color: #283d50;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.catalogo-order-field .form-control {
+  min-height: 38px;
+}
+
+.catalogo-order-feedback {
+  min-height: 20px;
+  margin: 0;
+  color: #556877;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.catalogo-order-feedback.is-error {
+  color: #842029;
+}
+
 #catalogo-order-send {
   background-color: #25d366;
   border-color: #25d366;
