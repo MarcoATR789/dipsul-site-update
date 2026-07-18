@@ -10,7 +10,7 @@
   const PEDIDO_PREVIEW_MS = 500;
   const PEDIDO_MAX_QUANTIDADE = 100;
   const PEDIDO_STORAGE_KEY = 'dipsul_catalogo_pedido_v1';
-  const SUPABASE_URL = 'https://ypsfvlajycinrhmwykn.supabase.co';
+  const SUPABASE_URL = 'https://yypsfvlajycinrhmwykn.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_0lRHqPKNvLuSjrfICsdZ8g_A8gluaXX';
   const SUPABASE_PEDIDO_RPC = 'catalogo_registrar_pedido';
   const CATEGORIAS_ORDEM = [
