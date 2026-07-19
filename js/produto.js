@@ -12,7 +12,7 @@
     image: document.getElementById('produto-image'),
     code: document.getElementById('produto-code'),
     title: document.getElementById('produto-title'),
-    category: document.getElementById('produto-category'),
+    category: document.getElementById('produto-category').textContent.replace('Categoria: ', '').trim(),
     backLink: document.getElementById('produto-back-link'),
     backButton: document.getElementById('produto-back-button'),
     copy: document.getElementById('produto-copy'),
