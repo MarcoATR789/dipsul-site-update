@@ -1,0 +1,431 @@
+#televendas {
+  color: #283d50;
+}
+
+.televendas-main {
+  max-width: 1120px;
+}
+
+.televendas-section {
+  width: 100%;
+}
+
+.televendas-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+}
+
+.televendas-resumo,
+.televendas-hours {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #d6eaff;
+  border-radius: 6px;
+}
+
+.televendas-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #283d50;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.televendas-intro p {
+  margin: 0;
+  color: #556877;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.televendas-hours {
+  gap: 4px;
+}
+
+.televendas-hours span {
+  display: block;
+  margin-bottom: 4px;
+  color: #556877;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.televendas-hours strong {
+  display: block;
+  color: #283d50;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+#televendas .televendas-equipe {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+#televendas .televendas-vendedor {
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: #283d50;
+  background: #fff;
+  border: 1px solid #d6eaff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+#televendas .televendas-vendedor:hover,
+#televendas .televendas-vendedor:focus {
+  border-color: #007bff;
+  box-shadow: 0 10px 24px rgba(0, 123, 255, 0.12);
+  outline: none;
+  transform: translateY(-2px);
+}
+
+#televendas .televendas-foto-area {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 18px;
+  margin: 0;
+  background: #f8fbff;
+  border-bottom: 1px solid #e8f2ff;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+#televendas .televendas-foto-fundo {
+  position: absolute;
+  inset: 0;
+  background: #2b3c67;
+  opacity: 0.04;
+}
+
+#televendas .televendas-foto {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: min(72%, 160px);
+  height: min(72%, 160px);
+  object-fit: cover;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 35, 70, 0.16);
+  transition: transform 180ms ease;
+}
+
+#televendas .televendas-vendedor:hover .televendas-foto,
+#televendas .televendas-vendedor:focus .televendas-foto {
+  transform: scale(1.04);
+}
+
+#televendas .televendas-vendedor .televendas-info {
+  flex: 1 1 auto;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  margin-top: 0 !important;
+}
+
+#televendas .televendas-vendedor .televendas-nome {
+  color: #283d50 !important;
+  font-size: 17px;
+  font-weight: 900 !important;
+  line-height: 1.3;
+}
+
+#televendas .televendas-vendedor .televendas-telefone,
+#televendas .televendas-vendedor .televendas-email {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  color: #556877 !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+#televendas .televendas-vendedor .televendas-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+#televendas .televendas-vendedor .televendas-telefone i,
+#televendas .televendas-vendedor .televendas-email i {
+  flex: 0 0 16px;
+  color: #2b3c67;
+  text-align: center;
+}
+
+#televendas .televendas-acao-card {
+  align-self: end;
+  margin-top: auto;
+  color: #2b3c67;
+  font-weight: 900;
+}
+
+.televendas-painel-contato {
+  bottom: 76px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 132px));
+  max-height: min(620px, calc(100dvh - 132px));
+  overflow-y: auto;
+  text-align: left;
+}
+
+.televendas-painel-contato #televendas-detalhes {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.televendas-painel-contato .catalogo-pedido-cabecalho {
+  margin-bottom: 14px;
+}
+
+.televendas-contato-etiqueta {
+  display: block;
+  margin-bottom: 4px;
+  color: #556877;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.televendas-painel-contato .vendedor-contatos-lista {
+  display: grid;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.televendas-painel-contato .vendedor-contato-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 6px 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: #f8fbff;
+  border: 1px solid #e0e7ef;
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.televendas-painel-contato .vendedor-contato-item:hover,
+.televendas-painel-contato .vendedor-contato-item:focus {
+  background: #fff;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.12);
+  outline: none;
+}
+
+.televendas-painel-contato .vendedor-contato-item span {
+  grid-column: 1 / -1;
+  color: #556877;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.televendas-painel-contato .vendedor-contato-item strong {
+  color: #283d50;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: normal;
+}
+
+.televendas-painel-contato .vendedor-contato-item i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #2b3c67;
+  background: #e5f1fd;
+  border-radius: 50%;
+  font-size: 15px;
+}
+
+.televendas-painel-contato .vendedor-acoes {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.televendas-painel-contato .vendedor-acao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: transform 180ms ease, filter 180ms ease;
+}
+
+.televendas-painel-contato .vendedor-acao:hover,
+.televendas-painel-contato .vendedor-acao:focus {
+  color: #fff;
+  text-decoration: none;
+  outline: 3px solid rgba(0, 123, 255, 0.25);
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+}
+
+.televendas-painel-contato .vendedor-acao i {
+  width: 20px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.televendas-painel-contato .vendedor-acao--whatsapp {
+  background: #25d366;
+}
+
+.televendas-painel-contato .vendedor-acao--email {
+  background: #2b3c67;
+}
+
+.televendas-painel-contato .vendedor-acao--telefone {
+  background: #5f6f7a;
+}
+
+@media (max-width: 991px) {
+  .televendas-intro {
+    grid-template-columns: 1fr;
+  }
+
+  #televendas .televendas-equipe {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  #televendas .catalogo-title {
+    font-size: 30px;
+    line-height: 1.35;
+  }
+
+  .televendas-intro {
+    padding: 16px;
+  }
+
+  #televendas .televendas-equipe {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  #televendas .televendas-vendedor {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  #televendas .televendas-foto-area {
+    width: 132px;
+    min-height: 132px;
+    aspect-ratio: auto;
+    border-right: 1px solid #e8f2ff;
+    border-bottom: 0;
+  }
+
+  #televendas .televendas-foto {
+    width: 92px;
+    height: 92px;
+  }
+
+  #televendas .televendas-vendedor .televendas-info {
+    min-width: 0;
+    padding: 14px;
+  }
+
+  #televendas .televendas-vendedor .televendas-email {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .televendas-painel-contato {
+    right: 15px;
+    bottom: 72px;
+    width: calc(100vw - 30px);
+    max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
+  }
+
+  .televendas-painel-contato .vendedor-contato-item {
+    padding-right: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  #televendas .catalogo-title {
+    font-size: 26px;
+  }
+
+  #televendas .televendas-vendedor {
+    flex-direction: column;
+  }
+
+  #televendas .televendas-foto-area {
+    width: 100%;
+    aspect-ratio: 1.5 / 1;
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid #e8f2ff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #televendas .televendas-vendedor,
+  #televendas .televendas-foto,
+  .televendas-painel-contato .vendedor-acao {
+    transition: none;
+  }
+
+  #televendas .televendas-vendedor:hover,
+  #televendas .televendas-vendedor:focus,
+  #televendas .televendas-vendedor:hover .televendas-foto,
+  #televendas .televendas-vendedor:focus .televendas-foto,
+  .televendas-painel-contato .vendedor-acao:hover,
+  .televendas-painel-contato .vendedor-acao:focus {
+    transform: none;
+  }
+}
