@@ -1,0 +1,50 @@
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: "31 10 */2 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Chamar catalogo_ping
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validar secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL:-}" ]; then
+            echo "Configure o secret SUPABASE_URL no GitHub."
+            exit 1
+          fi
+
+          if [ -z "${SUPABASE_PUBLISHABLE_KEY:-}" ]; then
+            echo "Configure o secret SUPABASE_PUBLISHABLE_KEY no GitHub."
+            exit 1
+          fi
+
+      - name: Chamar Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+
+          resposta=$(
+            curl --fail-with-body --show-error --silent \
+              --request POST "$SUPABASE_URL/rest/v1/rpc/catalogo_ping" \
+              --header "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+              --header "Authorization: Bearer $SUPABASE_PUBLISHABLE_KEY" \
+              --header "Content-Type: application/json" \
+              --data '{}'
+          )
+
+          echo "$resposta"

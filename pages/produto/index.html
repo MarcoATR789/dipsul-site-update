@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produto - Dipsul</title>
+    <meta id="produto-meta-descricao" name="description" content="Detalhes do produto no catálogo da Dipsul Distribuidora.">
+    <link id="produto-canonico" rel="canonical" href="../produto/">
+
+    <!-- ICONE DO SITE -->
+    <link rel="icon" href="../../img/favicon.png">
+
+    <!-- CSS BASE -->
+    <link rel="stylesheet" href="../../css/style.css?v=20260902-2">
+    <link rel="stylesheet" href="../../css/televendas.css?v=20260902-3">
+    <link rel="stylesheet" href="../../css/catalogo.css?v=20260902-3">
+
+    <!-- BOOTSTRAP CSS -->
+    <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
+
+    <!-- LIBRARY CSS -->
+    <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../lib/animate/animate.min.css">
+    <link rel="stylesheet" href="../../lib/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="../../lib/owlcarousel/assets/owl.carousel.min.css">
+    <link rel="stylesheet" href="../../lib/lightbox/css/lightbox.min.css">
+</head>
+
+<body>
+
+    <!-- INICIO BARRA DE NAVEGAÇÃO FIXA -->
+    <header id="header" class="fixed-top">
+        <div class="container">
+            <div class="logo float-left">
+                <a href="../../#intro" class="rolar-ate">
+                <img src="../../img/logo.png" alt="Logo Dipsul" class="img-fluid">
+                </a>
+            </div>
+            <nav class="main-nav float-right d-none d-lg-block">
+                <ul>
+                <li><a href="../../#intro">Home</a></li>
+                <li><a href="../../#about">Sobre</a></li>
+                <li><a href="../../#services">Serviços</a></li>
+                <li><a href="../../#clients">Parceiros</a></li>
+                <li><a href="../../#curriculum">Localização</a></li>
+                    <li>
+                    <a href="../catalogo/" class="focus catalogo-nav-link">Catálogo</a>
+                    </li>
+                    <li>
+                    <a href="../televendas/" class="focus catalogo-nav-link">Canal de Vendas</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <!-- FIM BARRA DE NAVEGAÇÃO FIXA -->
+
+    <!-- INICIO DO PRODUTO -->
+    <main class="container catalogo-main produto-principal">
+        <section id="produto-carregando" class="catalogo-estado" role="status">
+            Carregando produto...
+        </section>
+
+        <section id="produto-erro" class="catalogo-estado catalogo-estado--erro" hidden>
+            <p>Não foi possível carregar este produto.</p>
+            <a class="btn btn-primary" href="../catalogo/">Voltar ao catálogo</a>
+        </section>
+
+        <article id="produto-detalhe" class="produto-detalhe" hidden>
+            <div class="produto-imagem-painel">
+                <img id="produto-imagem" src="../../img/catalogo/sem-imagem.webp" alt="" width="520" height="520" decoding="async">
+            </div>
+
+            <div class="produto-info-painel">
+                <h1 id="produto-titulo" class="produto-titulo"></h1>
+                <span id="produto-codigo" class="catalogo-produto-codigo"></span>
+                <p id="produto-categoria" class="produto-categoria"></p>
+
+                <div class="produto-acoes">
+                    <a id="produto-voltar-botao" class="btn btn-outline-secondary" href="../catalogo/">Voltar ao catálogo</a>
+                    <button type="button" id="produto-copiar" class="btn btn-primary">Copiar link</button>
+                    <button type="button" id="produto-compartilhar" class="btn btn-primary" hidden>Compartilhar</button>
+                </div>
+
+            </div>
+        </article>
+
+        <script id="produto-jsonld" type="application/ld+json"></script>
+    </main>
+    <!-- FIM DO PRODUTO -->
+
+    <!-- INICIO RODAPÉ DA PAGINA -->
+    <footer id="footer" class="catalogo-footer">
+
+    <div class="footer-top catalogo-footer-top">
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="footer-info">
+                    <h3>Dipsul</h3>
+                    <p>
+                    Fundada em 1992, a Dipsul Distribuidora nasceu como uma distribuidora de produtos agropecuários. Com muito esforço, e observando as oportunidades que o mercado apresentou, firmou-se como uma das principais distribuidoras desse ramo.
+                    </p>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Links Úteis</h4>
+                    <ul>
+                    <li><a class="ion-ios-arrow-right" href="../../#intro"> Home</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../../#about"> Sobre</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../../#services"> Serviços</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../../#clients"> Parceiros</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../../#curriculum"> Localização</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../catalogo/"> Catálogo</a></li>
+                    <li><a class="ion-ios-arrow-right" href="../televendas/"> Canal de Vendas</a></li>
+                    </ul>
+                </div>
+
+                <!-- CONTATOS - ajustado para ser responsivo -->
+                <div class="col-lg-6 col-md-12 footer-contacts" aria-label="Contatos e redes sociais">
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Matriz</h4>
+                    <p>
+                        Rodovia SC-370<br>
+                        Nº 3486<br>
+                        Tubarão - SC<br>
+                        Cep 88708-800<br>
+                        <strong>Telefone:</strong> (48) 3301-0700<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Filial RS</h4>
+                    <p>
+                        Rua Dr. Amaury Daudt Lampert<br>
+                        Nº 703<br>
+                        Montenegro - RS<br>
+                        Cep 95780-000<br>
+                        <strong>Telefone:</strong> (48) 9 8842-7017<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-contact mb-3">
+                    <h4>Contato - Filial PR</h4>
+                    <p>
+                        Rua Rafael Puchetti<br>
+                        Nº 865<br>
+                        São Jose dos Pinhais - PR<br>
+                        Cep 83020-330<br>
+                        <strong>Telefone:</strong> (48) 9 8842-4992<br>
+                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                    </p>
+                    </div>
+
+                    <div class="footer-social mb-3">
+                    <h4>Redes Sociais</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/dipsul.distribuidora/" class="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i></a>
+                        <a href="https://www.instagram.com/dipsul.distribuidora/" class="instagram" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
+                        <a href="https://br.linkedin.com/company/dipsul-distribuidora/" class="linkedin" target="_blank" rel="noopener"><i class="fa fa-linkedin"></i></a>
+                    </div>
+                    </div>
+                </div>
+                <!-- FIM CONTATOS -->
+
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid catalogo-footer-spacer"></div>
+        <div class="copyright">
+        &copy; Copyright <strong>Dipsul Distribuidora LTDA</strong>. Todos os direitos Reservados <br>
+        <a href="https://cnpj.biz/85222446000113" target="_blank" rel="noopener noreferrer">CNPJ: 85.222.446/0001-13</a>
+      </div>
+
+        <div class="credits">
+            Desenvolvido na base de: <a href="https://bootstrapmade.com/" target="_blank" rel="noopener noreferrer">BootstrapMade</a>
+        </div>
+    </div>
+
+    </footer>
+    <!-- FIM RODAPÉ DA PAGINA -->
+
+    <!-- INICIO BOTÃO DE RETORNO -->
+    <a href="#" class="voltar-ao-topo"><i class="fa fa-chevron-up"></i></a>
+    <!-- FIM BOTÃO DE RETORNO -->
+
+    <!-- JAVA SCRIPT LIBRARIES -->
+    <script src="../../lib/jquery/jquery.min.js"></script>
+    <script src="../../lib/jquery/jquery-migrate.min.js"></script>
+    <script src="../../lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../../lib/easing/easing.min.js"></script>
+    <script src="../../lib/mobile-nav/mobile-nav.js?v=20260902-2"></script>
+    <script src="../../lib/wow/wow.min.js"></script>
+    <script src="../../lib/waypoints/waypoints.min.js"></script>
+    <script src="../../lib/counterup/counterup.min.js"></script>
+    <script src="../../lib/owlcarousel/owl.carousel.min.js"></script>
+    <script src="../../lib/isotope/isotope.pkgd.min.js"></script>
+    <script src="../../lib/lightbox/js/lightbox.min.js"></script>
+    <script src="../../js/main.js?v=20260902-2"></script>
+    <script src="../../js/clients.js?v=20260902-2"></script>
+    <script src="../../js/curriculum.js?v=20260902-2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="../../js/vagas.js?v=20260902-2"></script>
+    <script src="../../js/cookies.js"></script>
+    <script src="../../js/televendas.js?v=20260902-2"></script>
+    <script src="../../js/produto.js?v=20260902-2"></script>
+
+</body>
+<!-- FIM DO BODY -->
+
+</html>
