@@ -1,0 +1,372 @@
+(function () {
+  "use strict";
+
+  const campo = (id) => document.getElementById(id);
+  const raiz = new URL("../../", window.location.href);
+  const nomesSituacao = { novo: "Novo", em_atendimento: "Em atendimento", concluido: "Concluído", cancelado: "Cancelado" };
+  const porPagina = 25;
+  let cliente;
+  let usuario = null;
+  let versaoSessao = 0;
+  let consultaAtual = 0;
+  let detalheAtual = 0;
+  let pagina = 0;
+  let pedidoAberto = null;
+  let vendedores = new Map();
+  let produtos = null;
+  let geracaoPDF = null;
+  let leituraCatalogo = null;
+  let ultimaAtividade = Date.now();
+
+  function mensagem(id, texto, erro = false) {
+    campo(id).textContent = texto;
+    campo(id).classList.toggle("erro", erro);
+  }
+
+  function elemento(tag, texto, classe) {
+    const novo = document.createElement(tag);
+    if (texto != null) novo.textContent = String(texto);
+    if (classe) novo.className = classe;
+    return novo;
+  }
+
+  function dataBrasil(data) {
+    return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(data));
+  }
+
+  function formatarCnpj(cnpj) {
+    return String(cnpj).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+  }
+
+  function limparPDF() {
+    geracaoPDF?.abort();
+    geracaoPDF = null;
+    campo("previa-pdf").hidden = true;
+    campo("previa-pdf").contentDocument?.body.replaceChildren();
+    campo("imprimir-pdf").disabled = true;
+    campo("preparar-pdf").disabled = !produtos;
+    campo("cancelar-pdf").hidden = true;
+    mensagem("pdf-mensagem", "");
+  }
+
+  function limparSessao(texto = "") {
+    versaoSessao++;
+    consultaAtual++;
+    detalheAtual++;
+    usuario = null;
+    pedidoAberto = null;
+    produtos = null;
+    vendedores.clear();
+    leituraCatalogo?.abort();
+    leituraCatalogo = null;
+    limparPDF();
+    campo("painel").hidden = campo("sessao").hidden = true;
+    campo("acesso").hidden = false;
+    campo("usuario-email").textContent = "";
+    campo("senha").value = "";
+    campo("detalhes").close();
+    for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "historico"]) campo(id).replaceChildren();
+    campo("televendas").replaceChildren(new Option("Todos", ""));
+    campo("categoria-pdf").replaceChildren(new Option("Catálogo completo", ""));
+    campo("categoria-pdf").disabled = true;
+    selecionarAba("pedidos");
+    campo("filtros").reset();
+    campo("formulario-situacao").reset();
+    campo("detalhes-conteudo").hidden = true;
+    campo("titulo-detalhes").textContent = "Pedido";
+    campo("detalhes-mensagem").textContent = "";
+    campo("itens-mensagem").textContent = "";
+    campo("pedidos-mensagem").textContent = "";
+    campo("pagina-atual").textContent = "";
+    document.querySelectorAll(".dipsul-notificacao").forEach((aviso) => aviso.remove());
+    mensagem("mensagem-acesso", texto);
+  }
+
+  async function sair(texto = "Sessão encerrada.") {
+    limparSessao(texto);
+    await cliente.auth.signOut({ scope: "local" });
+  }
+
+  async function confirmarAcesso() {
+    const resposta = await cliente.rpc("catalogo_admin_autorizado");
+    if (resposta.error) throw new Error("Não foi possível verificar a autorização. Confira a conexão e a configuração do Supabase.");
+    if (resposta.data !== true) {
+      await sair("Usuário sem autorização administrativa.");
+      throw new Error("Usuário sem autorização administrativa.");
+    }
+  }
+
+  async function iniciarSessao(sessao) {
+    if (!sessao) { limparSessao(); return; }
+    const versao = ++versaoSessao;
+    await confirmarAcesso();
+    if (versao !== versaoSessao) return;
+    usuario = sessao.user;
+    ultimaAtividade = Date.now();
+    campo("usuario-email").textContent = usuario.email;
+    campo("acesso").hidden = true;
+    campo("painel").hidden = campo("sessao").hidden = false;
+    campo("senha").value = "";
+    pagina = 0;
+    try {
+      await carregarVendedores();
+      if (versao === versaoSessao) await carregarPedidos();
+    } catch (erro) {
+      if (versao === versaoSessao) mensagem("pedidos-mensagem", erro.message, true);
+    }
+  }
+
+  async function carregarVendedores() {
+    const versao = versaoSessao;
+    const resposta = await cliente.from("catalogo_televendas").select("id,nome").order("ordem");
+    if (versao !== versaoSessao) return;
+    if (resposta.error) throw new Error("Não foi possível carregar os televendas.");
+    vendedores = new Map(resposta.data.map((vendedor) => [String(vendedor.id), vendedor.nome]));
+    campo("televendas").replaceChildren(new Option("Todos", ""));
+    for (const [id, nome] of vendedores) campo("televendas").add(new Option(nome, id));
+  }
+
+  async function carregarPedidos() {
+    if (!usuario) return;
+    const consulta = ++consultaAtual;
+    const versao = versaoSessao;
+    campo("pedidos-lista").replaceChildren();
+    campo("anterior").disabled = campo("proxima").disabled = true;
+    campo("pagina-atual").textContent = "";
+    mensagem("pedidos-mensagem", "Carregando pedidos...");
+    try {
+      const inicio = campo("data-inicio").value;
+      const fim = campo("data-fim").value;
+      if (inicio && fim && inicio > fim) throw new Error("A data inicial deve ser anterior à data final.");
+      await confirmarAcesso();
+      if (!vendedores.size) await carregarVendedores();
+      let consultaPedidos = cliente.from("catalogo_pedidos_log")
+        .select("id,cnpj,empresa,televendas_id,situacao,created_at", { count: "exact" })
+        .order("created_at", { ascending: false }).order("id", { ascending: false });
+      const busca = campo("busca").value.trim();
+      if (busca) {
+        consultaPedidos = /^[\d.\/\-\s]+$/.test(busca)
+          ? consultaPedidos.like("cnpj", `%${busca.replace(/\D/g, "")}%`)
+          : consultaPedidos.ilike("empresa", `%${busca.replace(/[\\%_]/g, "\\$&")}%`);
+      }
+      if (campo("situacao").value) consultaPedidos = consultaPedidos.eq("situacao", campo("situacao").value);
+      if (campo("televendas").value) consultaPedidos = consultaPedidos.eq("televendas_id", campo("televendas").value);
+      if (inicio) consultaPedidos = consultaPedidos.gte("created_at", `${inicio}T00:00:00-03:00`);
+      if (fim) {
+        const limite = new Date(`${fim}T00:00:00-03:00`);
+        limite.setUTCDate(limite.getUTCDate() + 1);
+        consultaPedidos = consultaPedidos.lt("created_at", limite.toISOString());
+      }
+      const resposta = await consultaPedidos.range(pagina * porPagina, (pagina + 1) * porPagina - 1);
+      if (versao !== versaoSessao || consulta !== consultaAtual) return;
+      if (resposta.error) throw new Error("Não foi possível carregar os pedidos. Confira se o SQL administrativo foi aplicado e tente atualizar.");
+      const total = resposta.count || 0;
+      if (pagina > 0 && pagina * porPagina >= total) { pagina = 0; return carregarPedidos(); }
+      for (const pedido of resposta.data) {
+        const linha = elemento("tr");
+        const data = elemento("td", `#${pedido.id}`);
+        data.append(elemento("small", dataBrasil(pedido.created_at)));
+        const empresa = elemento("td", pedido.empresa);
+        empresa.append(elemento("small", formatarCnpj(pedido.cnpj)));
+        const situacao = elemento("td");
+        situacao.append(elemento("span", nomesSituacao[pedido.situacao] || pedido.situacao, `admin-situacao ${pedido.situacao}`));
+        const acao = elemento("td");
+        const botao = elemento("button", null, "admin-botao secundario");
+        botao.type = "button";
+        botao.title = `Detalhes do pedido ${pedido.id}`;
+        botao.setAttribute("aria-label", botao.title);
+        const icone = elemento("i", null, "fa fa-eye");
+        icone.setAttribute("aria-hidden", "true");
+        botao.append(icone);
+        botao.addEventListener("click", () => abrirPedido(pedido.id));
+        acao.append(botao);
+        linha.append(data, empresa, elemento("td", vendedores.get(String(pedido.televendas_id)) || "Não informado"), situacao, acao);
+        campo("pedidos-lista").append(linha);
+      }
+      mensagem("pedidos-mensagem", total ? `${total} pedido(s) encontrado(s).` : "Nenhum pedido encontrado.");
+      campo("pagina-atual").textContent = total ? `Página ${pagina + 1} de ${Math.ceil(total / porPagina)}` : "";
+      campo("anterior").disabled = pagina === 0;
+      campo("proxima").disabled = (pagina + 1) * porPagina >= total;
+    } catch (erro) {
+      if (versao === versaoSessao && consulta === consultaAtual) mensagem("pedidos-mensagem", erro.message, true);
+    }
+  }
+
+  async function abrirPedido(id) {
+    const versao = versaoSessao;
+    const detalhe = ++detalheAtual;
+    pedidoAberto = null;
+    campo("detalhes-conteudo").hidden = true;
+    campo("titulo-detalhes").textContent = `Pedido #${id}`;
+    if (!campo("detalhes").open) campo("detalhes").showModal();
+    mensagem("detalhes-mensagem", "Carregando detalhes...");
+    try {
+      await confirmarAcesso();
+      const resposta = await cliente.from("catalogo_pedidos_log")
+        .select("id,cnpj,empresa,televendas_id,created_at,updated_at,situacao,itens").eq("id", id).single();
+      // O histórico pode ultrapassar o limite padrão de respostas do Supabase.
+      const historico = [];
+      for (let inicio = 0; ; inicio += 500) {
+        if (versao !== versaoSessao || detalhe !== detalheAtual) return;
+        const lote = await cliente.from("catalogo_pedidos_historico")
+          .select("id,autor_email,situacao_anterior,situacao_nova,observacao,created_at")
+          .eq("pedido_id", id).order("created_at", { ascending: false }).order("id", { ascending: false }).range(inicio, inicio + 499);
+        if (lote.error) throw new Error("Não foi possível carregar o histórico.");
+        historico.push(...lote.data);
+        if (lote.data.length < 500) break;
+      }
+      if (versao !== versaoSessao || detalhe !== detalheAtual) return;
+      if (resposta.error) throw new Error("Não foi possível carregar os detalhes do pedido.");
+      pedidoAberto = resposta.data;
+      const pedido = pedidoAberto;
+      campo("detalhes-dados").replaceChildren();
+      for (const [nome, valor] of Object.entries({ Empresa: pedido.empresa, CNPJ: formatarCnpj(pedido.cnpj), Data: dataBrasil(pedido.created_at), Televendas: vendedores.get(String(pedido.televendas_id)) || "Não informado" })) {
+        campo("detalhes-dados").append(elemento("dt", nome), elemento("dd", valor));
+      }
+      campo("detalhes-itens").replaceChildren();
+      const itens = Array.isArray(pedido.itens) ? pedido.itens : [];
+      campo("itens-mensagem").textContent = itens.length ? `${itens.length} item(ns), ${itens.reduce((total, item) => total + Number(item.quantidade || 0), 0)} unidade(s).` : "Itens não registrados neste pedido antigo.";
+      for (const item of itens) {
+        const linha = elemento("tr");
+        linha.append(elemento("td", item.codigo), elemento("td", item.descricao), elemento("td", item.quantidade));
+        campo("detalhes-itens").append(linha);
+      }
+      campo("nova-situacao").value = pedido.situacao;
+      campo("observacao").value = "";
+      campo("historico").replaceChildren();
+      for (const registro of historico) {
+        const item = elemento("li");
+        item.append(elemento("strong", `${nomesSituacao[registro.situacao_anterior]} → ${nomesSituacao[registro.situacao_nova]}`), elemento("p", registro.observacao), elemento("small", `${dataBrasil(registro.created_at)} · ${registro.autor_email}`));
+        campo("historico").append(item);
+      }
+      const origem = elemento("li");
+      origem.append(elemento("strong", "Solicitação registrada pelo site"), elemento("p", dataBrasil(pedido.created_at)));
+      campo("historico").append(origem);
+      mensagem("detalhes-mensagem", "");
+      campo("detalhes-conteudo").hidden = false;
+    } catch (erro) {
+      if (versao === versaoSessao && detalhe === detalheAtual) mensagem("detalhes-mensagem", erro.message, true);
+    }
+  }
+
+  async function carregarCatalogo() {
+    if (produtos || leituraCatalogo) return;
+    const leitura = new AbortController();
+    leituraCatalogo = leitura;
+    mensagem("pdf-mensagem", "Carregando catálogo...");
+    try {
+      const catalogo = await window.DipsulCatalogoPDF.carregarProdutos(raiz, leitura.signal);
+      leitura.signal.throwIfAborted();
+      produtos = catalogo;
+      campo("categoria-pdf").replaceChildren(new Option("Catálogo completo", ""));
+      const categorias = [...new Set(produtos.map((produto) => produto.categoria))];
+      for (const categoria of categorias) campo("categoria-pdf").add(new Option(categoria, categoria));
+      campo("categoria-pdf").disabled = campo("preparar-pdf").disabled = false;
+      mensagem("pdf-mensagem", `${produtos.length} produtos · ${categorias.length} categorias`);
+    } catch (erro) {
+      if (!leitura.signal.aborted) {
+        mensagem("pdf-mensagem", erro.message, true);
+        campo("preparar-pdf").disabled = false;
+      }
+    } finally { if (leituraCatalogo === leitura) leituraCatalogo = null; }
+  }
+
+  campo("formulario-login").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!cliente) return;
+    campo("entrar").disabled = true;
+    mensagem("mensagem-acesso", "Entrando...");
+    try {
+      const { data, error } = await cliente.auth.signInWithPassword({ email: campo("email").value.trim(), password: campo("senha").value });
+      if (error) throw new Error("Não foi possível entrar. Confira o e-mail, a senha e sua conexão.");
+      await iniciarSessao(data.session);
+    } catch (erro) { mensagem("mensagem-acesso", erro.message, true); }
+    finally { campo("senha").value = ""; campo("entrar").disabled = false; }
+  });
+  campo("sair").addEventListener("click", () => sair());
+  campo("filtros").addEventListener("submit", (evento) => { evento.preventDefault(); pagina = 0; carregarPedidos(); });
+  campo("limpar-filtros").addEventListener("click", () => { campo("filtros").reset(); pagina = 0; carregarPedidos(); });
+  campo("atualizar").addEventListener("click", carregarPedidos);
+  campo("anterior").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); carregarPedidos(); });
+  campo("proxima").addEventListener("click", () => { pagina++; carregarPedidos(); });
+  campo("fechar-detalhes").addEventListener("click", () => campo("detalhes").close());
+  campo("detalhes").addEventListener("close", () => { detalheAtual++; pedidoAberto = null; });
+  campo("formulario-situacao").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!pedidoAberto || campo("salvar-situacao").disabled) return;
+    const pedido = pedidoAberto;
+    if (campo("nova-situacao").value === pedido.situacao && !campo("observacao").value.trim()) {
+      mensagem("detalhes-mensagem", "Nenhuma alteração para salvar.");
+      return;
+    }
+    const versao = versaoSessao;
+    campo("salvar-situacao").disabled = true;
+    try {
+      const resposta = await cliente.rpc("catalogo_admin_atualizar_pedido", { p_pedido_id: pedido.id, p_situacao: campo("nova-situacao").value, p_observacao: campo("observacao").value.trim(), p_updated_at: pedido.updated_at });
+      if (versao !== versaoSessao) return;
+      if (resposta.error) throw new Error(resposta.error.code === "40001" ? "Pedido alterado por outro usuário. Feche e abra os detalhes novamente." : "Não foi possível salvar. Verifique sua autorização e tente novamente.");
+      window.Dipsul.notificar("Alteração registrada.");
+      if (pedidoAberto?.id === pedido.id && campo("detalhes").open) await abrirPedido(pedido.id);
+      await carregarPedidos();
+    } catch (erro) { if (versao === versaoSessao) mensagem("detalhes-mensagem", erro.message, true); }
+    finally { campo("salvar-situacao").disabled = false; }
+  });
+  function selecionarAba(aba) {
+    for (const nome of ["pedidos", "catalogo"]) {
+      campo(`secao-${nome}`).hidden = nome !== aba;
+      campo(`aba-${nome}`).classList.toggle("ativa", nome === aba);
+      campo(`aba-${nome}`).setAttribute("aria-pressed", String(nome === aba));
+    }
+    if (aba === "catalogo") carregarCatalogo();
+  }
+  for (const aba of ["pedidos", "catalogo"]) campo(`aba-${aba}`).addEventListener("click", () => selecionarAba(aba));
+  campo("formulario-pdf").addEventListener("change", limparPDF);
+  campo("cancelar-pdf").addEventListener("click", limparPDF);
+  campo("formulario-pdf").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!usuario) return;
+    if (!produtos) { await carregarCatalogo(); if (!produtos) return; }
+    limparPDF();
+    const geracao = new AbortController();
+    geracaoPDF = geracao;
+    campo("preparar-pdf").disabled = true;
+    campo("cancelar-pdf").hidden = false;
+    campo("previa-pdf").hidden = false;
+    try {
+      await confirmarAcesso();
+      geracao.signal.throwIfAborted();
+      const resultado = await window.DipsulCatalogoPDF.preparar({ iframe: campo("previa-pdf"), raiz, produtos, categoria: campo("categoria-pdf").value, formato: new FormData(campo("formulario-pdf")).get("formato"), sinal: geracao.signal, progresso: (texto) => { if (!geracao.signal.aborted) mensagem("pdf-mensagem", texto); } });
+      geracao.signal.throwIfAborted();
+      campo("imprimir-pdf").disabled = false;
+      mensagem("pdf-mensagem", `${resultado.itens} produtos · ${resultado.paginas} páginas${resultado.ausentes ? ` · ${resultado.ausentes} imagem(ns) indisponível(is)` : ""}`);
+    } catch (erro) {
+      if (!geracao.signal.aborted) { geracao.abort(); mensagem("pdf-mensagem", erro.message, true); }
+    } finally {
+      if (geracaoPDF === geracao) { campo("preparar-pdf").disabled = false; campo("cancelar-pdf").hidden = true; }
+    }
+  });
+  campo("imprimir-pdf").addEventListener("click", () => {
+    if (!usuario || campo("imprimir-pdf").disabled) return;
+    campo("previa-pdf").contentWindow.focus();
+    campo("previa-pdf").contentWindow.print();
+  });
+
+  for (const evento of ["pointerdown", "keydown"]) document.addEventListener(evento, () => { ultimaAtividade = Date.now(); }, { passive: true });
+  setInterval(() => { if (usuario && Date.now() - ultimaAtividade > 30 * 60 * 1000) sair("Sessão encerrada por inatividade."); }, 30000);
+
+  async function iniciar() {
+    try {
+      const config = window.DipsulConfiguracao;
+      cliente = window.supabase.createClient(config.supabaseUrl, config.supabaseChavePublica, { auth: { storage: window.sessionStorage, storageKey: "dipsul_admin_sessao", persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+      cliente.auth.onAuthStateChange((evento) => { if (evento === "SIGNED_OUT") limparSessao("Sessão encerrada."); });
+      const { data, error } = await cliente.auth.getSession();
+      if (error) throw error;
+      await iniciarSessao(data.session);
+      campo("entrar").disabled = false;
+    } catch (erro) {
+      mensagem("mensagem-acesso", erro.message || "Não foi possível iniciar o acesso administrativo.", true);
+      campo("entrar").disabled = !cliente;
+    }
+  }
+  iniciar();
+})();

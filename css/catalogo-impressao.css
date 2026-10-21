@@ -236,9 +236,6 @@ body {
     break-after: page;
   }
 
-  .folha-catalogo .page
-
-  
   .folha-catalogo:last-child {
     break-after: auto;
   }

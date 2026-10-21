@@ -91,6 +91,8 @@
 (function ($) {
   "use strict";
 
+  if (!$) return;
+
   $(window).on("load", function () {
     const preCarregador = $("#pre-carregador");
 
@@ -183,4 +185,4 @@
     time: 1000
   });
 
-})(jQuery);
+})(window.jQuery);

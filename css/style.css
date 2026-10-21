@@ -1,3 +1,4 @@
+@import url('notificacoes.css');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 @import url("https://fonts.googleapis.com/css?family=Montserrat:900&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i&display=swap");
@@ -2134,39 +2135,4 @@ h6 {
 .catalogo-paginacao-botao:disabled {
   cursor: not-allowed;
   opacity: 0.55;
-}
-
-.dipsul-notificacao-area {
-  position: fixed;
-  left: 20px;
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-  z-index: 2000;
-  width: min(320px, calc(100vw - 40px));
-  pointer-events: none;
-}
-
-.dipsul-notificacao {
-  padding: 14px 16px;
-  background: #2f2f2f;
-  color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
-  font-size: 14px;
-  line-height: 1.4;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 180ms ease, transform 180ms ease;
-}
-
-.dipsul-notificacao.esta-visivel {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (max-width: 575px) {
-  .dipsul-notificacao-area {
-    left: 12px;
-    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    width: min(320px, calc(100vw - 24px));
-  }
 }

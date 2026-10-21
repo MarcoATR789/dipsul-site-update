@@ -12,8 +12,8 @@
   const TEMPO_PREVIEW_PEDIDO_MS = 500;
   const QUANTIDADE_MAXIMA_PEDIDO = 500;
   const CHAVE_PEDIDO_SALVO = "dipsul_catalogo_pedido_v1";
-  const SUPABASE_URL = "https://yypsfvlajycinrhmwykn.supabase.co";
-  const SUPABASE_CHAVE_PUBLICA = "sb_publishable_0lRHqPKNvLuSjrfICsdZ8g_A8gluaXX";
+  const SUPABASE_URL = window.DipsulConfiguracao.supabaseUrl;
+  const SUPABASE_CHAVE_PUBLICA = window.DipsulConfiguracao.supabaseChavePublica;
   const SUPABASE_FUNCAO_PEDIDO = "catalogo_registrar_pedido";
   const ORDEM_CATEGORIAS = [
     "medicamentos-veterinarios",
@@ -572,7 +572,9 @@
     const item = estado.pedido.get(codigo);
     if (!item) return;
 
-    item.quantidade = normalizarQuantidade(quantidade);
+    const novaQuantidade = normalizarQuantidade(quantidade);
+    if (item.quantidade === novaQuantidade) return;
+    item.quantidade = novaQuantidade;
     estado.pedido.set(codigo, item);
     salvarPedido();
     renderizarPedido();
@@ -721,25 +723,31 @@
       throw new Error("Informe um CNPJ válido.");
     }
 
-    if (empresa.length < 2) {
-      throw new Error("Informe o nome da empresa.");
+    if (empresa.length < 2 || empresa.length > 120) {
+      throw new Error("Informe o nome da empresa com 2 a 120 caracteres.");
     }
 
     return { cnpj, empresa };
   }
 
-  async function registrarPedidoSupabase(cliente) {
-    const resposta = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${SUPABASE_FUNCAO_PEDIDO}`, {
+  async function registrarPedidoSupabase(cliente, itens) {
+    if (itens.length > 1000) throw new Error("O pedido deve ter no máximo 1000 itens diferentes.");
+    const parametros = { p_cnpj: cliente.cnpj, p_empresa: cliente.empresa };
+    const solicitar = (funcao, dados) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${funcao}`, {
       method: "POST",
       headers: {
         apikey: SUPABASE_CHAVE_PUBLICA,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        p_cnpj: cliente.cnpj,
-        p_empresa: cliente.empresa
-      })
+      body: JSON.stringify(dados)
     });
+
+    let resposta = await solicitar("catalogo_registrar_pedido_itens", { ...parametros, p_itens: itens });
+    // Compatibilidade apenas enquanto a nova função SQL ainda não foi instalada.
+    if (resposta.status === 404) {
+      const erro = await resposta.clone().json().catch(() => ({}));
+      if (erro.code === "PGRST202") resposta = await solicitar(SUPABASE_FUNCAO_PEDIDO, parametros);
+    }
 
     if (!resposta.ok) {
       let mensagem = "Não foi possível selecionar o televendas. Tente novamente.";
@@ -764,8 +772,8 @@
     return resultado;
   }
 
-  function montarMensagemPedido(cliente) {
-    const linhasItens = obterItensPedido().map((item, indice) => {
+  function montarMensagemPedido(cliente, itens) {
+    const linhasItens = itens.map((item, indice) => {
       return `${indice + 1}- (${item.quantidade}Uni) ${item.descricao} - ${item.codigo}`;
     });
 
@@ -796,12 +804,13 @@
 
     try {
       const cliente = obterClientePedido();
+      const itens = obterItensPedido().map(({ codigo, descricao, quantidade }) => ({ codigo, descricao, quantidade }));
 
       definirEnvioPedidoAtivo(true);
       avisarPedido("Selecionando televendas...");
 
-      const atendimento = await registrarPedidoSupabase(cliente);
-      const mensagem = montarMensagemPedido(cliente);
+      const atendimento = await registrarPedidoSupabase(cliente, itens);
+      const mensagem = montarMensagemPedido(cliente, itens);
       const numero = obterDigitos(atendimento.televendas_whatsapp);
       const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
 
