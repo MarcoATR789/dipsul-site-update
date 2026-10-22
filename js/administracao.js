@@ -79,7 +79,7 @@
     campo("detalhes").close();
     for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "historico"]) campo(id).replaceChildren();
     campo("televendas").replaceChildren(new Option("Todos", ""));
-    campo("categoria-pdf").replaceChildren(new Option("CATÁLOGO COMPLETO", ""));
+    campo("categoria-pdf").replaceChildren(new Option("Todas as categorias", ""));
     campo("categoria-pdf").disabled = true;
     selecionarAba("pedidos");
     campo("filtros").reset();
@@ -274,7 +274,7 @@
       const catalogo = await window.DipsulCatalogoPDF.carregarProdutos(raiz, leitura.signal);
       leitura.signal.throwIfAborted();
       produtos = catalogo;
-      campo("categoria-pdf").replaceChildren(new Option("CATÁLOGO COMPLETO", ""));
+      campo("categoria-pdf").replaceChildren(new Option("Todas as categorias", ""));
       const categorias = [...new Set(produtos.map((produto) => produto.categoria))];
       for (const categoria of categorias) campo("categoria-pdf").add(new Option(categoria, categoria));
       campo("categoria-pdf").disabled = campo("preparar-pdf").disabled = false;
