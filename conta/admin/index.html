@@ -12,7 +12,8 @@
   <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../../css/notificacoes.css">
   <link rel="stylesheet" href="../../css/botoes.css?v=20261022-3">
-  <link rel="stylesheet" href="../../css/catalogo.css?v=20261022-3">
+  <link rel="stylesheet" href="../../css/formularios.css?v=20261022-4">
+  <link rel="stylesheet" href="../../css/catalogo.css?v=20261022-4">
   <link rel="stylesheet" href="../../css/administracao.css?v=20261022-3">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
@@ -58,9 +59,9 @@
           <div class="admin-busca"><label for="busca">Empresa ou CNPJ:</label><input id="busca" class="form-control" type="search" maxlength="120" placeholder="Buscar pedidos"></div>
           <div>
             <label for="situacao">Situação:</label>
-            <select id="situacao" class="form-control"><option value="">Todas</option><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select>
+            <select id="situacao" class="form-control" data-abrir-ao-clicar><option value="">Todas</option><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select>
           </div>
-          <div class="admin-televendas"><label for="televendas">Televendas:</label><select id="televendas" class="form-control"><option value="">Todos</option></select></div>
+          <div class="admin-televendas"><label for="televendas">Televendas:</label><select id="televendas" class="form-control" data-abrir-ao-clicar><option value="">Todos</option></select></div>
           <div><label for="data-inicio">De:</label><input id="data-inicio" class="form-control" type="date"></div>
           <div><label for="data-fim">Até:</label><input id="data-fim" class="form-control" type="date"></div>
           <button class="btn btn-primary catalogo-botao-primario botao-icone" type="submit" title="Buscar pedidos" aria-label="Buscar pedidos"><i class="fa fa-search" aria-hidden="true"></i></button>
@@ -90,7 +91,7 @@
           </div>
           <div>
             <label for="formato-pdf">Formato:</label>
-            <select id="formato-pdf" name="formato" class="form-control">
+            <select id="formato-pdf" name="formato" class="form-control" data-abrir-ao-clicar>
               <option value="publico">PDF público</option>
               <option value="impressao">PDF frente e verso</option>
             </select>
@@ -114,7 +115,7 @@
       <p id="itens-mensagem"></p>
       <div class="admin-tabela-rolagem"><table class="admin-tabela"><thead><tr><th>Código:</th><th>Descrição:</th><th>Quantidade:</th></tr></thead><tbody id="detalhes-itens"></tbody></table></div>
       <form id="formulario-situacao">
-        <div><label for="nova-situacao">Situação:</label><select id="nova-situacao" class="form-control"><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
+        <div><label for="nova-situacao">Situação:</label><select id="nova-situacao" class="form-control" data-abrir-ao-clicar><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
         <div><label for="observacao">Observação:</label><textarea id="observacao" class="form-control" maxlength="2000" rows="3"></textarea></div>
         <div class="admin-acoes-pedido">
           <button id="excluir-pedido" class="btn btn-link text-danger botao-icone" type="button" title="Excluir pedido" aria-label="Excluir pedido"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
