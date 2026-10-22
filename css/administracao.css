@@ -1,25 +1,22 @@
 .administracao { margin: 0; background: #fff; color: #283d50; font: 15px/1.5 Arial, Helvetica, sans-serif; letter-spacing: 0; }
 .administracao [hidden] { display: none !important; }
 .administracao * { box-sizing: border-box; }
-.admin-largura { width: min(1240px, 100%); margin: auto; padding: 0 24px; }
-.admin-cabecalho { border-bottom: 1px solid #d6eaff; background: #fff; }
-.admin-cabecalho > div { min-height: 76px; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px; }
-.admin-cabecalho img { object-fit: contain; }
-.admin-identidade { font-size: 18px; font-weight: 700; }
+.admin-cabecalho { background: #fff; box-shadow: 0 0 30px rgba(127, 137, 161, .3); }
+.admin-cabecalho > .container { min-height: 80px; display: flex; gap: 24px; align-items: center; flex-wrap: wrap; padding-top: 12px; padding-bottom: 12px; }
+.admin-cabecalho img { display: block; width: auto; height: 40px; object-fit: contain; }
 .admin-sessao { margin-left: auto; display: flex; align-items: center; gap: 16px; min-width: 0; }
 #usuario-email { font-size: 13px; overflow-wrap: anywhere; }
 .administracao h1 { font-size: 26px; font-weight: 700; margin: 0; letter-spacing: 0; }
 .administracao h2 { font-size: 22px; font-weight: 700; margin: 0; }
 .administracao h3 { font-size: 17px; font-weight: 700; margin: 24px 0 12px; }
-.administracao label, .administracao legend { display: block; font-size: 13px; font-weight: 700; margin: 0 0 6px; }
-.administracao .form-control { font: inherit; color: #283d50; border: 1px solid #cbd5e0; border-radius: 4px; min-width: 0; height: 40px; padding: 8px 10px; }
+.administracao label, .administracao legend { display: block; font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+.administracao .form-control { font: inherit; min-width: 0; height: 44px; }
 .administracao textarea.form-control { height: auto; resize: vertical; }
 .administracao button { cursor: pointer; }
 .administracao button:disabled { opacity: .5; cursor: not-allowed; }
 .administracao :focus-visible { outline: 3px solid #80bdff; outline-offset: 3px; }
-.admin-botao { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; min-width: 40px; padding: 8px 14px; border: 1px solid #2b3b65; border-radius: 4px; background: #2b3b65; color: #fff; font: 600 14px/1.5 Arial, sans-serif; white-space: nowrap; }
-.admin-botao:hover:not(:disabled), .admin-botao:active:not(:disabled) { background: #007bff; border-color: #007bff; color: #fff; }
-.admin-botao.secundario { background: #fff; color: #43556d; border-color: #cbd5e0; }
+.administracao .btn { min-height: 44px; font-size: 14px; }
+.administracao .admin-icone { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: 0 0 44px; padding: 0; }
 .admin-acesso { width: min(400px, 100%); margin: 80px auto; }
 .admin-acesso h1 { margin-bottom: 28px; }
 .admin-acesso label:not(:first-child) { margin-top: 20px; }
@@ -29,10 +26,13 @@
 .admin-abas { display: flex; gap: 24px; border-bottom: 1px solid #d6eaff; margin: 24px 0; }
 .admin-abas button { padding: 12px 0; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #556877; font-weight: 700; }
 .admin-abas .ativa { border-bottom-color: #007bff; color: #004289; }
-.admin-abas i { margin-right: 6px; }
 .admin-titulo { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
-.admin-filtros { display: grid; grid-template-columns: minmax(170px, 1.6fr) minmax(140px, 1fr) minmax(140px, 1fr) 144px 144px 40px 40px; gap: 12px; align-items: end; padding: 20px 0; border-block: 1px solid #d6eaff; }
+.admin-filtros { grid-template-columns: minmax(170px, 1.6fr) minmax(130px, 1fr) minmax(290px, 1fr) 136px 136px 44px 44px; gap: 12px; }
 .admin-filtros > *, .admin-opcoes-pdf > * { min-width: 0; }
+.admin-resumo { gap: 16px; flex-wrap: wrap; }
+.admin-resumo .admin-mensagem { margin: 0; }
+.administracao .admin-excluidos { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 400; cursor: pointer; }
+.admin-excluidos input { accent-color: #007bff; }
 .admin-tabela-rolagem { position: relative; overflow-x: auto; }
 .admin-tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
 .admin-tabela th { background: #f8f9fa; font-size: 12px; color: #556877; font-weight: 700; }
@@ -45,12 +45,13 @@
 .admin-situacao.em_atendimento { background: #fff3d7; color: #795300; }
 .admin-situacao.concluido { background: #e2f4ea; color: #176840; }
 .admin-situacao.cancelado { background: #fbe7e9; color: #9a2934; }
+.admin-situacao.excluido { background: #edf0f3; color: #556877; }
 .admin-paginacao { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 20px 0 40px; }
 #pagina-atual { margin-right: auto; color: #556877; font-size: 14px; }
-.admin-opcoes-pdf { display: flex; align-items: end; gap: 16px; flex-wrap: wrap; padding: 20px 0; border-block: 1px solid #d6eaff; }
+.admin-opcoes-pdf { display: flex; flex-wrap: wrap; }
 .admin-opcoes-pdf > div { flex: 1; min-width: 230px; }
 .admin-opcoes-pdf fieldset { border: 0; margin: 0; padding: 0; }
-.admin-modos { display: flex; gap: 16px; align-items: center; min-height: 40px; }
+.admin-modos { display: flex; gap: 16px; align-items: center; min-height: 44px; }
 .admin-modos label { margin: 0; font-weight: 400; }
 .admin-modos input { margin-right: 4px; accent-color: #007bff; }
 #previa-pdf { width: 100%; height: 780px; max-height: 80vh; border: 1px solid #d6eaff; border-radius: 4px; margin-bottom: 32px; background: #eef0f3; }
@@ -61,24 +62,28 @@
 .admin-dados dt { font-size: 13px; color: #556877; }
 .admin-dados dd { margin: 0; overflow-wrap: anywhere; }
 #formulario-situacao { display: grid; gap: 16px; padding: 24px 0; border-bottom: 1px solid #e4ebf3; }
-#formulario-situacao button { justify-self: end; }
+.admin-acoes-pedido { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.admin-acoes-pedido i { margin-right: 4px; }
 .admin-historico { list-style: none; padding: 0; margin: 0; }
 .admin-historico li { padding: 12px 0; border-bottom: 1px solid #e4ebf3; }
 .admin-historico p { margin: 4px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .admin-historico small { color: #556877; overflow-wrap: anywhere; }
-@media (max-width: 1100px) {
+@media (max-width: 1199px) {
   .admin-filtros { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .admin-busca { grid-column: span 2; }
+  .admin-busca { grid-column: span 3; }
+  .admin-televendas { grid-column: 1 / -1; }
   .admin-filtros button { justify-self: start; }
 }
+@media (max-width: 991px) {
+  .admin-cabecalho > .container { min-height: 60px; padding-block: 10px; }
+}
 @media (max-width: 600px) {
-  .admin-largura { padding-inline: 16px; }
-  .admin-cabecalho > div { gap: 12px; }
+  .admin-cabecalho > .container { gap: 12px; }
   .admin-sessao { width: 100%; justify-content: space-between; }
-  .admin-identidade { margin-left: auto; font-size: 16px; }
   .administracao h1 { font-size: 22px; }
   .admin-acesso { margin-top: 48px; }
   .admin-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-filtros > div:not(.admin-televendas):nth-child(-n+2) { grid-column: 1 / -1; }
   .admin-titulo { align-items: start; }
   .admin-modos { flex-wrap: wrap; }
   .admin-opcoes-pdf > *, .admin-opcoes-pdf > div { width: 100%; min-width: 0; }

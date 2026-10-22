@@ -21,16 +21,15 @@
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
-    <div class="admin-largura">
-      <a href="../../index.html" aria-label="Dipsul, página inicial"><img src="../../img/logo.png" width="115" height="43" alt="Dipsul Distribuidora"></a>
-      <span class="admin-identidade">Administração</span>
+    <div class="container">
+      <a href="../../index.html" aria-label="Dipsul, página inicial"><img src="../../img/logo.png" class="img-fluid" width="115" height="40" alt="Dipsul Distribuidora"></a>
       <div id="sessao" class="admin-sessao" hidden>
         <span id="usuario-email"></span>
-        <button id="sair" type="button" class="admin-botao secundario"><i class="fa fa-sign-out" aria-hidden="true"></i> Sair</button>
+        <button id="sair" type="button" class="btn btn-outline-secondary admin-icone" title="Sair" aria-label="Sair"><i class="fa fa-sign-out" aria-hidden="true"></i></button>
       </div>
     </div>
   </header>
-  <main class="admin-largura">
+  <main class="container">
     <section id="acesso" class="admin-acesso" aria-labelledby="titulo-acesso">
       <h1 id="titulo-acesso">Acesso administrativo</h1>
       <form id="formulario-login">
@@ -39,31 +38,34 @@
         <label for="senha">Senha</label>
         <input class="form-control" id="senha" type="password" autocomplete="current-password" required>
         <p id="mensagem-acesso" class="admin-mensagem" role="status" aria-live="polite">Verificando sessão...</p>
-        <button id="entrar" class="admin-botao" type="submit" disabled><i class="fa fa-lock" aria-hidden="true"></i> Entrar</button>
+        <button id="entrar" class="btn btn-primary catalogo-botao-primario" type="submit" disabled>Entrar</button>
       </form>
       <noscript>Ative o JavaScript para acessar a administração.</noscript>
     </section>
 
     <div id="painel" hidden>
       <nav class="admin-abas" aria-label="Administração">
-        <button type="button" id="aba-pedidos" class="ativa" aria-pressed="true" aria-controls="secao-pedidos"><i class="fa fa-list-alt" aria-hidden="true"></i> Pedidos</button>
-        <button type="button" id="aba-catalogo" aria-pressed="false" aria-controls="secao-catalogo"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Catálogo PDF</button>
+        <button type="button" id="aba-pedidos" class="ativa" aria-pressed="true" aria-controls="secao-pedidos">Pedidos</button>
+        <button type="button" id="aba-catalogo" aria-pressed="false" aria-controls="secao-catalogo">Catálogo PDF</button>
       </nav>
       <section id="secao-pedidos" aria-labelledby="titulo-pedidos">
         <div class="admin-titulo">
           <h1 id="titulo-pedidos">Controle de pedidos</h1>
-          <button id="atualizar" class="admin-botao secundario" type="button"><i class="fa fa-refresh" aria-hidden="true"></i> Atualizar</button>
+          <button id="atualizar" class="btn btn-outline-secondary admin-icone" type="button" title="Atualizar pedidos" aria-label="Atualizar pedidos"><i class="fa fa-refresh" aria-hidden="true"></i></button>
         </div>
-        <form id="filtros" class="admin-filtros">
+        <form id="filtros" class="catalogo-controles admin-filtros" role="search">
           <div class="admin-busca"><label for="busca">Empresa ou CNPJ</label><input id="busca" class="form-control" type="search" maxlength="120" placeholder="Buscar pedidos"></div>
           <div><label for="situacao">Situação</label><select id="situacao" class="form-control"><option value="">Todas</option><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
-          <div><label for="televendas">Televendas</label><select id="televendas" class="form-control"><option value="">Todos</option></select></div>
+          <div class="admin-televendas"><label for="televendas">Televendas</label><select id="televendas" class="form-control"><option value="">Todos</option></select></div>
           <div><label for="data-inicio">De</label><input id="data-inicio" class="form-control" type="date"></div>
           <div><label for="data-fim">Até</label><input id="data-fim" class="form-control" type="date"></div>
-          <button class="admin-botao" type="submit" title="Buscar pedidos"><i class="fa fa-search" aria-hidden="true"></i><span class="sr-only">Buscar pedidos</span></button>
-          <button id="limpar-filtros" class="admin-botao secundario" type="button" title="Limpar filtros"><i class="fa fa-eraser" aria-hidden="true"></i><span class="sr-only">Limpar filtros</span></button>
+          <button class="btn btn-primary catalogo-botao-primario admin-icone" type="submit" title="Buscar pedidos" aria-label="Buscar pedidos"><i class="fa fa-search" aria-hidden="true"></i></button>
+          <button id="limpar-filtros" class="btn btn-outline-secondary admin-icone" type="button" title="Limpar filtros" aria-label="Limpar filtros"><i class="fa fa-eraser" aria-hidden="true"></i></button>
         </form>
-        <p id="pedidos-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
+        <div class="catalogo-resumo admin-resumo">
+          <p id="pedidos-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
+          <label class="admin-excluidos" for="excluidos"><input id="excluidos" type="checkbox" form="filtros"> Excluídos</label>
+        </div>
         <div class="admin-tabela-rolagem" tabindex="0" aria-label="Lista de pedidos">
           <table class="admin-tabela">
             <thead><tr><th scope="col">Pedido / data</th><th scope="col">Empresa / CNPJ</th><th scope="col">Televendas</th><th scope="col">Situação</th><th scope="col"><span class="sr-only">Detalhes</span></th></tr></thead>
@@ -72,21 +74,21 @@
         </div>
         <div class="admin-paginacao">
           <span id="pagina-atual"></span>
-          <button id="anterior" type="button" class="admin-botao secundario" title="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i><span class="sr-only">Página anterior</span></button>
-          <button id="proxima" type="button" class="admin-botao secundario" title="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i><span class="sr-only">Próxima página</span></button>
+          <button id="anterior" type="button" class="btn btn-outline-secondary admin-icone" title="Página anterior" aria-label="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+          <button id="proxima" type="button" class="btn btn-outline-secondary admin-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
         </div>
       </section>
       <section id="secao-catalogo" aria-labelledby="titulo-catalogo" hidden>
         <div class="admin-titulo"><h1 id="titulo-catalogo">Catálogo PDF</h1></div>
-        <form id="formulario-pdf" class="admin-opcoes-pdf">
+        <form id="formulario-pdf" class="catalogo-controles admin-opcoes-pdf">
           <div><label for="categoria-pdf">Categoria</label><select id="categoria-pdf" class="form-control" disabled><option value="">Catálogo completo</option></select></div>
           <fieldset><legend>Formato</legend><div class="admin-modos">
             <label><input type="radio" name="formato" value="publico" checked> PDF público</label>
             <label><input type="radio" name="formato" value="impressao">Impressão frente e verso</label>
           </div></fieldset>
-          <button id="preparar-pdf" type="submit" class="admin-botao" disabled><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Preparar catálogo</button>
-          <button id="cancelar-pdf" type="button" class="admin-botao secundario" hidden>Cancelar</button>
-          <button id="imprimir-pdf" type="button" class="admin-botao" disabled><i class="fa fa-print" aria-hidden="true"></i> Imprimir / salvar PDF</button>
+          <button id="preparar-pdf" type="submit" class="btn btn-primary catalogo-botao-primario" disabled>Preparar catálogo</button>
+          <button id="cancelar-pdf" type="button" class="btn btn-outline-secondary" hidden>Cancelar</button>
+          <button id="imprimir-pdf" type="button" class="btn btn-primary catalogo-botao-primario" disabled>Imprimir / salvar PDF</button>
         </form>
         <p id="pdf-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
         <iframe id="previa-pdf" title="Prévia do catálogo" sandbox="allow-same-origin allow-modals" hidden></iframe>
@@ -95,7 +97,7 @@
   </main>
 
   <dialog id="detalhes" aria-labelledby="titulo-detalhes">
-    <div class="admin-dialogo-cabecalho"><h2 id="titulo-detalhes">Pedido</h2><button id="fechar-detalhes" type="button" class="admin-botao secundario" title="Fechar detalhes"><i class="fa fa-times" aria-hidden="true"></i><span class="sr-only">Fechar detalhes</span></button></div>
+    <div class="admin-dialogo-cabecalho"><h2 id="titulo-detalhes">Pedido</h2><button id="fechar-detalhes" type="button" class="btn btn-outline-secondary admin-icone" title="Fechar detalhes" aria-label="Fechar detalhes"><i class="fa fa-times" aria-hidden="true"></i></button></div>
     <p id="detalhes-mensagem" class="admin-mensagem" role="status"></p>
     <div id="detalhes-conteudo" hidden>
       <dl id="detalhes-dados" class="admin-dados"></dl>
@@ -105,7 +107,10 @@
       <form id="formulario-situacao">
         <div><label for="nova-situacao">Situação</label><select id="nova-situacao" class="form-control"><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
         <div><label for="observacao">Observação</label><textarea id="observacao" class="form-control" maxlength="2000" rows="3"></textarea></div>
-        <button id="salvar-situacao" class="admin-botao" type="submit"><i class="fa fa-save" aria-hidden="true"></i> Salvar alteração</button>
+        <div class="admin-acoes-pedido">
+          <button id="excluir-pedido" class="btn btn-outline-danger" type="button"><i class="fa fa-trash-o" aria-hidden="true"></i> Excluir pedido</button>
+          <button id="salvar-situacao" class="btn btn-primary catalogo-botao-primario" type="submit">Salvar alteração</button>
+        </div>
       </form>
       <h3>Histórico</h3>
       <ol id="historico" class="admin-historico"></ol>

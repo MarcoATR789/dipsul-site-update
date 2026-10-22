@@ -426,7 +426,8 @@
   min-height: 38px;
 }
 
-.btn.catalogo-produto-adicionar {
+.btn.catalogo-produto-adicionar,
+.btn.catalogo-botao-primario {
   min-height: 38px;
   background-color: #2b3c67;
   border-color: #2b3c67;
@@ -437,7 +438,10 @@
 .catalogo-produto-cartao:hover .btn.catalogo-produto-adicionar,
 .btn.catalogo-produto-adicionar:hover,
 .btn.catalogo-produto-adicionar:focus,
-.btn.catalogo-produto-adicionar:not(:disabled):not(.disabled):active {
+.btn.catalogo-produto-adicionar:not(:disabled):not(.disabled):active,
+.btn.catalogo-botao-primario:hover:not(:disabled),
+.btn.catalogo-botao-primario:focus,
+.btn.catalogo-botao-primario:not(:disabled):not(.disabled):active {
   background-color: #007bff;
   border-color: #007bff;
   color: #fff;
