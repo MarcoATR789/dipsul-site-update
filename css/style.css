@@ -1,4 +1,5 @@
 @import url('notificacoes.css');
+@import url('botoes.css');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 @import url("https://fonts.googleapis.com/css?family=Montserrat:900&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i&display=swap");
@@ -2086,26 +2087,6 @@ h6 {
 .main-nav .catalogo-nav-link {
   color: #ffffff !important;
   transition: color 0.3s ease !important;
-}
-
-.catalogo-pedido-fechar {
-  flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 50%;
-  background: #e5f1fd;
-  color: #004289;
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.catalogo-pedido-fechar:hover,
-.catalogo-pedido-fechar:focus {
-  background: #007bff;
-  color: #fff;
-  outline: 3px solid rgba(0, 123, 255, 0.2);
 }
 
 .catalogo-paginacao-botao {

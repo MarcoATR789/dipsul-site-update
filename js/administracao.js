@@ -12,6 +12,7 @@
   let detalheAtual = 0;
   let pagina = 0;
   let pedidoAberto = null;
+  let pedidoParaExcluir = null;
   let vendedores = new Map();
   let produtos = null;
   let geracaoPDF = null;
@@ -69,17 +70,23 @@
     campo("acesso").hidden = false;
     campo("usuario-email").textContent = "";
     campo("senha").value = "";
+    campo("confirmacao-exclusao").close();
+    campo("confirmacao-exclusao").removeAttribute("aria-busy");
+    pedidoParaExcluir = null;
+    campo("exclusao-dados").replaceChildren();
+    mensagem("exclusao-mensagem", "");
+    for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = false;
     campo("detalhes").close();
     for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "historico"]) campo(id).replaceChildren();
     campo("televendas").replaceChildren(new Option("Todos", ""));
-    campo("categoria-pdf").replaceChildren(new Option("Catálogo completo", ""));
+    campo("categoria-pdf").replaceChildren(new Option("CATÁLOGO COMPLETO", ""));
     campo("categoria-pdf").disabled = true;
     selecionarAba("pedidos");
     campo("filtros").reset();
     campo("formulario-situacao").reset();
     campo("salvar-situacao").disabled = campo("excluir-pedido").disabled = false;
     campo("detalhes-conteudo").hidden = true;
-    campo("titulo-detalhes").textContent = "Pedido";
+    campo("titulo-detalhes").textContent = "Pedido:";
     campo("detalhes-mensagem").textContent = "";
     campo("itens-mensagem").textContent = "";
     campo("pedidos-mensagem").textContent = "";
@@ -129,7 +136,7 @@
     if (resposta.error) throw new Error("Não foi possível carregar os televendas.");
     vendedores = new Map(resposta.data.map((vendedor) => {
       const telefone = formatarTelefone(vendedor.telefone_whatsapp);
-      return [String(vendedor.id), `${vendedor.nome}${telefone ? ` · ${telefone}` : ""}`];
+      return [String(vendedor.id), `${vendedor.nome}${telefone ? ` / ${telefone}` : ""}`];
     }));
     campo("televendas").replaceChildren(new Option("Todos", ""));
     for (const [id, nome] of vendedores) campo("televendas").add(new Option(nome, id));
@@ -150,10 +157,8 @@
       await confirmarAcesso();
       if (!vendedores.size) await carregarVendedores();
       let consultaPedidos = cliente.from("catalogo_pedidos_log")
-        .select("id,cnpj,empresa,televendas_id,situacao,created_at,excluido_em", { count: "exact" })
+        .select("id,cnpj,empresa,televendas_id,situacao,created_at", { count: "exact" })
         .order("created_at", { ascending: false }).order("id", { ascending: false });
-      const excluidos = campo("excluidos").checked;
-      consultaPedidos = excluidos ? consultaPedidos.not("excluido_em", "is", null) : consultaPedidos.is("excluido_em", null);
       const busca = campo("busca").value.trim();
       if (busca) {
         consultaPedidos = /^[\d.\/\-\s]+$/.test(busca)
@@ -170,7 +175,7 @@
       }
       const resposta = await consultaPedidos.range(pagina * porPagina, (pagina + 1) * porPagina - 1);
       if (versao !== versaoSessao || consulta !== consultaAtual) return;
-      if (resposta.error) throw new Error("Não foi possível carregar os pedidos. Confira se o SQL administrativo foi aplicado e tente atualizar.");
+      if (resposta.error) throw new Error("Não foi possível carregar os pedidos.");
       const total = resposta.count || 0;
       if (pagina > 0 && pagina * porPagina >= total) { pagina = 0; return carregarPedidos(); }
       for (const pedido of resposta.data) {
@@ -180,7 +185,7 @@
         const empresa = elemento("td", pedido.empresa);
         empresa.append(elemento("small", formatarCnpj(pedido.cnpj)));
         const situacao = elemento("td");
-        situacao.append(elemento("span", pedido.excluido_em ? "Excluído" : nomesSituacao[pedido.situacao] || pedido.situacao, `admin-situacao ${pedido.excluido_em ? "excluido" : pedido.situacao}`));
+        situacao.append(elemento("span", nomesSituacao[pedido.situacao] || pedido.situacao, `admin-situacao ${pedido.situacao}`));
         const acao = elemento("td");
         const botao = elemento("button", null, "btn btn-outline-secondary admin-icone");
         botao.type = "button";
@@ -194,7 +199,7 @@
         linha.append(data, empresa, elemento("td", vendedores.get(String(pedido.televendas_id)) || "Não informado"), situacao, acao);
         campo("pedidos-lista").append(linha);
       }
-      mensagem("pedidos-mensagem", total ? `${total} pedido(s) ${excluidos ? "excluído(s)" : "encontrado(s)"}.` : "Nenhum pedido encontrado.");
+      mensagem("pedidos-mensagem", total ? `${total} pedido(s) encontrado(s).` : "Nenhum pedido encontrado.");
       campo("pagina-atual").textContent = total ? `Página ${pagina + 1} de ${Math.ceil(total / porPagina)}` : "";
       campo("anterior").disabled = pagina === 0;
       campo("proxima").disabled = (pagina + 1) * porPagina >= total;
@@ -208,20 +213,19 @@
     const detalhe = ++detalheAtual;
     pedidoAberto = null;
     campo("detalhes-conteudo").hidden = true;
-    campo("titulo-detalhes").textContent = `Pedido #${id}`;
+    campo("titulo-detalhes").textContent = `Pedido #${id}:`;
     if (!campo("detalhes").open) campo("detalhes").showModal();
     mensagem("detalhes-mensagem", "Carregando detalhes...");
     try {
       await confirmarAcesso();
       const resposta = await cliente.from("catalogo_pedidos_log")
-        .select("id,cnpj,empresa,televendas_id,created_at,updated_at,situacao,itens,excluido_em").eq("id", id).single();
+        .select("id,cnpj,empresa,televendas_id,created_at,updated_at,situacao,itens").eq("id", id).single();
       if (resposta.error) throw new Error("Não foi possível carregar os detalhes do pedido.");
-      // O histórico pode ultrapassar o limite padrão de respostas do Supabase.
       const historico = [];
       for (let inicio = 0; ; inicio += 500) {
         if (versao !== versaoSessao || detalhe !== detalheAtual) return;
         const lote = await cliente.from("catalogo_pedidos_historico")
-          .select("id,autor_email,situacao_anterior,situacao_nova,observacao,created_at,acao")
+          .select("id,autor_email,situacao_anterior,situacao_nova,observacao,created_at")
           .eq("pedido_id", id).order("created_at", { ascending: false }).order("id", { ascending: false }).range(inicio, inicio + 499);
         if (lote.error) throw new Error("Não foi possível carregar o histórico.");
         historico.push(...lote.data);
@@ -232,7 +236,7 @@
       const pedido = pedidoAberto;
       campo("detalhes-dados").replaceChildren();
       for (const [nome, valor] of Object.entries({ Empresa: pedido.empresa, CNPJ: formatarCnpj(pedido.cnpj), Data: dataBrasil(pedido.created_at), Televendas: vendedores.get(String(pedido.televendas_id)) || "Não informado" })) {
-        campo("detalhes-dados").append(elemento("dt", nome), elemento("dd", valor));
+        campo("detalhes-dados").append(elemento("dt", `${nome}:`), elemento("dd", valor));
       }
       campo("detalhes-itens").replaceChildren();
       const itens = Array.isArray(pedido.itens) ? pedido.itens : [];
@@ -244,18 +248,17 @@
       }
       campo("nova-situacao").value = pedido.situacao;
       campo("observacao").value = "";
-      campo("formulario-situacao").hidden = Boolean(pedido.excluido_em);
       campo("historico").replaceChildren();
       for (const registro of historico) {
         const item = elemento("li");
-        const titulo = registro.acao === "exclusao" ? "Pedido excluído" : `${nomesSituacao[registro.situacao_anterior]} → ${nomesSituacao[registro.situacao_nova]}`;
+        const titulo = `${nomesSituacao[registro.situacao_anterior]} → ${nomesSituacao[registro.situacao_nova]}`;
         item.append(elemento("strong", titulo), elemento("p", registro.observacao), elemento("small", `${dataBrasil(registro.created_at)} · ${registro.autor_email}`));
         campo("historico").append(item);
       }
       const origem = elemento("li");
       origem.append(elemento("strong", "Solicitação registrada pelo site"), elemento("p", dataBrasil(pedido.created_at)));
       campo("historico").append(origem);
-      mensagem("detalhes-mensagem", pedido.excluido_em ? `Pedido excluído em ${dataBrasil(pedido.excluido_em)}. Histórico preservado.` : "");
+      mensagem("detalhes-mensagem", "");
       campo("detalhes-conteudo").hidden = false;
     } catch (erro) {
       if (versao === versaoSessao && detalhe === detalheAtual) mensagem("detalhes-mensagem", erro.message, true);
@@ -271,7 +274,7 @@
       const catalogo = await window.DipsulCatalogoPDF.carregarProdutos(raiz, leitura.signal);
       leitura.signal.throwIfAborted();
       produtos = catalogo;
-      campo("categoria-pdf").replaceChildren(new Option("Catálogo completo", ""));
+      campo("categoria-pdf").replaceChildren(new Option("CATÁLOGO COMPLETO", ""));
       const categorias = [...new Set(produtos.map((produto) => produto.categoria))];
       for (const categoria of categorias) campo("categoria-pdf").add(new Option(categoria, categoria));
       campo("categoria-pdf").disabled = campo("preparar-pdf").disabled = false;
@@ -299,15 +302,23 @@
   campo("sair").addEventListener("click", () => sair());
   campo("filtros").addEventListener("submit", (evento) => { evento.preventDefault(); pagina = 0; carregarPedidos(); });
   campo("limpar-filtros").addEventListener("click", () => { campo("filtros").reset(); pagina = 0; carregarPedidos(); });
-  campo("excluidos").addEventListener("change", () => { pagina = 0; carregarPedidos(); });
   campo("atualizar").addEventListener("click", carregarPedidos);
   campo("anterior").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); carregarPedidos(); });
   campo("proxima").addEventListener("click", () => { pagina++; carregarPedidos(); });
   campo("fechar-detalhes").addEventListener("click", () => campo("detalhes").close());
-  campo("detalhes").addEventListener("close", () => { detalheAtual++; pedidoAberto = null; });
+  campo("detalhes").addEventListener("close", () => {
+    detalheAtual++;
+    pedidoAberto = null;
+    campo("confirmacao-exclusao").close();
+    for (const id of ["detalhes-dados", "detalhes-itens", "historico"]) campo(id).replaceChildren();
+    campo("formulario-situacao").reset();
+    mensagem("detalhes-mensagem", "");
+    campo("itens-mensagem").textContent = "";
+    campo("titulo-detalhes").textContent = "Pedido:";
+  });
   campo("formulario-situacao").addEventListener("submit", async (evento) => {
     evento.preventDefault();
-    if (!usuario || !pedidoAberto || pedidoAberto.excluido_em || campo("salvar-situacao").disabled) return;
+    if (!usuario || !pedidoAberto || campo("salvar-situacao").disabled) return;
     const pedido = pedidoAberto;
     if (campo("nova-situacao").value === pedido.situacao && !campo("observacao").value.trim()) {
       mensagem("detalhes-mensagem", "Nenhuma alteração para salvar.");
@@ -326,26 +337,54 @@
     } catch (erro) { if (versao === versaoSessao && detalhe === detalheAtual) mensagem("detalhes-mensagem", erro.message, true); }
     finally { if (versao === versaoSessao) campo("salvar-situacao").disabled = campo("excluir-pedido").disabled = false; }
   });
-  campo("excluir-pedido").addEventListener("click", async () => {
-    if (!usuario || !pedidoAberto || pedidoAberto.excluido_em || campo("excluir-pedido").disabled) return;
-    const pedido = pedidoAberto;
-    if (!window.confirm(`Excluir o pedido #${pedido.id}?\n${pedido.empresa} · ${formatarCnpj(pedido.cnpj)}\n\nO pedido sairá da lista principal. Os dados e o histórico serão preservados em Excluídos.`)) return;
+  campo("excluir-pedido").addEventListener("click", () => {
+    if (!usuario || !pedidoAberto || campo("excluir-pedido").disabled) return;
+    pedidoParaExcluir = pedidoAberto;
+    campo("exclusao-dados").replaceChildren();
+    for (const [nome, valor] of Object.entries({ Pedido: `#${pedidoAberto.id}`, Empresa: pedidoAberto.empresa, CNPJ: formatarCnpj(pedidoAberto.cnpj) })) {
+      campo("exclusao-dados").append(elemento("dt", `${nome}:`), elemento("dd", valor));
+    }
+    mensagem("exclusao-mensagem", "");
+    campo("confirmacao-exclusao").showModal();
+    campo("cancelar-exclusao").focus();
+  });
+  for (const id of ["cancelar-exclusao", "fechar-exclusao"]) campo(id).addEventListener("click", () => campo("confirmacao-exclusao").close());
+  campo("confirmacao-exclusao").addEventListener("cancel", (evento) => {
+    if (campo("confirmar-exclusao").disabled) evento.preventDefault();
+  });
+  campo("confirmacao-exclusao").addEventListener("close", () => {
+    pedidoParaExcluir = null;
+    campo("exclusao-dados").replaceChildren();
+    mensagem("exclusao-mensagem", "");
+  });
+  campo("confirmar-exclusao").addEventListener("click", async () => {
+    if (!usuario || !pedidoParaExcluir || campo("confirmar-exclusao").disabled) return;
+    const pedido = pedidoParaExcluir;
     const versao = versaoSessao;
     const detalhe = detalheAtual;
     campo("salvar-situacao").disabled = campo("excluir-pedido").disabled = true;
-    mensagem("detalhes-mensagem", "Excluindo pedido...");
+    for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = true;
+    campo("confirmacao-exclusao").setAttribute("aria-busy", "true");
+    mensagem("exclusao-mensagem", "Excluindo pedido...");
     try {
-      const resposta = await cliente.rpc("catalogo_admin_excluir_pedido", { p_pedido_id: pedido.id, p_updated_at: pedido.updated_at });
+      const resposta = await cliente.rpc("catalogo_admin_excluir_pedido_definitivo", { p_pedido_id: pedido.id, p_updated_at: pedido.updated_at });
       if (versao !== versaoSessao) return;
       if (resposta.error) {
         if (resposta.error.code === "40001" || resposta.error.code === "P0002") throw new Error("Pedido alterado ou excluído por outro usuário. Atualize a lista e abra os detalhes novamente.");
         throw new Error("Não foi possível excluir. Confira sua autorização e se o SQL administrativo atualizado foi aplicado.");
       }
-      window.Dipsul.notificar("Pedido excluído. Histórico preservado.");
+      campo("confirmacao-exclusao").close();
+      window.Dipsul.notificar("Pedido excluído definitivamente.");
       if (detalhe === detalheAtual && pedidoAberto?.id === pedido.id) campo("detalhes").close();
       await carregarPedidos();
-    } catch (erro) { if (versao === versaoSessao && detalhe === detalheAtual) mensagem("detalhes-mensagem", erro.message, true); }
-    finally { if (versao === versaoSessao) campo("salvar-situacao").disabled = campo("excluir-pedido").disabled = false; }
+    } catch (erro) { if (versao === versaoSessao && detalhe === detalheAtual) mensagem("exclusao-mensagem", erro.message, true); }
+    finally {
+      if (versao === versaoSessao) {
+        campo("salvar-situacao").disabled = campo("excluir-pedido").disabled = false;
+        for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = false;
+        campo("confirmacao-exclusao").removeAttribute("aria-busy");
+      }
+    }
   });
   function selecionarAba(aba) {
     for (const nome of ["pedidos", "catalogo"]) {

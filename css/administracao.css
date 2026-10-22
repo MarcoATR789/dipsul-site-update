@@ -26,13 +26,12 @@
 .admin-abas { display: flex; gap: 24px; border-bottom: 1px solid #d6eaff; margin: 24px 0; }
 .admin-abas button { padding: 12px 0; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #556877; font-weight: 700; }
 .admin-abas .ativa { border-bottom-color: #007bff; color: #004289; }
+.admin-abas button:focus { outline: none; box-shadow: none; }
+.admin-abas button:focus-visible { background: #e5f1fd; color: #004289; box-shadow: inset 0 -3px #007bff; }
 .admin-titulo { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
 .admin-filtros { grid-template-columns: minmax(170px, 1.6fr) minmax(130px, 1fr) minmax(290px, 1fr) 136px 136px 44px 44px; gap: 12px; }
 .admin-filtros > *, .admin-opcoes-pdf > * { min-width: 0; }
-.admin-resumo { gap: 16px; flex-wrap: wrap; }
-.admin-resumo .admin-mensagem { margin: 0; }
-.administracao .admin-excluidos { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 400; cursor: pointer; }
-.admin-excluidos input { accent-color: #007bff; }
+.administracao .catalogo-resumo .admin-mensagem { margin: 0; }
 .admin-tabela-rolagem { position: relative; overflow-x: auto; }
 .admin-tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
 .admin-tabela th { background: #f8f9fa; font-size: 12px; color: #556877; font-weight: 700; }
@@ -45,7 +44,6 @@
 .admin-situacao.em_atendimento { background: #fff3d7; color: #795300; }
 .admin-situacao.concluido { background: #e2f4ea; color: #176840; }
 .admin-situacao.cancelado { background: #fbe7e9; color: #9a2934; }
-.admin-situacao.excluido { background: #edf0f3; color: #556877; }
 .admin-paginacao { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin: 20px 0 40px; }
 #pagina-atual { margin-right: auto; color: #556877; font-size: 14px; }
 .admin-opcoes-pdf { display: flex; flex-wrap: wrap; }
@@ -57,13 +55,14 @@
 #previa-pdf { width: 100%; height: 780px; max-height: 80vh; border: 1px solid #d6eaff; border-radius: 4px; margin-bottom: 32px; background: #eef0f3; }
 .administracao dialog { width: min(760px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 24px; border: 1px solid #d6eaff; border-radius: 8px; color: #283d50; overflow-y: auto; }
 .administracao dialog::backdrop { background: #19243170; }
+.administracao .admin-confirmacao { width: min(480px, calc(100% - 32px)); }
+.admin-confirmacao .admin-dados { margin: 24px 0; }
 .admin-dialogo-cabecalho { display: flex; gap: 16px; justify-content: space-between; align-items: center; }
 .admin-dados { display: grid; grid-template-columns: 110px 1fr; gap: 6px 16px; padding: 16px 0; border-block: 1px solid #e4ebf3; }
 .admin-dados dt { font-size: 13px; color: #556877; }
 .admin-dados dd { margin: 0; overflow-wrap: anywhere; }
 #formulario-situacao { display: grid; gap: 16px; padding: 24px 0; border-bottom: 1px solid #e4ebf3; }
 .admin-acoes-pedido { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.admin-acoes-pedido i { margin-right: 4px; }
 .admin-historico { list-style: none; padding: 0; margin: 0; }
 .admin-historico li { padding: 12px 0; border-bottom: 1px solid #e4ebf3; }
 .admin-historico p { margin: 4px 0; white-space: pre-wrap; overflow-wrap: anywhere; }

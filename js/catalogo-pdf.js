@@ -18,7 +18,6 @@
     return paginas;
   }
 
-  // Único ponto de leitura do catálogo; a futura consulta ao espelho entra aqui.
   async function carregarProdutos(raiz, sinal) {
     const resposta = await fetch(new URL("data/catalogo/produtos.json", raiz), { signal: sinal });
     if (!resposta.ok) throw new Error("Não foi possível carregar os produtos.");
@@ -64,7 +63,6 @@
   }
 
   function imagemParaPDF(imagem) {
-    // Aproximadamente 300 dpi no espaço de foto do modelo, sem ampliar a origem.
     const escala = Math.min(1, 500 / imagem.naturalWidth, 320 / imagem.naturalHeight);
     const tela = imagem.ownerDocument.createElement("canvas");
     tela.width = Math.max(1, Math.round(imagem.naturalWidth * escala));
@@ -143,7 +141,6 @@
         await new Promise((resolver) => setTimeout(resolver, 0));
       }
     }
-    // Oito carregamentos por vez evitam disparar milhares de imagens simultaneamente.
     let proxima = 0;
     let carregadas = 0;
     let ausentes = 0;
@@ -166,7 +163,6 @@
     await Promise.all(Array.from({ length: Math.min(8, imagens.length) }, carregarFila));
     await documento.fonts.ready;
     sinal.throwIfAborted();
-    // Não imprime silenciosamente descrições cortadas ou sobrepostas.
     for (const corpo of principal.querySelectorAll(".produto-corpo")) {
       const descricao = corpo.querySelector(".produto-descricao");
       let tamanho = 8;
