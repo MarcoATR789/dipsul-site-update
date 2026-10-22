@@ -54,6 +54,54 @@
   align-items: end;
 }
 
+@supports (appearance: base-select) and selector(::picker(select)) {
+  select[data-abrir-ao-clicar],
+  select[data-abrir-ao-clicar]::picker(select) {
+    appearance: base-select;
+  }
+
+  select[data-abrir-ao-clicar] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  select[data-abrir-ao-clicar]::picker(select) {
+    inset: auto;
+    position-area: bottom span-right;
+    position-try-fallbacks: flip-block;
+    width: anchor-size(width);
+    min-width: 0;
+    max-height: min(320px, 50dvh);
+    margin: 4px 0;
+    padding: 4px;
+    overflow: auto;
+    box-sizing: border-box;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #fff;
+    color: #495057;
+  }
+
+  select[data-abrir-ao-clicar] option {
+    padding: 8px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  select[data-abrir-ao-clicar] option:hover,
+  select[data-abrir-ao-clicar] option:focus-visible {
+    background: #e5f1fd;
+    color: #004289;
+  }
+
+  select[data-abrir-ao-clicar] option:checked {
+    background: #007bff;
+    color: #fff;
+  }
+}
+
 .catalogo-resumo {
   display: flex;
   align-items: center;
@@ -590,10 +638,6 @@
   .catalogo-controles {
     grid-template-columns: 1fr;
     padding: 16px;
-  }
-
-  .catalogo-acoes .btn {
-    width: 100%;
   }
 
   .catalogo-produtos {

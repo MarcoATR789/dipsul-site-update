@@ -15,11 +15,20 @@
   cursor: pointer;
 }
 
-.catalogo-pedido-fechar .fa { font-size: 16px; }
-
 .catalogo-pedido-fechar:hover,
 .catalogo-pedido-fechar:focus {
   background: #007bff;
   color: #fff;
   outline: 3px solid rgba(0, 123, 255, 0.2);
+}
+
+.btn.botao-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  font-size: 14px;
 }

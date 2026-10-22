@@ -87,6 +87,8 @@
   });
 
   document.addEventListener("DOMContentLoaded", () => {
+    if (CSS.supports("(appearance: base-select) and selector(::picker(select))")) return;
+
     document.querySelectorAll("select[data-abrir-ao-clicar]").forEach((seletor) => {
       if (typeof seletor.showPicker !== "function") return;
       let abrirComClique = false;

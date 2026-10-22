@@ -187,7 +187,7 @@
         const situacao = elemento("td");
         situacao.append(elemento("span", nomesSituacao[pedido.situacao] || pedido.situacao, `admin-situacao ${pedido.situacao}`));
         const acao = elemento("td");
-        const botao = elemento("button", null, "btn btn-outline-secondary admin-icone");
+        const botao = elemento("button", null, "btn btn-outline-secondary botao-icone");
         botao.type = "button";
         botao.title = `Detalhes do pedido ${pedido.id}`;
         botao.setAttribute("aria-label", botao.title);

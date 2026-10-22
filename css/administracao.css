@@ -16,7 +16,6 @@
 .administracao button:disabled { opacity: .5; cursor: not-allowed; }
 .administracao :focus-visible { outline: 3px solid #80bdff; outline-offset: 3px; }
 .administracao .btn { min-height: 44px; font-size: 14px; }
-.administracao .admin-icone { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex: 0 0 44px; padding: 0; }
 .admin-acesso { width: min(400px, 100%); margin: 80px auto; }
 .admin-acesso h1 { margin-bottom: 28px; }
 .admin-acesso label:not(:first-child) { margin-top: 20px; }
@@ -48,10 +47,6 @@
 #pagina-atual { margin-right: auto; color: #556877; font-size: 14px; }
 .admin-opcoes-pdf { display: flex; flex-wrap: wrap; }
 .admin-opcoes-pdf > div { flex: 1; min-width: 230px; }
-.admin-opcoes-pdf fieldset { border: 0; margin: 0; padding: 0; }
-.admin-modos { display: flex; gap: 16px; align-items: center; min-height: 44px; }
-.admin-modos label { margin: 0; font-weight: 400; }
-.admin-modos input { margin-right: 4px; accent-color: #007bff; }
 #previa-pdf { width: 100%; height: 780px; max-height: 80vh; border: 1px solid #d6eaff; border-radius: 4px; margin-bottom: 32px; background: #eef0f3; }
 .administracao dialog { width: min(760px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 24px; border: 1px solid #d6eaff; border-radius: 8px; color: #283d50; overflow-y: auto; }
 .administracao dialog::backdrop { background: #19243170; }
@@ -84,8 +79,8 @@
   .admin-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-filtros > div:not(.admin-televendas):nth-child(-n+2) { grid-column: 1 / -1; }
   .admin-titulo { align-items: start; }
-  .admin-modos { flex-wrap: wrap; }
   .admin-opcoes-pdf > *, .admin-opcoes-pdf > div { width: 100%; min-width: 0; }
+  .admin-opcoes-pdf > div { flex-basis: 100%; }
   .administracao dialog { padding: 16px; }
   .admin-dados { grid-template-columns: 84px 1fr; gap: 6px 12px; }
 }

@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../../css/notificacoes.css">
-  <link rel="stylesheet" href="../../css/botoes.css">
-  <link rel="stylesheet" href="../../css/catalogo.css">
-  <link rel="stylesheet" href="../../css/administracao.css?v=20261022-2">
+  <link rel="stylesheet" href="../../css/botoes.css?v=20261022-3">
+  <link rel="stylesheet" href="../../css/catalogo.css?v=20261022-3">
+  <link rel="stylesheet" href="../../css/administracao.css?v=20261022-3">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
-  <script defer src="../../js/main.js?v=20261022-2"></script>
+  <script defer src="../../js/main.js?v=20261022-3"></script>
   <script defer src="../../js/catalogo-pdf.js"></script>
-  <script defer src="../../js/administracao.js?v=20261022-2"></script>
+  <script defer src="../../js/administracao.js?v=20261022-3"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -26,7 +26,7 @@
       <a href="../../index.html" aria-label="Dipsul, página inicial"><img src="../../img/logo.png" class="img-fluid" width="115" height="40" alt="Dipsul Distribuidora"></a>
       <div id="sessao" class="admin-sessao" hidden>
         <span id="usuario-email"></span>
-        <button id="sair" type="button" class="btn btn-outline-secondary admin-icone" title="Sair" aria-label="Sair"><i class="fa fa-sign-out" aria-hidden="true"></i></button>
+        <button id="sair" type="button" class="btn btn-outline-secondary botao-icone" title="Sair" aria-label="Sair"><i class="fa fa-sign-out" aria-hidden="true"></i></button>
       </div>
     </div>
   </header>
@@ -52,7 +52,7 @@
       <section id="secao-pedidos" aria-labelledby="titulo-pedidos">
         <div class="admin-titulo">
           <h1 id="titulo-pedidos">CONTROLE DE PEDIDOS:</h1>
-          <button id="atualizar" class="btn btn-outline-secondary admin-icone" type="button" title="Atualizar pedidos" aria-label="Atualizar pedidos"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+          <button id="atualizar" class="btn btn-outline-secondary botao-icone" type="button" title="Atualizar pedidos" aria-label="Atualizar pedidos"><i class="fa fa-refresh" aria-hidden="true"></i></button>
         </div>
         <form id="filtros" class="catalogo-controles admin-filtros" role="search">
           <div class="admin-busca"><label for="busca">Empresa ou CNPJ:</label><input id="busca" class="form-control" type="search" maxlength="120" placeholder="Buscar pedidos"></div>
@@ -63,8 +63,8 @@
           <div class="admin-televendas"><label for="televendas">Televendas:</label><select id="televendas" class="form-control"><option value="">Todos</option></select></div>
           <div><label for="data-inicio">De:</label><input id="data-inicio" class="form-control" type="date"></div>
           <div><label for="data-fim">Até:</label><input id="data-fim" class="form-control" type="date"></div>
-          <button class="btn btn-primary catalogo-botao-primario admin-icone" type="submit" title="Buscar pedidos" aria-label="Buscar pedidos"><i class="fa fa-search" aria-hidden="true"></i></button>
-          <button id="limpar-filtros" class="btn btn-outline-secondary admin-icone" type="button" title="Limpar filtros" aria-label="Limpar filtros"><i class="fa fa-eraser" aria-hidden="true"></i></button>
+          <button class="btn btn-primary catalogo-botao-primario botao-icone" type="submit" title="Buscar pedidos" aria-label="Buscar pedidos"><i class="fa fa-search" aria-hidden="true"></i></button>
+          <button id="limpar-filtros" class="btn btn-outline-secondary botao-icone" type="button" title="Limpar filtros" aria-label="Limpar filtros"><i class="fa fa-eraser" aria-hidden="true"></i></button>
         </form>
         <div class="catalogo-resumo">
           <p id="pedidos-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
@@ -77,8 +77,8 @@
         </div>
         <div class="admin-paginacao">
           <span id="pagina-atual"></span>
-          <button id="anterior" type="button" class="btn btn-outline-secondary admin-icone" title="Página anterior" aria-label="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
-          <button id="proxima" type="button" class="btn btn-outline-secondary admin-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+          <button id="anterior" type="button" class="btn btn-outline-secondary botao-icone" title="Página anterior" aria-label="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+          <button id="proxima" type="button" class="btn btn-outline-secondary botao-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
         </div>
       </section>
       <section id="secao-catalogo" aria-labelledby="titulo-catalogo" hidden>
@@ -88,10 +88,13 @@
             <label for="categoria-pdf">Categoria:</label>
             <select id="categoria-pdf" class="form-control" data-abrir-ao-clicar disabled><option value="">Todas as categorias</option></select>
           </div>
-          <fieldset><legend>Formato:</legend><div class="admin-modos">
-            <label><input type="radio" name="formato" value="publico" checked> PDF público</label>
-            <label><input type="radio" name="formato" value="impressao">PDF frente e verso</label>
-          </div></fieldset>
+          <div>
+            <label for="formato-pdf">Formato:</label>
+            <select id="formato-pdf" name="formato" class="form-control">
+              <option value="publico">PDF público</option>
+              <option value="impressao">PDF frente e verso</option>
+            </select>
+          </div>
           <button id="preparar-pdf" type="submit" class="btn btn-primary catalogo-botao-primario" disabled>Preparar catálogo</button>
           <button id="cancelar-pdf" type="button" class="btn btn-outline-secondary" hidden>Cancelar</button>
           <button id="imprimir-pdf" type="button" class="btn btn-primary catalogo-botao-primario" disabled>Imprimir / salvar PDF</button>
@@ -103,7 +106,7 @@
   </main>
 
   <dialog id="detalhes" aria-labelledby="titulo-detalhes">
-    <div class="admin-dialogo-cabecalho"><h2 id="titulo-detalhes">Pedido:</h2><button id="fechar-detalhes" type="button" class="catalogo-pedido-fechar" title="Fechar detalhes" aria-label="Fechar detalhes"><i class="fa fa-times" aria-hidden="true"></i></button></div>
+    <div class="admin-dialogo-cabecalho"><h2 id="titulo-detalhes">Pedido:</h2><button id="fechar-detalhes" type="button" class="catalogo-pedido-fechar" title="Fechar detalhes" aria-label="Fechar detalhes">×</button></div>
     <p id="detalhes-mensagem" class="admin-mensagem" role="status"></p>
     <div id="detalhes-conteudo" hidden>
       <dl id="detalhes-dados" class="admin-dados"></dl>
@@ -114,7 +117,7 @@
         <div><label for="nova-situacao">Situação:</label><select id="nova-situacao" class="form-control"><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
         <div><label for="observacao">Observação:</label><textarea id="observacao" class="form-control" maxlength="2000" rows="3"></textarea></div>
         <div class="admin-acoes-pedido">
-          <button id="excluir-pedido" class="btn btn-link text-danger admin-icone" type="button" title="Excluir pedido" aria-label="Excluir pedido"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+          <button id="excluir-pedido" class="btn btn-link text-danger botao-icone" type="button" title="Excluir pedido" aria-label="Excluir pedido"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
           <button id="salvar-situacao" class="btn btn-primary catalogo-botao-primario" type="submit">Salvar alteração</button>
         </div>
       </form>
@@ -126,7 +129,7 @@
   <dialog id="confirmacao-exclusao" class="admin-confirmacao" aria-labelledby="titulo-exclusao" aria-describedby="aviso-exclusao">
     <div class="admin-dialogo-cabecalho">
       <h2 id="titulo-exclusao">Excluir pedido?</h2>
-      <button id="fechar-exclusao" type="button" class="catalogo-pedido-fechar" title="Fechar confirmação" aria-label="Fechar confirmação"><i class="fa fa-times" aria-hidden="true"></i></button>
+      <button id="fechar-exclusao" type="button" class="catalogo-pedido-fechar" title="Fechar confirmação" aria-label="Fechar confirmação">×</button>
     </div>
     <dl id="exclusao-dados" class="admin-dados"></dl>
     <p id="aviso-exclusao">O pedido, seus itens e todo o histórico serão apagados permanentemente. Esta ação não pode ser desfeita.</p>
