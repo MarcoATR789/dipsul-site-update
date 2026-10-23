@@ -1,3 +1,25 @@
+.btn,
+.form-control {
+  transition: none !important;
+}
+
+.btn:focus,
+.btn:active,
+.form-control:focus {
+  box-shadow: none !important;
+}
+
+button:focus:not(:focus-visible),
+.btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+button:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
 .catalogo-pedido-fechar {
   display: inline-flex;
   align-items: center;
@@ -19,7 +41,6 @@
 .catalogo-pedido-fechar:focus {
   background: #007bff;
   color: #fff;
-  outline: 3px solid rgba(0, 123, 255, 0.2);
 }
 
 .btn.botao-icone {

@@ -267,7 +267,6 @@
 .catalogo-pedido-botao:hover,
 .catalogo-pedido-botao:focus {
   background: #0067d5;
-  outline: 3px solid rgba(0, 123, 255, 0.25);
 }
 
 .catalogo-pedido-botao strong {
@@ -432,7 +431,6 @@
   background-color: #2b3c67;
   border-color: #2b3c67;
   color: #fff;
-  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 .catalogo-produto-cartao:hover .btn.catalogo-produto-adicionar,
@@ -445,7 +443,6 @@
   background-color: #007bff;
   border-color: #007bff;
   color: #fff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
 }
 
 .catalogo-paginacao {

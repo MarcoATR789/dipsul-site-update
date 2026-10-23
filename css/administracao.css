@@ -14,7 +14,6 @@
 .administracao textarea.form-control { height: auto; resize: vertical; }
 .administracao button { cursor: pointer; }
 .administracao button:disabled { opacity: .5; cursor: not-allowed; }
-.administracao :focus-visible { outline: 3px solid #80bdff; outline-offset: 3px; }
 .administracao .btn { min-height: 44px; font-size: 14px; }
 .admin-acesso { width: min(400px, 100%); margin: 80px auto; }
 .admin-acesso h1 { margin-bottom: 28px; }
