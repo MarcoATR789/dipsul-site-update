@@ -31,12 +31,22 @@
     return novo;
   }
 
-  function definirVisibilidadeSenha(visivel) {
-    const botao = campo("alternar-senha");
-    campo("senha").type = visivel ? "text" : "password";
+  function mostrarSenha(visivel, botao = campo("alternar-senha")) {
+    campo(botao.getAttribute("aria-controls")).type = visivel ? "text" : "password";
     botao.title = visivel ? "Ocultar senha" : "Mostrar senha";
     botao.setAttribute("aria-label", botao.title);
     botao.firstElementChild.className = visivel ? "fa fa-eye-slash" : "fa fa-eye";
+  }
+
+  function limparFormularioSenha() {
+    campo("formulario-senha").reset();
+    campo("dialogo-senha").querySelectorAll("[data-visualizar-senha]").forEach((botao) => mostrarSenha(false, botao));
+  }
+
+  function bloquearFormularioSenha(bloqueado) {
+    campo("dialogo-senha").querySelectorAll("input, button").forEach((controle) => { controle.disabled = bloqueado; });
+    campo("sair").disabled = campo("trocar-senha").disabled = bloqueado;
+    campo("dialogo-senha").setAttribute("aria-busy", String(bloqueado));
   }
 
   function dataBrasil(data) {
@@ -78,7 +88,9 @@
     campo("acesso").hidden = false;
     campo("usuario-email").textContent = "";
     campo("senha").value = "";
-    definirVisibilidadeSenha(false);
+    mostrarSenha(false);
+    campo("dialogo-senha").close();
+    limparFormularioSenha();
     campo("confirmacao-exclusao").close();
     campo("confirmacao-exclusao").removeAttribute("aria-busy");
     pedidoParaExcluir = null;
@@ -129,7 +141,7 @@
     campo("acesso").hidden = true;
     campo("painel").hidden = campo("sessao").hidden = false;
     campo("senha").value = "";
-    definirVisibilidadeSenha(false);
+    mostrarSenha(false);
     pagina = 0;
     try {
       await carregarVendedores();
@@ -297,7 +309,9 @@
     } finally { if (leituraCatalogo === leitura) leituraCatalogo = null; }
   }
 
-  campo("alternar-senha").addEventListener("click", () => definirVisibilidadeSenha(campo("senha").type === "password"));
+  document.querySelectorAll("[data-visualizar-senha]").forEach((botao) => {
+    botao.addEventListener("click", () => mostrarSenha(campo(botao.getAttribute("aria-controls")).type === "password", botao));
+  });
   campo("formulario-login").addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (!cliente) return;
@@ -308,9 +322,60 @@
       if (error) throw new Error("Não foi possível entrar. Confira o e-mail, a senha e sua conexão.");
       await iniciarSessao(data.session);
     } catch (erro) { mensagem("mensagem-acesso", erro.message, true); }
-    finally { campo("senha").value = ""; definirVisibilidadeSenha(false); campo("entrar").disabled = false; }
+    finally { campo("senha").value = ""; mostrarSenha(false); campo("entrar").disabled = false; }
   });
   campo("sair").addEventListener("click", () => sair());
+  campo("trocar-senha").addEventListener("click", () => {
+    if (!usuario || campo("trocar-senha").disabled) return;
+    limparFormularioSenha();
+    mensagem("senha-mensagem", "");
+    campo("dialogo-senha").showModal();
+  });
+  for (const id of ["cancelar-senha", "fechar-senha"]) campo(id).addEventListener("click", () => campo("dialogo-senha").close());
+  campo("dialogo-senha").addEventListener("cancel", (evento) => { if (campo("salvar-senha").disabled) evento.preventDefault(); });
+  campo("dialogo-senha").addEventListener("close", limparFormularioSenha);
+  campo("formulario-senha").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+    if (!usuario || campo("salvar-senha").disabled || !evento.currentTarget.reportValidity()) return;
+    const senhaAtual = campo("senha-atual").value;
+    const novaSenha = campo("senha-nova").value;
+    if (novaSenha !== campo("senha-confirmacao").value) {
+      mensagem("senha-mensagem", "A confirmação deve ser igual à nova senha.", true);
+      campo("senha-confirmacao").focus();
+      return;
+    }
+    if (novaSenha === senhaAtual) {
+      mensagem("senha-mensagem", "A nova senha deve ser diferente da atual.", true);
+      campo("senha-nova").focus();
+      return;
+    }
+    const versao = versaoSessao;
+    const usuarioAtual = usuario;
+    let autenticacaoTemporaria;
+    bloquearFormularioSenha(true);
+    mensagem("senha-mensagem", "Alterando senha...");
+    try {
+      const configuracao = window.DipsulConfiguracao;
+      // A verificação fica em memória e não substitui a sessão administrativa.
+      autenticacaoTemporaria = window.supabase.createClient(configuracao.supabaseUrl, configuracao.supabaseChavePublica, { auth: { storageKey: "dipsul_admin_troca_senha", persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }).auth;
+      const resposta = await autenticacaoTemporaria.signInWithPassword({ email: usuarioAtual.email, password: senhaAtual });
+      if (versao !== versaoSessao) return;
+      if (resposta.error) throw new Error(resposta.error.code === "invalid_credentials" ? "Senha atual incorreta." : "Não foi possível validar a senha atual. Confira a conexão e tente novamente.");
+      if (resposta.data.user?.id !== usuarioAtual.id) throw new Error("Sessão inválida. Entre novamente.");
+      const { error } = await autenticacaoTemporaria.updateUser({ password: novaSenha, current_password: senhaAtual });
+      if (versao !== versaoSessao) return;
+      if (error) throw new Error(error.code === "weak_password" ? "A nova senha não atende aos requisitos de segurança do Supabase." : "Não foi possível alterar a senha. Confira a conexão e os requisitos da sua conta.");
+      const aviso = "Senha alterada. Entre novamente com a nova senha.";
+      await sair(aviso).catch(() => {});
+      if (!usuario) mensagem("mensagem-acesso", aviso);
+    } catch (erro) {
+      if (versao === versaoSessao) mensagem("senha-mensagem", erro.message, true);
+    } finally {
+      limparFormularioSenha();
+      bloquearFormularioSenha(false);
+      await autenticacaoTemporaria?.signOut({ scope: "local" }).catch(() => {});
+    }
+  });
   campo("filtros").addEventListener("submit", (evento) => { evento.preventDefault(); pagina = 0; carregarPedidos(); });
   campo("limpar-filtros").addEventListener("click", () => { campo("filtros").reset(); pagina = 0; carregarPedidos(); });
   campo("atualizar").addEventListener("click", carregarPedidos);
@@ -442,8 +507,8 @@
 
   async function iniciar() {
     try {
-      const config = window.DipsulConfiguracao;
-      cliente = window.supabase.createClient(config.supabaseUrl, config.supabaseChavePublica, { auth: { storage: window.sessionStorage, storageKey: "dipsul_admin_sessao", persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+      const configuracao = window.DipsulConfiguracao;
+      cliente = window.supabase.createClient(configuracao.supabaseUrl, configuracao.supabaseChavePublica, { auth: { storage: window.sessionStorage, storageKey: "dipsul_admin_sessao", persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
       cliente.auth.onAuthStateChange((evento) => { if (evento === "SIGNED_OUT") limparSessao("Sessão encerrada."); });
       const { data, error } = await cliente.auth.getSession();
       if (error) throw error;
