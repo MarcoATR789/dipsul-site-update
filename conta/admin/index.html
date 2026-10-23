@@ -18,7 +18,7 @@
   <script defer src="../../js/configuracao.js"></script>
   <script defer src="../../js/main.js?v=20261022-3"></script>
   <script defer src="../../js/catalogo-pdf.js"></script>
-  <script defer src="../../js/administracao.js?v=20261023-2"></script>
+  <script defer src="../../js/administracao.js?v=20261023-3"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -137,7 +137,7 @@
       <h2 id="titulo-senha">Trocar senha:</h2>
       <button id="fechar-senha" type="button" class="catalogo-pedido-fechar" title="Fechar" aria-label="Fechar troca de senha">×</button>
     </div>
-    <form id="formulario-senha" class="mt-4">
+    <form id="formulario-senha" class="mt-4" novalidate>
       <div class="form-group">
         <label for="senha-atual">Senha atual:</label>
         <div class="input-group">
@@ -150,16 +150,19 @@
       <div class="form-group">
         <label for="senha-nova">Nova senha:</label>
         <div class="input-group">
-          <input id="senha-nova" class="form-control" type="password" autocomplete="new-password" minlength="8" required>
+          <input id="senha-nova" class="form-control" type="password" autocomplete="new-password" minlength="8" maxlength="15" aria-describedby="senha-tamanho" required>
           <div class="input-group-append">
             <button class="btn btn-outline-secondary botao-icone" type="button" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="senha-nova" data-visualizar-senha><i class="fa fa-eye" aria-hidden="true"></i></button>
           </div>
         </div>
+        <ul class="list-unstyled small mt-2 mb-0" aria-live="polite">
+          <li id="senha-tamanho" class="text-danger"><i class="fa fa-times-circle" aria-hidden="true"></i> <span class="sr-only">Pendente:</span> De 8 a 15 caracteres</li>
+        </ul>
       </div>
       <div class="form-group">
         <label for="senha-confirmacao">Confirmar nova senha:</label>
         <div class="input-group">
-          <input id="senha-confirmacao" class="form-control" type="password" autocomplete="new-password" minlength="8" required>
+          <input id="senha-confirmacao" class="form-control" type="password" autocomplete="new-password" minlength="8" maxlength="15" required>
           <div class="input-group-append">
             <button class="btn btn-outline-secondary botao-icone" type="button" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="senha-confirmacao" data-visualizar-senha><i class="fa fa-eye" aria-hidden="true"></i></button>
           </div>

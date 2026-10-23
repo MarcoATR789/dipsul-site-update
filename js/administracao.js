@@ -38,8 +38,23 @@
     botao.firstElementChild.className = visivel ? "fa fa-eye-slash" : "fa fa-eye";
   }
 
+  function validarTamanhoSenha() {
+    const senha = campo("senha-nova");
+    const valido = senha.value.length >= senha.minLength && senha.value.length <= senha.maxLength;
+    const requisito = campo("senha-tamanho");
+    const classe = valido ? "text-success" : "text-danger";
+    if (requisito.className !== classe) {
+      requisito.className = classe;
+      requisito.querySelector("i").className = valido ? "fa fa-check-circle" : "fa fa-times-circle";
+      requisito.querySelector("span").textContent = valido ? "Atendido:" : "Pendente:";
+    }
+    senha.setAttribute("aria-invalid", String(senha.value.length > 0 && !valido));
+    return valido;
+  }
+
   function limparFormularioSenha() {
     campo("formulario-senha").reset();
+    validarTamanhoSenha();
     campo("dialogo-senha").querySelectorAll("[data-visualizar-senha]").forEach((botao) => mostrarSenha(false, botao));
   }
 
@@ -334,11 +349,22 @@
   for (const id of ["cancelar-senha", "fechar-senha"]) campo(id).addEventListener("click", () => campo("dialogo-senha").close());
   campo("dialogo-senha").addEventListener("cancel", (evento) => { if (campo("salvar-senha").disabled) evento.preventDefault(); });
   campo("dialogo-senha").addEventListener("close", limparFormularioSenha);
+  campo("senha-nova").addEventListener("input", validarTamanhoSenha);
   campo("formulario-senha").addEventListener("submit", async (evento) => {
     evento.preventDefault();
-    if (!usuario || campo("salvar-senha").disabled || !evento.currentTarget.reportValidity()) return;
+    if (!usuario || campo("salvar-senha").disabled) return;
     const senhaAtual = campo("senha-atual").value;
     const novaSenha = campo("senha-nova").value;
+    mensagem("senha-mensagem", "");
+    if (!senhaAtual) {
+      mensagem("senha-mensagem", "Informe a senha atual.", true);
+      campo("senha-atual").focus();
+      return;
+    }
+    if (!validarTamanhoSenha()) {
+      campo("senha-nova").focus();
+      return;
+    }
     if (novaSenha !== campo("senha-confirmacao").value) {
       mensagem("senha-mensagem", "A confirmação deve ser igual à nova senha.", true);
       campo("senha-confirmacao").focus();
