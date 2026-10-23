@@ -31,6 +31,14 @@
     return novo;
   }
 
+  function definirVisibilidadeSenha(visivel) {
+    const botao = campo("alternar-senha");
+    campo("senha").type = visivel ? "text" : "password";
+    botao.title = visivel ? "Ocultar senha" : "Mostrar senha";
+    botao.setAttribute("aria-label", botao.title);
+    botao.firstElementChild.className = visivel ? "fa fa-eye-slash" : "fa fa-eye";
+  }
+
   function dataBrasil(data) {
     return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(data));
   }
@@ -70,6 +78,7 @@
     campo("acesso").hidden = false;
     campo("usuario-email").textContent = "";
     campo("senha").value = "";
+    definirVisibilidadeSenha(false);
     campo("confirmacao-exclusao").close();
     campo("confirmacao-exclusao").removeAttribute("aria-busy");
     pedidoParaExcluir = null;
@@ -120,6 +129,7 @@
     campo("acesso").hidden = true;
     campo("painel").hidden = campo("sessao").hidden = false;
     campo("senha").value = "";
+    definirVisibilidadeSenha(false);
     pagina = 0;
     try {
       await carregarVendedores();
@@ -287,6 +297,7 @@
     } finally { if (leituraCatalogo === leitura) leituraCatalogo = null; }
   }
 
+  campo("alternar-senha").addEventListener("click", () => definirVisibilidadeSenha(campo("senha").type === "password"));
   campo("formulario-login").addEventListener("submit", async (evento) => {
     evento.preventDefault();
     if (!cliente) return;
@@ -297,7 +308,7 @@
       if (error) throw new Error("Não foi possível entrar. Confira o e-mail, a senha e sua conexão.");
       await iniciarSessao(data.session);
     } catch (erro) { mensagem("mensagem-acesso", erro.message, true); }
-    finally { campo("senha").value = ""; campo("entrar").disabled = false; }
+    finally { campo("senha").value = ""; definirVisibilidadeSenha(false); campo("entrar").disabled = false; }
   });
   campo("sair").addEventListener("click", () => sair());
   campo("filtros").addEventListener("submit", (evento) => { evento.preventDefault(); pagina = 0; carregarPedidos(); });
