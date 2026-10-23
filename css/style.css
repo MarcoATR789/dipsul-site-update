@@ -1631,7 +1631,7 @@ h6 {
   color: #fff;
   font-weight: 400;
   letter-spacing: 3px;
-  text-transform: uppercase;
+  text-transform: uppercase, italic;
 }
 
 #footer .footer-top .footer-info p {

@@ -84,3 +84,8 @@
     color: #fff;
   }
 }
+
+.preview-senha .input {
+  position: absolute;
+  cursor: pointer;
+}
