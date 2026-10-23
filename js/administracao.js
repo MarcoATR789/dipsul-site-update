@@ -45,7 +45,6 @@
     const classe = valido ? "text-success" : "text-danger";
     if (requisito.className !== classe) {
       requisito.className = classe;
-      requisito.querySelector("i").className = valido ? "fa fa-check-circle" : "fa fa-times-circle";
       requisito.querySelector("span").textContent = valido ? "Atendido:" : "Pendente:";
     }
     senha.setAttribute("aria-invalid", String(senha.value.length > 0 && !valido));

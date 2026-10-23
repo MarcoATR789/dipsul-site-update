@@ -18,7 +18,7 @@
   <script defer src="../../js/configuracao.js"></script>
   <script defer src="../../js/main.js?v=20261022-3"></script>
   <script defer src="../../js/catalogo-pdf.js"></script>
-  <script defer src="../../js/administracao.js?v=20261023-3"></script>
+  <script defer src="../../js/administracao.js?v=20261023-4"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -101,9 +101,9 @@
               <option value="impressao">PDF frente e verso</option>
             </select>
           </div>
-          <button id="preparar-pdf" type="submit" class="btn btn-primary catalogo-botao-primario" disabled>Preparar catálogo</button>
-          <button id="cancelar-pdf" type="button" class="btn btn-outline-secondary" hidden>Cancelar</button>
-          <button id="imprimir-pdf" type="button" class="btn btn-primary catalogo-botao-primario" disabled>Imprimir / salvar PDF</button>
+          <button id="cancelar-pdf" type="button" class="btn btn-outline-danger" hidden>Cancelar</button>
+          <button id="preparar-pdf" type="submit" class="btn btn-primary catalogo-botao-primario" disabled>Gerar</button>
+          <button id="imprimir-pdf" type="button" class="btn btn-outline-secondary botao-icone" title="Imprimir / salvar PDF" aria-label="Imprimir / salvar PDF" disabled><i class="fa fa-print" aria-hidden="true"></i></button>
         </form>
         <p id="pdf-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
         <iframe id="previa-pdf" title="Prévia do catálogo" sandbox="allow-same-origin allow-modals" hidden></iframe>
@@ -156,7 +156,7 @@
           </div>
         </div>
         <ul class="list-unstyled small mt-2 mb-0" aria-live="polite">
-          <li id="senha-tamanho" class="text-danger"><i class="fa fa-times-circle" aria-hidden="true"></i> <span class="sr-only">Pendente:</span> De 8 a 15 caracteres</li>
+          <li id="senha-tamanho" class="text-danger"><span class="sr-only">Pendente:</span> De 8 a 15 caracteres</li>
         </ul>
       </div>
       <div class="form-group">
