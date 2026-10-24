@@ -163,6 +163,8 @@
 .carrinho-main .catalogo-pedido-itens { margin-top: 0; overflow: visible; }
 .carrinho-main .catalogo-pedido-cliente { border: 0; margin-top: 16px; padding: 0; gap: 16px; }
 .carrinho-main #catalogo-status { overflow-wrap: anywhere; }
+.carrinho-main .catalogo-pedido-item-info { display: flex; align-items: center; gap: 12px; }
+.carrinho-produto-imagem { width: 80px; height: 80px; object-fit: contain; flex-shrink: 0; background: #fff; }
 
 @media (max-width: 767px) {
   .carrinho-conteudo { grid-template-columns: minmax(0, 1fr); gap: 24px; }

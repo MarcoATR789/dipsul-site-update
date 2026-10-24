@@ -4,8 +4,6 @@
   const ROTA_LIMPA = window.location.pathname.endsWith("/pages/produto/");
   const BASE_ARQUIVOS = ROTA_LIMPA ? "../../" : "../";
   const URL_DADOS_CATALOGO = `${BASE_ARQUIVOS}data/catalogo/produtos.json`;
-  const BASE_IMAGENS_CATALOGO = `${BASE_ARQUIVOS}img/catalogo/imagens/`;
-  const IMAGEM_PADRAO_CATALOGO = `${BASE_ARQUIVOS}img/catalogo/sem-imagem.webp`;
 
   const elementos = {
     carregando: document.getElementById("produto-carregando"),
@@ -35,21 +33,6 @@
     }
 
     console[erro ? "error" : "log"](mensagem);
-  }
-
-  function sanitizarImagem(nomeImagem) {
-    const nome = String(nomeImagem || "").trim();
-
-    if (!nome || nome.includes("..") || nome.includes("/") || nome.includes("\\") || /^[a-z]+:/i.test(nome)) {
-      return "";
-    }
-
-    return nome;
-  }
-
-  function obterUrlImagem(produto) {
-    const imagem = sanitizarImagem(produto && produto.imagem);
-    return imagem ? `${BASE_IMAGENS_CATALOGO}${encodeURIComponent(imagem)}` : IMAGEM_PADRAO_CATALOGO;
   }
 
   function obterCodigoDaUrl() {
@@ -109,17 +92,6 @@
     if (elementos.voltarBotao) elementos.voltarBotao.href = voltar;
   }
 
-  function aplicarFallbackImagem() {
-    if (!elementos.imagem) return;
-
-    elementos.imagem.addEventListener("error", function () {
-      if (elementos.imagem.dataset.alternativaAplicada === "true") return;
-
-      elementos.imagem.dataset.alternativaAplicada = "true";
-      elementos.imagem.src = IMAGEM_PADRAO_CATALOGO;
-    });
-  }
-
   function atualizarSeo(produto) {
     const parametros = new URLSearchParams();
     parametros.set("codigo", produto.codigo);
@@ -144,7 +116,7 @@
         name: produto.descricao,
         sku: produto.codigo,
         category: produto.categoria,
-        image: new URL(obterUrlImagem(produto), window.location.href).href,
+        image: window.Dipsul.obterUrlImagemProduto(produto),
         url: urlCanonica
       });
     }
@@ -155,7 +127,7 @@
     definirOculto(elementos.erro, true);
     definirOculto(elementos.detalhe, false);
 
-    elementos.imagem.src = obterUrlImagem(produto);
+    window.Dipsul.definirImagemProduto(elementos.imagem, produto);
     elementos.imagem.alt = produto.descricao;
     elementos.codigo.textContent = `Código: ${produto.codigo}`;
     elementos.titulo.textContent = produto.descricao;
@@ -221,7 +193,6 @@
     const codigo = obterCodigoDaUrl();
 
     atualizarVoltar();
-    aplicarFallbackImagem();
 
     if (!codigo) {
       mostrarErro("Código do produto ausente.");

@@ -12,13 +12,13 @@
   <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../../css/notificacoes.css">
   <link rel="stylesheet" href="../../css/botoes.css?v=20261023-2">
-  <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-1">
+  <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-3">
   <link rel="stylesheet" href="../../css/administracao.css?v=20261024-1">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
-  <script defer src="../../js/main.js?v=20261022-3"></script>
+  <script defer src="../../js/main.js?v=20261024-3"></script>
   <script defer src="../../js/catalogo-pdf.js?v=20261024-1"></script>
-  <script defer src="../../js/administracao.js?v=20261024-2"></script>
+  <script defer src="../../js/administracao.js?v=20261024-3"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -126,7 +126,7 @@
         <div><label for="nova-situacao">Situação:</label><select id="nova-situacao" class="form-control" data-abrir-ao-clicar><option value="novo">Novo</option><option value="em_atendimento">Em atendimento</option><option value="concluido">Concluído</option><option value="cancelado">Cancelado</option></select></div>
         <div><label for="observacao">Observação:</label><textarea id="observacao" class="form-control" maxlength="2000" rows="3"></textarea></div>
         <div class="admin-acoes-pedido">
-          <button id="excluir-pedido" class="btn btn-link text-danger botao-icone" type="button" title="Excluir pedido" aria-label="Excluir pedido"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+          <button id="excluir-pedido" class="btn btn-outline-danger botao-icone" type="button" title="Excluir pedido" aria-label="Excluir pedido"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
           <button id="salvar-situacao" class="btn btn-primary catalogo-botao-primario" type="submit">Salvar alteração</button>
         </div>
       </form>

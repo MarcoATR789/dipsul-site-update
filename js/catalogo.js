@@ -4,8 +4,6 @@
   const ROTA_LIMPA_CATALOGO = window.location.pathname.endsWith("/pages/catalogo/");
   const BASE_ARQUIVOS_CATALOGO = ROTA_LIMPA_CATALOGO ? "../../" : "../";
   const URL_DADOS_CATALOGO = `${BASE_ARQUIVOS_CATALOGO}data/catalogo/produtos.json`;
-  const BASE_IMAGENS_CATALOGO = `${BASE_ARQUIVOS_CATALOGO}img/catalogo/imagens/`;
-  const IMAGEM_PADRAO_CATALOGO = `${BASE_ARQUIVOS_CATALOGO}img/catalogo/sem-imagem.webp`;
   const ITENS_PADRAO_POR_PAGINA = 40;
   const OPCOES_ITENS_POR_PAGINA = [20, 40, 80];
   const TEMPO_ESPERA_BUSCA_MS = 250;
@@ -100,30 +98,6 @@
     while (elemento.firstChild) {
       elemento.removeChild(elemento.firstChild);
     }
-  }
-
-  function sanitizarImagem(nomeImagem) {
-    const nome = String(nomeImagem || "").trim();
-
-    if (!nome || nome.includes("..") || nome.includes("/") || nome.includes("\\") || /^[a-z]+:/i.test(nome)) {
-      return "";
-    }
-
-    return nome;
-  }
-
-  function obterUrlImagem(produto) {
-    const imagem = sanitizarImagem(produto && produto.imagem);
-    return imagem ? `${BASE_IMAGENS_CATALOGO}${encodeURIComponent(imagem)}` : IMAGEM_PADRAO_CATALOGO;
-  }
-
-  function aplicarFallbackImagem(imagem) {
-    imagem.addEventListener("error", function () {
-      if (imagem.dataset.alternativaAplicada === "true") return;
-
-      imagem.dataset.alternativaAplicada = "true";
-      imagem.src = IMAGEM_PADRAO_CATALOGO;
-    });
   }
 
   function lerEstadoDaUrl() {
@@ -286,13 +260,12 @@
     areaImagem.className = "catalogo-produto-imagem";
 
     const imagem = document.createElement("img");
-    imagem.src = obterUrlImagem(produto);
     imagem.alt = produto.descricao;
     imagem.loading = "lazy";
     imagem.decoding = "async";
     imagem.width = 220;
     imagem.height = 220;
-    aplicarFallbackImagem(imagem);
+    window.Dipsul.definirImagemProduto(imagem, produto);
 
     const corpo = document.createElement("div");
     corpo.className = "catalogo-produto-corpo";

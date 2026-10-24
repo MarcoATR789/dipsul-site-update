@@ -255,13 +255,13 @@
     try {
       await confirmarAcesso();
       const resposta = await cliente.from("catalogo_pedidos_log")
-        .select("id,cnpj,empresa,televendas_id,created_at,updated_at,situacao,itens").eq("id", id).single();
+        .select("id,cnpj,empresa,telefone,televendas_id,created_at,updated_at,situacao,itens").eq("id", id).single();
       if (resposta.error) throw new Error("Não foi possível carregar os detalhes do pedido.");
       if (versao !== versaoSessao || detalhe !== detalheAtual) return;
       pedidoAberto = resposta.data;
       const pedido = pedidoAberto;
       campo("detalhes-dados").replaceChildren();
-      for (const [nome, valor] of Object.entries({ Empresa: pedido.empresa, CNPJ: formatarCnpj(pedido.cnpj), Data: dataBrasil(pedido.created_at), Televendas: vendedores.get(String(pedido.televendas_id)) || "Não informado" })) {
+      for (const [nome, valor] of Object.entries({ Empresa: pedido.empresa, CNPJ: formatarCnpj(pedido.cnpj), Telefone: formatarTelefone(pedido.telefone) || "Não informado", Data: dataBrasil(pedido.created_at), Televendas: vendedores.get(String(pedido.televendas_id)) || "Não informado" })) {
         campo("detalhes-dados").append(elemento("dt", `${nome}:`), elemento("dd", valor));
       }
       campo("detalhes-itens").replaceChildren();

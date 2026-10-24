@@ -13,7 +13,7 @@
     <!-- CSS BASE -->
     <link rel="stylesheet" href="../../css/style.css?v=20261024-1">
     <link rel="stylesheet" href="../../css/televendas.css?v=20260902-3">
-    <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-1">
+    <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-3">
 
     <!-- BOOTSTRAP CSS -->
     <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
@@ -44,10 +44,10 @@
                 <li><a href="../../#clients">Parceiros</a></li>
                 <li><a href="../../#mapa">Localização</a></li>
                     <li>
-                    <a href="../catalogo/" class="focus catalogo-nav-link">Catálogo</a>
+                    <a href="../televendas/" class="focus catalogo-nav-link">Televendas</a>
                     </li>
                     <li>
-                    <a href="../televendas/" class="focus catalogo-nav-link">Televendas</a>
+                    <a href="../catalogo/" class="focus catalogo-nav-link">Catálogo</a>
                     </li>
                 </ul>
             </nav>
@@ -83,6 +83,10 @@
                     <div class="catalogo-pedido-campo">
                         <label for="catalogo-pedido-empresa">Nome da empresa:</label>
                         <input id="catalogo-pedido-empresa" class="form-control" type="text" maxlength="120" autocomplete="organization" placeholder="Razão social ou nome fantasia" required>
+                    </div>
+                    <div class="catalogo-pedido-campo">
+                        <label for="catalogo-pedido-telefone">Telefone:</label>
+                        <input id="catalogo-pedido-telefone" class="form-control" type="tel" maxlength="15" autocomplete="tel-national" placeholder="(00) 00000-0000" required>
                     </div>
                     <button type="submit" id="catalogo-pedido-enviar" class="btn btn-primary" disabled>Finalizar pelo WhatsApp</button>
                 </fieldset>
@@ -197,8 +201,8 @@
     <script src="../../lib/wow/wow.min.js"></script>
     <script src="../../lib/waypoints/waypoints.min.js"></script>
     <script src="../../lib/counterup/counterup.min.js"></script>
-    <script src="../../js/main.js?v=20261022-3"></script>
-    <script src="../../js/pedidos.js?v=20261024-1"></script>
+    <script src="../../js/main.js?v=20261024-3"></script>
+    <script src="../../js/pedidos.js?v=20261024-3"></script>
     <script src="../../js/cookies.js"></script>
     <script src="../../js/configuracao.js?v=20261021"></script>
 

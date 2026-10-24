@@ -2,7 +2,22 @@
   "use strict";
 
   const DURACAO_NOTIFICACAO = 3200;
+  const baseImagens = new URL("../img/catalogo/", document.currentScript.src);
   let temporizadorNotificacao = null;
+
+  function obterUrlImagemProduto(produto) {
+    const nome = String(produto?.imagem || "").trim();
+    const valido = nome && !nome.includes("..") && !/[\\/]/.test(nome) && !/^[a-z]+:/i.test(nome);
+    return new URL(valido ? `imagens/${encodeURIComponent(nome)}` : "sem-imagem.webp", baseImagens).href;
+  }
+
+  function definirImagemProduto(imagem, produto) {
+    imagem.onerror = () => {
+      imagem.onerror = null;
+      imagem.src = obterUrlImagemProduto();
+    };
+    imagem.src = obterUrlImagemProduto(produto);
+  }
 
   function obterAreaNotificacao() {
     let area = document.getElementById("dipsul-notificacao-area");
@@ -83,7 +98,9 @@
 
   window.Dipsul = Object.assign(window.Dipsul || {}, {
     notificar,
-    copiarTexto
+    copiarTexto,
+    obterUrlImagemProduto,
+    definirImagemProduto
   });
 
   document.addEventListener("DOMContentLoaded", () => {

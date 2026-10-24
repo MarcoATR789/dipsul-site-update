@@ -5,7 +5,7 @@
   const CHAVE_LISTA_ANTIGA = "dipsul_catalogo_pedido_v1";
   const QUANTIDADE_MAXIMA_PEDIDO = 500;
   const TEMPO_PREVIEW_PEDIDO_MS = 500;
-  const SUPABASE_FUNCAO_PEDIDO = "catalogo_registrar_pedido";
+  const urlCatalogo = new URL("../data/catalogo/produtos.json", document.currentScript.src);
   const noCarrinho = !!document.getElementById("carrinho");
   const listaAtual = noCarrinho ? "carrinho" : "lista";
   const tela = {
@@ -13,6 +13,7 @@
     pedidoItens: document.getElementById("catalogo-pedido-itens"),
     pedidoCnpj: document.getElementById("catalogo-pedido-cnpj"),
     pedidoEmpresa: document.getElementById("catalogo-pedido-empresa"),
+    pedidoTelefone: document.getElementById("catalogo-pedido-telefone"),
     pedidoLimpar: document.getElementById("catalogo-pedido-limpar"),
     pedidoEnviar: document.getElementById("catalogo-pedido-enviar"),
     pedidoAdicionar: document.getElementById("catalogo-pedido-adicionar"),
@@ -24,6 +25,7 @@
     status: document.getElementById("catalogo-status")
   };
   let pedidos = { lista: [], carrinho: [] };
+  let produtos = new Map();
   let temporizadorPreviewPedido = null;
   let pedidoAbertoAutomatico = false;
   let pedidoEnviando = false;
@@ -151,6 +153,21 @@
     } catch {
       avisarPedido("Não foi possível ler os pedidos salvos neste navegador.", true);
       return false;
+    }
+  }
+
+  async function carregarFotos() {
+    if (!noCarrinho) return;
+    try {
+      const resposta = await fetch(urlCatalogo, { cache: "no-cache" });
+      if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+      const dados = await resposta.json();
+      produtos = new Map(dados.map(produto => [String(produto.codigo), produto]));
+      tela.pedidoItens.querySelectorAll(".carrinho-produto-imagem").forEach(imagem => {
+        window.Dipsul.definirImagemProduto(imagem, produtos.get(imagem.dataset.codigo));
+      });
+    } catch (erro) {
+      console.warn("Não foi possível carregar as fotos do carrinho.", erro);
     }
   }
 
@@ -316,6 +333,18 @@
     const info = document.createElement("div");
     info.className = "catalogo-pedido-item-info";
 
+    if (noCarrinho) {
+      const imagem = document.createElement("img");
+      imagem.className = "carrinho-produto-imagem";
+      imagem.dataset.codigo = item.codigo;
+      imagem.alt = item.descricao;
+      imagem.width = imagem.height = 80;
+      imagem.loading = "lazy";
+      imagem.decoding = "async";
+      window.Dipsul.definirImagemProduto(imagem, produtos.get(item.codigo));
+      info.appendChild(imagem);
+    }
+
     const titulo = document.createElement("h3");
     titulo.textContent = `${indice + 1}. ${item.descricao}`;
 
@@ -383,6 +412,7 @@
   function obterClientePedido() {
     const cnpj = obterDigitos(tela.pedidoCnpj && tela.pedidoCnpj.value);
     const empresa = normalizarTextoCliente(tela.pedidoEmpresa && tela.pedidoEmpresa.value);
+    const telefone = obterDigitos(tela.pedidoTelefone && tela.pedidoTelefone.value);
 
     if (!cnpjValido(cnpj)) {
       throw new Error("Informe um CNPJ válido.");
@@ -392,34 +422,30 @@
       throw new Error("Informe o nome da empresa com 2 a 120 caracteres.");
     }
 
-    return { cnpj, empresa };
+    if (!/^[1-9]{2}\d{8,9}$/.test(telefone)) {
+      throw new Error("Informe um telefone com DDD, com 10 ou 11 dígitos.");
+    }
+
+    return { cnpj, empresa, telefone };
   }
 
   async function registrarPedidoSupabase(cliente, itens) {
     if (itens.length > 1000) throw new Error("O pedido deve ter no máximo 1000 itens diferentes.");
-    const parametros = { p_cnpj: cliente.cnpj, p_empresa: cliente.empresa };
-    const solicitar = (funcao, dados) => fetch(`${window.DipsulConfiguracao.supabaseUrl}/rest/v1/rpc/${funcao}`, {
+    const resposta = await fetch(`${window.DipsulConfiguracao.supabaseUrl}/rest/v1/rpc/catalogo_registrar_pedido_itens`, {
       method: "POST",
       headers: {
         apikey: window.DipsulConfiguracao.supabaseChavePublica,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(dados)
+      body: JSON.stringify({ p_cnpj: cliente.cnpj, p_empresa: cliente.empresa, p_telefone: cliente.telefone, p_itens: itens })
     });
 
-    let resposta = await solicitar("catalogo_registrar_pedido_itens", { ...parametros, p_itens: itens });
-    // Compatibilidade apenas enquanto a nova função SQL ainda não foi instalada.
-    if (resposta.status === 404) {
-      const erro = await resposta.clone().json().catch(() => ({}));
-      if (erro.code === "PGRST202") resposta = await solicitar(SUPABASE_FUNCAO_PEDIDO, parametros);
-    }
-
     if (!resposta.ok) {
-      let mensagem = "Não foi possível selecionar o televendas. Tente novamente.";
+      let mensagem = "Não foi possível registrar o pedido. Tente novamente.";
 
       try {
         const erro = await resposta.json();
-        mensagem = erro.message || mensagem;
+        if (erro.code !== "PGRST202") mensagem = erro.message || mensagem;
       } catch (erro) {
         mensagem = resposta.statusText || mensagem;
       }
@@ -447,6 +473,7 @@
       "",
       `Empresa: ${cliente.empresa}`,
       `CNPJ: ${formatarCnpj(cliente.cnpj)}`,
+      `Telefone: ${cliente.telefone.replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3")}`,
       "",
       "Segue abaixo os itens selecionados:",
       ...linhasItens
@@ -498,6 +525,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     carregarPedidos();
+    carregarFotos();
     configurarCampoCnpj();
     tela.pedidoAdicionar?.addEventListener("click", adicionarAoCarrinho);
     tela.pedidoLimpar?.addEventListener("click", limparPedido);
