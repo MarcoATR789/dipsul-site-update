@@ -112,7 +112,7 @@
     mensagem("exclusao-mensagem", "");
     for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = false;
     campo("detalhes").close();
-    for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens"]) campo(id).replaceChildren();
+    for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "pedido-data"]) campo(id).replaceChildren();
     campo("televendas").replaceChildren(new Option("Todos", ""));
     campo("categoria-pdf").replaceChildren(new Option("Todas as categorias", ""));
     campo("categoria-pdf").disabled = true;
@@ -274,6 +274,7 @@
       }
       campo("nova-situacao").value = pedido.situacao;
       campo("observacao").value = "";
+      campo("pedido-data").textContent = `Pedido realizado no site em ${dataBrasil(pedido.created_at)}.`;
       mensagem("detalhes-mensagem", "");
       campo("detalhes-conteudo").hidden = false;
     } catch (erro) {
@@ -402,7 +403,7 @@
     detalheAtual++;
     pedidoAberto = null;
     campo("confirmacao-exclusao").close();
-    for (const id of ["detalhes-dados", "detalhes-itens"]) campo(id).replaceChildren();
+    for (const id of ["detalhes-dados", "detalhes-itens", "pedido-data"]) campo(id).replaceChildren();
     campo("formulario-situacao").reset();
     mensagem("detalhes-mensagem", "");
     campo("itens-mensagem").textContent = "";
