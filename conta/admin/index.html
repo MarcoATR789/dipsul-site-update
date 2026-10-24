@@ -12,18 +12,18 @@
   <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../../css/notificacoes.css">
   <link rel="stylesheet" href="../../css/botoes.css?v=20261023-2">
-  <link rel="stylesheet" href="../../css/catalogo.css?v=20261023-1">
-  <link rel="stylesheet" href="../../css/administracao.css?v=20261023-2">
+  <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-1">
+  <link rel="stylesheet" href="../../css/administracao.css?v=20261024-1">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
   <script defer src="../../js/main.js?v=20261022-3"></script>
-  <script defer src="../../js/catalogo-pdf.js"></script>
-  <script defer src="../../js/administracao.js?v=20261023-4"></script>
+  <script defer src="../../js/catalogo-pdf.js?v=20261024-1"></script>
+  <script defer src="../../js/administracao.js?v=20261024-1"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
     <div class="container">
-      <a href="../../index.html" aria-label="Dipsul, página inicial"><img src="../../img/logo.png" class="img-fluid" width="115" height="40" alt="Dipsul Distribuidora"></a>
+      <a href="../../" aria-label="Dipsul, página inicial"><img src="../../img/logo.png" class="img-fluid" width="115" height="40" alt="Dipsul Distribuidora"></a>
       <div id="sessao" class="admin-sessao" hidden>
         <span id="usuario-email"></span>
         <button id="trocar-senha" type="button" class="btn btn-outline-secondary botao-icone" title="Trocar senha" aria-label="Trocar senha"><i class="fa fa-key" aria-hidden="true"></i></button>
@@ -88,7 +88,10 @@
         </div>
       </section>
       <section id="secao-catalogo" aria-labelledby="titulo-catalogo" hidden>
-        <div class="admin-titulo"><h1 id="titulo-catalogo">Catálogo PDF:</h1></div>
+        <div class="admin-titulo">
+          <h1 id="titulo-catalogo">CATÁLOGO PDF:</h1>
+          <button id="atualizar-catalogo" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar catálogo" aria-label="Atualizar catálogo"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+        </div>
         <form id="formulario-pdf" class="catalogo-controles admin-opcoes-pdf">
           <div>
             <label for="categoria-pdf">Categoria:</label>
@@ -103,7 +106,7 @@
           </div>
           <button id="cancelar-pdf" type="button" class="btn btn-outline-danger" hidden>Cancelar</button>
           <button id="preparar-pdf" type="submit" class="btn btn-primary catalogo-botao-primario" disabled>Gerar</button>
-          <button id="imprimir-pdf" type="button" class="btn btn-outline-secondary botao-icone" title="Imprimir / salvar PDF" aria-label="Imprimir / salvar PDF" disabled><i class="fa fa-print" aria-hidden="true"></i></button>
+          <button id="imprimir-pdf" type="button" class="btn btn-outline-secondary botao-icone" title="Imprimir / Salvar PDF" aria-label="Imprimir / Salvar PDF" disabled><i class="fa fa-print" aria-hidden="true"></i></button>
         </form>
         <p id="pdf-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
         <iframe id="previa-pdf" title="Prévia do catálogo" sandbox="allow-same-origin allow-modals" hidden></iframe>
@@ -127,8 +130,6 @@
           <button id="salvar-situacao" class="btn btn-primary catalogo-botao-primario" type="submit">Salvar alteração</button>
         </div>
       </form>
-      <h3>Histórico:</h3>
-      <ol id="historico" class="admin-historico"></ol>
     </div>
   </dialog>
 

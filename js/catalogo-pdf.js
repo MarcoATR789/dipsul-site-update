@@ -19,7 +19,7 @@
   }
 
   async function carregarProdutos(raiz, sinal) {
-    const resposta = await fetch(new URL("data/catalogo/produtos.json", raiz), { signal: sinal });
+    const resposta = await fetch(new URL("data/catalogo/produtos.json", raiz), { signal: sinal, cache: "no-cache" });
     if (!resposta.ok) throw new Error("Não foi possível carregar os produtos.");
     const produtos = await resposta.json();
     if (!Array.isArray(produtos) || !produtos.length) throw new Error("O catálogo está vazio.");

@@ -55,12 +55,8 @@
 .admin-dados { display: grid; grid-template-columns: 110px 1fr; gap: 6px 16px; padding: 16px 0; border-block: 1px solid #e4ebf3; }
 .admin-dados dt { font-size: 13px; color: #556877; }
 .admin-dados dd { margin: 0; overflow-wrap: anywhere; }
-#formulario-situacao { display: grid; gap: 16px; padding: 24px 0; border-bottom: 1px solid #e4ebf3; }
+#formulario-situacao { display: grid; gap: 16px; padding: 24px 0 0; }
 .admin-acoes-pedido { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.admin-historico { list-style: none; padding: 0; margin: 0; }
-.admin-historico li { padding: 12px 0; border-bottom: 1px solid #e4ebf3; }
-.admin-historico p { margin: 4px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.admin-historico small { color: #556877; overflow-wrap: anywhere; }
 @media (max-width: 1199px) {
   .admin-filtros { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .admin-busca { grid-column: span 3; }

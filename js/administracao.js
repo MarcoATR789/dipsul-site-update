@@ -112,7 +112,7 @@
     mensagem("exclusao-mensagem", "");
     for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = false;
     campo("detalhes").close();
-    for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "historico"]) campo(id).replaceChildren();
+    for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens"]) campo(id).replaceChildren();
     campo("televendas").replaceChildren(new Option("Todos", ""));
     campo("categoria-pdf").replaceChildren(new Option("Todas as categorias", ""));
     campo("categoria-pdf").disabled = true;
@@ -257,16 +257,6 @@
       const resposta = await cliente.from("catalogo_pedidos_log")
         .select("id,cnpj,empresa,televendas_id,created_at,updated_at,situacao,itens").eq("id", id).single();
       if (resposta.error) throw new Error("Não foi possível carregar os detalhes do pedido.");
-      const historico = [];
-      for (let inicio = 0; ; inicio += 500) {
-        if (versao !== versaoSessao || detalhe !== detalheAtual) return;
-        const lote = await cliente.from("catalogo_pedidos_historico")
-          .select("id,autor_email,situacao_anterior,situacao_nova,observacao,created_at")
-          .eq("pedido_id", id).order("created_at", { ascending: false }).order("id", { ascending: false }).range(inicio, inicio + 499);
-        if (lote.error) throw new Error("Não foi possível carregar o histórico.");
-        historico.push(...lote.data);
-        if (lote.data.length < 500) break;
-      }
       if (versao !== versaoSessao || detalhe !== detalheAtual) return;
       pedidoAberto = resposta.data;
       const pedido = pedidoAberto;
@@ -284,16 +274,6 @@
       }
       campo("nova-situacao").value = pedido.situacao;
       campo("observacao").value = "";
-      campo("historico").replaceChildren();
-      for (const registro of historico) {
-        const item = elemento("li");
-        const titulo = `${nomesSituacao[registro.situacao_anterior]} → ${nomesSituacao[registro.situacao_nova]}`;
-        item.append(elemento("strong", titulo), elemento("p", registro.observacao), elemento("small", `${dataBrasil(registro.created_at)} · ${registro.autor_email}`));
-        campo("historico").append(item);
-      }
-      const origem = elemento("li");
-      origem.append(elemento("strong", "Solicitação registrada pelo site"), elemento("p", dataBrasil(pedido.created_at)));
-      campo("historico").append(origem);
       mensagem("detalhes-mensagem", "");
       campo("detalhes-conteudo").hidden = false;
     } catch (erro) {
@@ -305,6 +285,7 @@
     if (produtos || leituraCatalogo) return;
     const leitura = new AbortController();
     leituraCatalogo = leitura;
+    const categoriaSelecionada = campo("categoria-pdf").value;
     mensagem("pdf-mensagem", "Carregando catálogo...");
     try {
       const catalogo = await window.DipsulCatalogoPDF.carregarProdutos(raiz, leitura.signal);
@@ -313,6 +294,7 @@
       campo("categoria-pdf").replaceChildren(new Option("Todas as categorias", ""));
       const categorias = [...new Set(produtos.map((produto) => produto.categoria))];
       for (const categoria of categorias) campo("categoria-pdf").add(new Option(categoria, categoria));
+      campo("categoria-pdf").value = categorias.includes(categoriaSelecionada) ? categoriaSelecionada : "";
       campo("categoria-pdf").disabled = campo("preparar-pdf").disabled = false;
       mensagem("pdf-mensagem", `${produtos.length} produtos · ${categorias.length} categorias`);
     } catch (erro) {
@@ -404,6 +386,15 @@
   campo("filtros").addEventListener("submit", (evento) => { evento.preventDefault(); pagina = 0; carregarPedidos(); });
   campo("limpar-filtros").addEventListener("click", () => { campo("filtros").reset(); pagina = 0; carregarPedidos(); });
   campo("atualizar").addEventListener("click", carregarPedidos);
+  campo("atualizar-catalogo").addEventListener("click", () => {
+    if (!usuario) return;
+    leituraCatalogo?.abort();
+    leituraCatalogo = null;
+    produtos = null;
+    limparPDF();
+    campo("categoria-pdf").disabled = true;
+    carregarCatalogo();
+  });
   campo("anterior").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); carregarPedidos(); });
   campo("proxima").addEventListener("click", () => { pagina++; carregarPedidos(); });
   campo("fechar-detalhes").addEventListener("click", () => campo("detalhes").close());
@@ -411,7 +402,7 @@
     detalheAtual++;
     pedidoAberto = null;
     campo("confirmacao-exclusao").close();
-    for (const id of ["detalhes-dados", "detalhes-itens", "historico"]) campo(id).replaceChildren();
+    for (const id of ["detalhes-dados", "detalhes-itens"]) campo(id).replaceChildren();
     campo("formulario-situacao").reset();
     mensagem("detalhes-mensagem", "");
     campo("itens-mensagem").textContent = "";

@@ -9,12 +9,6 @@
   const ITENS_PADRAO_POR_PAGINA = 40;
   const OPCOES_ITENS_POR_PAGINA = [20, 40, 80];
   const TEMPO_ESPERA_BUSCA_MS = 250;
-  const TEMPO_PREVIEW_PEDIDO_MS = 500;
-  const QUANTIDADE_MAXIMA_PEDIDO = 500;
-  const CHAVE_PEDIDO_SALVO = "dipsul_catalogo_pedido_v1";
-  const SUPABASE_URL = window.DipsulConfiguracao.supabaseUrl;
-  const SUPABASE_CHAVE_PUBLICA = window.DipsulConfiguracao.supabaseChavePublica;
-  const SUPABASE_FUNCAO_PEDIDO = "catalogo_registrar_pedido";
   const ORDEM_CATEGORIAS = [
     "medicamentos-veterinarios",
     "minerais",
@@ -55,7 +49,6 @@
     categoria: "",
     pagina: 1,
     itensPorPagina: ITENS_PADRAO_POR_PAGINA,
-    pedido: new Map(),
     controladorCarregamento: null,
     catalogoCarregado: false
   };
@@ -73,22 +66,8 @@
     erro: document.getElementById("catalogo-erro"),
     tentarNovamente: document.getElementById("catalogo-tentar-novamente"),
     paginacao: document.getElementById("catalogo-paginacao"),
-    pedidoResumo: document.getElementById("catalogo-pedido-resumo"),
-    pedidoItens: document.getElementById("catalogo-pedido-itens"),
-    pedidoCnpj: document.getElementById("catalogo-pedido-cnpj"),
-    pedidoEmpresa: document.getElementById("catalogo-pedido-empresa"),
-    pedidoLimpar: document.getElementById("catalogo-pedido-limpar"),
-    pedidoEnviar: document.getElementById("catalogo-pedido-enviar"),
-    pedidoPainel: document.getElementById("catalogo-pedido-painel"),
-    pedidoBotao: document.getElementById("catalogo-pedido-botao"),
-    pedidoFechar: document.getElementById("catalogo-pedido-fechar"),
-    pedidoContador: document.getElementById("catalogo-pedido-contador"),
     status: document.getElementById("catalogo-status")
   };
-
-  let temporizadorPreviewPedido = null;
-  let pedidoAbertoAutomatico = false;
-  let pedidoEnviando = false;
 
   function normalizar(valor) {
     return String(valor || "")
@@ -121,180 +100,6 @@
     while (elemento.firstChild) {
       elemento.removeChild(elemento.firstChild);
     }
-  }
-
-  function normalizarQuantidade(valor) {
-    const quantidade = parseInt(valor, 10);
-
-    if (!Number.isFinite(quantidade) || quantidade < 1) return 1;
-    return Math.min(quantidade, QUANTIDADE_MAXIMA_PEDIDO);
-  }
-
-  function limitarCampoQuantidade(campo) {
-    const digitos = String(campo.value || "").replace(/\D/g, "").slice(0, 3);
-
-    if (!digitos) {
-      campo.value = "";
-      return;
-    }
-
-    campo.value = String(normalizarQuantidade(digitos));
-  }
-
-  function configurarCampoQuantidade(campo) {
-    campo.min = "1";
-    campo.max = String(QUANTIDADE_MAXIMA_PEDIDO);
-    campo.step = "1";
-    campo.inputMode = "numeric";
-    campo.setAttribute("maxlength", "3");
-
-    campo.addEventListener("input", () => limitarCampoQuantidade(campo));
-    campo.addEventListener("change", () => {
-      campo.value = String(normalizarQuantidade(campo.value));
-    });
-  }
-
-  function obterDigitos(valor) {
-    return String(valor || "").replace(/\D/g, "");
-  }
-
-  function formatarCnpj(valor) {
-    const digitos = obterDigitos(valor).slice(0, 14);
-
-    return digitos
-      .replace(/^(\d{2})(\d)/, "$1.$2")
-      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
-      .replace(/\.(\d{3})(\d)/, ".$1/$2")
-      .replace(/(\d{4})(\d)/, "$1-$2");
-  }
-
-  function cnpjValido(valor) {
-    const cnpj = obterDigitos(valor);
-
-    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
-
-    const calcularDigito = (base) => {
-      const pesos = base.length === 12
-        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      const soma = base.split("").reduce((total, digito, indice) => {
-        return total + Number(digito) * pesos[indice];
-      }, 0);
-      const resto = soma % 11;
-
-      return resto < 2 ? "0" : String(11 - resto);
-    };
-
-    const primeiro = calcularDigito(cnpj.slice(0, 12));
-    const segundo = calcularDigito(cnpj.slice(0, 12) + primeiro);
-
-    return cnpj.endsWith(`${primeiro}${segundo}`);
-  }
-
-  function configurarCampoCnpj() {
-    if (!tela.pedidoCnpj) return;
-
-    tela.pedidoCnpj.addEventListener("input", () => {
-      tela.pedidoCnpj.value = formatarCnpj(tela.pedidoCnpj.value);
-    });
-  }
-
-  function avisarPedido(texto, erro = false) {
-    const mensagem = String(texto || "").trim();
-    if (!mensagem) return;
-
-    if (window.Dipsul && typeof window.Dipsul.notificar === "function") {
-      window.Dipsul.notificar(mensagem, { tipo: erro ? "erro" : "status" });
-    }
-
-    if (tela.status) {
-      tela.status.textContent = mensagem;
-    }
-  }
-
-  function carregarPedidoSalvo() {
-    try {
-      const dadosSalvos = JSON.parse(localStorage.getItem(CHAVE_PEDIDO_SALVO) || "[]");
-
-      if (!Array.isArray(dadosSalvos)) return;
-
-      dadosSalvos.forEach((item) => {
-        if (!item || !item.codigo || !item.descricao) return;
-
-        estado.pedido.set(String(item.codigo), {
-          codigo: String(item.codigo),
-          descricao: String(item.descricao),
-          quantidade: normalizarQuantidade(item.quantidade)
-        });
-      });
-    } catch (erro) {
-      console.warn("Não foi possível carregar a lista de pedido salva.", erro);
-    }
-  }
-
-  function salvarPedido() {
-    try {
-      localStorage.setItem(CHAVE_PEDIDO_SALVO, JSON.stringify(Array.from(estado.pedido.values())));
-    } catch (erro) {
-      console.warn("Não foi possível salvar a lista de pedido.", erro);
-    }
-  }
-
-  function definirPainelPedidoAberto(aberto, opcoes = {}) {
-    if (!tela.pedidoPainel || !tela.pedidoBotao) return;
-
-    tela.pedidoPainel.classList.toggle("esta-aberto", aberto);
-    tela.pedidoPainel.setAttribute("aria-hidden", aberto ? "false" : "true");
-    tela.pedidoPainel.inert = !aberto;
-    tela.pedidoBotao.setAttribute("aria-expanded", aberto ? "true" : "false");
-
-    if (aberto && opcoes.foco !== false) {
-      const primeiroControle = tela.pedidoPainel.querySelector("input, button, a");
-      if (primeiroControle) primeiroControle.focus();
-    }
-  }
-
-  function cancelarPreviewPedido() {
-    if (!temporizadorPreviewPedido) return;
-
-    window.clearTimeout(temporizadorPreviewPedido);
-    temporizadorPreviewPedido = null;
-  }
-
-  function fecharPainelPedido() {
-    cancelarPreviewPedido();
-    pedidoAbertoAutomatico = false;
-    definirPainelPedidoAberto(false, { foco: false });
-  }
-
-  function mostrarPreviewPedido() {
-    cancelarPreviewPedido();
-    pedidoAbertoAutomatico = true;
-    definirPainelPedidoAberto(true, { foco: false });
-
-    temporizadorPreviewPedido = window.setTimeout(() => {
-      temporizadorPreviewPedido = null;
-
-      if (pedidoAbertoAutomatico) {
-        pedidoAbertoAutomatico = false;
-        definirPainelPedidoAberto(false, { foco: false });
-      }
-    }, TEMPO_PREVIEW_PEDIDO_MS);
-  }
-
-  function alternarPainelPedido() {
-    const aberto = tela.pedidoPainel && tela.pedidoPainel.classList.contains("esta-aberto");
-
-    if (aberto && pedidoAbertoAutomatico) {
-      cancelarPreviewPedido();
-      pedidoAbertoAutomatico = false;
-      definirPainelPedidoAberto(true);
-      return;
-    }
-
-    cancelarPreviewPedido();
-    pedidoAbertoAutomatico = false;
-    definirPainelPedidoAberto(!aberto);
   }
 
   function sanitizarImagem(nomeImagem) {
@@ -518,14 +323,14 @@
     campoQuantidade.id = quantidadeId;
     campoQuantidade.className = "form-control catalogo-produto-quantidade";
     campoQuantidade.value = "1";
-    configurarCampoQuantidade(campoQuantidade);
+    window.DipsulPedidos.configurarQuantidade(campoQuantidade);
 
     const botaoAdicionar = document.createElement("button");
     botaoAdicionar.type = "button";
     botaoAdicionar.className = "btn btn-primary btn-sm catalogo-produto-adicionar";
     botaoAdicionar.textContent = "Adicionar";
     botaoAdicionar.addEventListener("click", () => {
-      adicionarItemPedido(produto, normalizarQuantidade(campoQuantidade.value));
+      window.DipsulPedidos.adicionar(produto, campoQuantidade.value);
       campoQuantidade.value = "1";
     });
 
@@ -542,285 +347,6 @@
     cartao.appendChild(controlesPedido);
 
     return cartao;
-  }
-
-  function adicionarItemPedido(produto, quantidade) {
-    const codigo = String(produto.codigo);
-    const itemAtual = estado.pedido.get(codigo);
-    const quantidadeAtual = itemAtual ? itemAtual.quantidade : 0;
-    const novaQuantidade = Math.min(
-      quantidadeAtual + normalizarQuantidade(quantidade),
-      QUANTIDADE_MAXIMA_PEDIDO
-    );
-
-    estado.pedido.set(codigo, {
-      codigo,
-      descricao: produto.descricao,
-      quantidade: novaQuantidade
-    });
-
-    salvarPedido();
-    renderizarPedido();
-    mostrarPreviewPedido();
-
-    if (tela.status) {
-      tela.status.textContent = `${produto.descricao} adicionado à lista de pedido.`;
-    }
-  }
-
-  function atualizarQuantidadePedido(codigo, quantidade) {
-    const item = estado.pedido.get(codigo);
-    if (!item) return;
-
-    const novaQuantidade = normalizarQuantidade(quantidade);
-    if (item.quantidade === novaQuantidade) return;
-    item.quantidade = novaQuantidade;
-    estado.pedido.set(codigo, item);
-    salvarPedido();
-    renderizarPedido();
-  }
-
-  function alterarQuantidadePedido(codigo, incremento) {
-    const item = estado.pedido.get(codigo);
-    if (!item) return;
-
-    atualizarQuantidadePedido(codigo, item.quantidade + incremento);
-  }
-
-  function removerItemPedido(codigo) {
-    estado.pedido.delete(codigo);
-    salvarPedido();
-    renderizarPedido();
-
-    if (tela.status) {
-      tela.status.textContent = "Item removido da lista de pedido.";
-    }
-  }
-
-  function limparPedido() {
-    estado.pedido.clear();
-    salvarPedido();
-    renderizarPedido();
-
-    if (tela.status) {
-      tela.status.textContent = "Lista de pedido limpa.";
-    }
-  }
-
-  function obterItensPedido() {
-    return Array.from(estado.pedido.values());
-  }
-
-  function renderizarPedido() {
-    if (!tela.pedidoItens) return;
-
-    const itens = obterItensPedido();
-    const totalUnidades = itens.reduce((total, item) => total + item.quantidade, 0);
-
-    limparElemento(tela.pedidoItens);
-
-    if (!itens.length) {
-      const avisoVazio = document.createElement("p");
-      avisoVazio.className = "catalogo-pedido-vazio";
-      avisoVazio.textContent = "Selecione produtos no catálogo para montar sua lista.";
-      tela.pedidoItens.appendChild(avisoVazio);
-    } else {
-      itens.forEach((item, indice) => {
-        tela.pedidoItens.appendChild(criarItemPedido(item, indice));
-      });
-    }
-
-    if (tela.pedidoResumo) {
-      tela.pedidoResumo.textContent = itens.length
-        ? `${itens.length} item(ns), ${totalUnidades} unidade(s) selecionada(s).`
-        : "Nenhum item selecionado.";
-    }
-
-    if (tela.pedidoContador) {
-      tela.pedidoContador.textContent = String(itens.length);
-    }
-
-    if (tela.pedidoLimpar) tela.pedidoLimpar.disabled = !itens.length;
-    if (tela.pedidoEnviar) tela.pedidoEnviar.disabled = pedidoEnviando || !itens.length;
-  }
-
-  function criarItemPedido(item, indice) {
-    const linha = document.createElement("article");
-    linha.className = "catalogo-pedido-item";
-
-    const info = document.createElement("div");
-    info.className = "catalogo-pedido-item-info";
-
-    const titulo = document.createElement("h3");
-    titulo.textContent = `${indice + 1}. ${item.descricao}`;
-
-    const codigo = document.createElement("p");
-    codigo.className = "catalogo-pedido-codigo";
-    codigo.textContent = `Código: ${item.codigo}`;
-
-    const legendaQuantidade = document.createElement("label");
-    legendaQuantidade.className = "sr-only";
-    legendaQuantidade.setAttribute("for", `pedido-quantidade-${item.codigo}`);
-    legendaQuantidade.textContent = `Quantidade de ${item.descricao}`;
-
-    const campoQuantidade = document.createElement("input");
-    campoQuantidade.type = "number";
-    campoQuantidade.id = `pedido-quantidade-${item.codigo}`;
-    campoQuantidade.className = "form-control catalogo-pedido-quantidade";
-    campoQuantidade.value = String(item.quantidade);
-    configurarCampoQuantidade(campoQuantidade);
-    campoQuantidade.addEventListener("change", () => {
-      atualizarQuantidadePedido(item.codigo, campoQuantidade.value);
-    });
-
-    const grupoQuantidade = document.createElement("div");
-    grupoQuantidade.className = "catalogo-pedido-quantidade-grupo";
-
-    const botaoMenos = document.createElement("button");
-    botaoMenos.type = "button";
-    botaoMenos.className = "btn btn-outline-secondary btn-sm catalogo-pedido-passo";
-    botaoMenos.textContent = "-";
-    botaoMenos.setAttribute("aria-label", `Diminuir quantidade de ${item.descricao}`);
-    botaoMenos.disabled = item.quantidade <= 1;
-    botaoMenos.addEventListener("click", () => alterarQuantidadePedido(item.codigo, -1));
-
-    const botaoMais = document.createElement("button");
-    botaoMais.type = "button";
-    botaoMais.className = "btn btn-outline-secondary btn-sm catalogo-pedido-passo";
-    botaoMais.textContent = "+";
-    botaoMais.setAttribute("aria-label", `Aumentar quantidade de ${item.descricao}`);
-    botaoMais.disabled = item.quantidade >= QUANTIDADE_MAXIMA_PEDIDO;
-    botaoMais.addEventListener("click", () => alterarQuantidadePedido(item.codigo, 1));
-
-    const botaoRemover = document.createElement("button");
-    botaoRemover.type = "button";
-    botaoRemover.className = "btn btn-outline-secondary btn-sm";
-    botaoRemover.textContent = "Remover";
-    botaoRemover.addEventListener("click", () => removerItemPedido(item.codigo));
-
-    info.appendChild(titulo);
-    grupoQuantidade.appendChild(botaoMenos);
-    grupoQuantidade.appendChild(campoQuantidade);
-    grupoQuantidade.appendChild(botaoMais);
-    linha.appendChild(info);
-    linha.appendChild(legendaQuantidade);
-    linha.appendChild(grupoQuantidade);
-    linha.appendChild(botaoRemover);
-    linha.appendChild(codigo);
-
-    return linha;
-  }
-
-  function normalizarTextoCliente(valor) {
-    return String(valor || "").replace(/\s+/g, " ").trim();
-  }
-
-  function obterClientePedido() {
-    const cnpj = obterDigitos(tela.pedidoCnpj && tela.pedidoCnpj.value);
-    const empresa = normalizarTextoCliente(tela.pedidoEmpresa && tela.pedidoEmpresa.value);
-
-    if (!cnpjValido(cnpj)) {
-      throw new Error("Informe um CNPJ válido.");
-    }
-
-    if (empresa.length < 2 || empresa.length > 120) {
-      throw new Error("Informe o nome da empresa com 2 a 120 caracteres.");
-    }
-
-    return { cnpj, empresa };
-  }
-
-  async function registrarPedidoSupabase(cliente, itens) {
-    if (itens.length > 1000) throw new Error("O pedido deve ter no máximo 1000 itens diferentes.");
-    const parametros = { p_cnpj: cliente.cnpj, p_empresa: cliente.empresa };
-    const solicitar = (funcao, dados) => fetch(`${SUPABASE_URL}/rest/v1/rpc/${funcao}`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_CHAVE_PUBLICA,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(dados)
-    });
-
-    let resposta = await solicitar("catalogo_registrar_pedido_itens", { ...parametros, p_itens: itens });
-    // Compatibilidade apenas enquanto a nova função SQL ainda não foi instalada.
-    if (resposta.status === 404) {
-      const erro = await resposta.clone().json().catch(() => ({}));
-      if (erro.code === "PGRST202") resposta = await solicitar(SUPABASE_FUNCAO_PEDIDO, parametros);
-    }
-
-    if (!resposta.ok) {
-      let mensagem = "Não foi possível selecionar o televendas. Tente novamente.";
-
-      try {
-        const erro = await resposta.json();
-        mensagem = erro.message || mensagem;
-      } catch (erro) {
-        mensagem = resposta.statusText || mensagem;
-      }
-
-      throw new Error(mensagem);
-    }
-
-    const dados = await resposta.json();
-    const resultado = Array.isArray(dados) ? dados[0] : dados;
-
-    if (!resultado || !resultado.televendas_whatsapp) {
-      throw new Error("O Supabase não retornou um número de WhatsApp.");
-    }
-
-    return resultado;
-  }
-
-  function montarMensagemPedido(cliente, itens) {
-    const linhasItens = itens.map((item, indice) => {
-      return `${indice + 1}- (${item.quantidade}Uni) ${item.descricao} - ${item.codigo}`;
-    });
-
-    return [
-      "Olá, quero fazer um pedido. Fiz um carrinho de itens pelo site, gostaria de prosseguir com a compra.",
-      "",
-      `Empresa: ${cliente.empresa}`,
-      `CNPJ: ${formatarCnpj(cliente.cnpj)}`,
-      "",
-      "Segue abaixo os itens selecionados:",
-      ...linhasItens
-    ].join("\n");
-  }
-
-  function definirEnvioPedidoAtivo(ativo) {
-    if (!tela.pedidoEnviar) return;
-
-    pedidoEnviando = ativo;
-    tela.pedidoEnviar.disabled = pedidoEnviando || !obterItensPedido().length;
-    tela.pedidoEnviar.textContent = ativo ? "Selecionando televendas..." : "Finalizar pelo WhatsApp";
-  }
-
-  async function enviarPedidoWhatsApp() {
-    if (!obterItensPedido().length) {
-      avisarPedido("Selecione ao menos um item para finalizar o pedido.", true);
-      return;
-    }
-
-    try {
-      const cliente = obterClientePedido();
-      const itens = obterItensPedido().map(({ codigo, descricao, quantidade }) => ({ codigo, descricao, quantidade }));
-
-      definirEnvioPedidoAtivo(true);
-      avisarPedido("Selecionando televendas...");
-
-      const atendimento = await registrarPedidoSupabase(cliente, itens);
-      const mensagem = montarMensagemPedido(cliente, itens);
-      const numero = obterDigitos(atendimento.televendas_whatsapp);
-      const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
-
-      avisarPedido(`Pedido direcionado para ${atendimento.televendas_nome}.`);
-      window.open(url, "_blank", "noopener,noreferrer");
-    } catch (erro) {
-      avisarPedido(erro.message || "Não foi possível finalizar o pedido.", true);
-    } finally {
-      definirEnvioPedidoAtivo(false);
-    }
   }
 
   function renderizarProdutos() {
@@ -1033,21 +559,9 @@
     });
 
     tela.limpar.addEventListener("click", limparFiltros);
-    tela.pedidoLimpar.addEventListener("click", limparPedido);
-    tela.pedidoEnviar.addEventListener("click", enviarPedidoWhatsApp);
-    tela.pedidoBotao.addEventListener("click", alternarPainelPedido);
-    tela.pedidoFechar.addEventListener("click", fecharPainelPedido);
     tela.tentarNovamente.addEventListener("click", () => {
       estado.catalogoCarregado = false;
       carregarCatalogo();
-    });
-
-    configurarCampoCnpj();
-
-    document.addEventListener("keydown", (evento) => {
-      if (evento.key === "Escape") {
-        fecharPainelPedido();
-      }
     });
 
     window.addEventListener("popstate", () => {
@@ -1061,9 +575,7 @@
     if (!tela.formulario || !tela.produtos) return;
 
     lerEstadoDaUrl();
-    carregarPedidoSalvo();
     configurarEventos();
-    renderizarPedido();
     carregarCatalogo();
   }
 
