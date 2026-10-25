@@ -27,6 +27,21 @@
       .replace(/(\d{4})(\d)/, "$1-$2");
   }
 
+  function formatarCep(valor) {
+    return obterDigitos(valor).slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2");
+  }
+
+  function dadosCliente(cadastro) {
+    return {
+      Empresa: cadastro.empresa, CNPJ: formatarCnpj(cadastro.cnpj),
+      "E-mail": cadastro.email, Telefone: formatarTelefone(cadastro.telefone),
+      CEP: formatarCep(cadastro.cep),
+      Endereço: [cadastro.tipo_logradouro, cadastro.logradouro, cadastro.numero].filter(Boolean).join(" "),
+      Complemento: cadastro.complemento, Bairro: cadastro.bairro,
+      Cidade: [cadastro.cidade, cadastro.uf].filter(Boolean).join(" / ")
+    };
+  }
+
   function cnpjValido(valor) {
     const cnpj = obterDigitos(valor);
     if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
@@ -158,6 +173,8 @@
     obterDigitos,
     formatarTelefone,
     formatarCnpj,
+    formatarCep,
+    dadosCliente,
     cnpjValido,
     mostrarSenha,
     montarMensagemPedido

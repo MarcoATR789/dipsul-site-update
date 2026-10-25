@@ -30,6 +30,7 @@
   let temporizadorPreviewPedido = null;
   let pedidoAbertoAutomatico = false;
   let pedidoEnviando = false;
+  let clientePedido = null, contaPronta = !noCarrinho, consultaConta = 0;
 
   function normalizarQuantidade(valor) {
     const quantidade = parseInt(valor, 10);
@@ -227,9 +228,9 @@
     tela.pedidoResumo.textContent = itens.length ? itens.length + " item(ns), " + total + " unidade(s)." : "Nenhum item selecionado.";
     if (tela.pedidoContador) tela.pedidoContador.textContent = String(itens.length);
     if (tela.pedidoLimpar) tela.pedidoLimpar.disabled = pedidoEnviando || !itens.length;
-    if (tela.pedidoEnviar) tela.pedidoEnviar.disabled = pedidoEnviando || !itens.length;
+    if (tela.pedidoEnviar) tela.pedidoEnviar.disabled = pedidoEnviando || !itens.length || !contaPronta || (clientePedido && clientePedido.situacao !== "aprovado");
     if (tela.pedidoAdicionar) tela.pedidoAdicionar.disabled = !itens.length;
-    if (tela.formulario) tela.formulario.querySelector("fieldset").disabled = pedidoEnviando || !itens.length;
+    if (tela.formulario) tela.formulario.querySelector("fieldset").disabled = pedidoEnviando || !itens.length || !contaPronta;
     if (pedidoEnviando) tela.pedidoItens.querySelectorAll("input, button").forEach(controle => { controle.disabled = true; });
   }
 
@@ -374,6 +375,11 @@
   }
 
   function obterClientePedido() {
+    if (!contaPronta) throw new Error("Não foi possível verificar os dados da conta. Recarregue a página.");
+    if (clientePedido) {
+      if (clientePedido.situacao !== "aprovado") throw new Error("O cadastro precisa estar aprovado para finalizar com esta conta.");
+      return { ...clientePedido };
+    }
     const cnpj = obterDigitos(tela.pedidoCnpj && tela.pedidoCnpj.value);
     const empresa = normalizarTextoCliente(tela.pedidoEmpresa && tela.pedidoEmpresa.value);
     const telefone = obterDigitos(tela.pedidoTelefone && tela.pedidoTelefone.value);
@@ -399,6 +405,7 @@
     const { data, error } = await window.DipsulConta.auth.getSession();
     if (error) throw new Error("Não foi possível verificar a sessão. Entre novamente na sua conta.");
     const sessao = data.session;
+    if ((sessao?.user.id || null) !== (cliente.usuario_id || null)) throw new Error("A sessão foi alterada. Atualize o carrinho antes de finalizar.");
     const funcao = sessao ? "catalogo_cliente_registrar_pedido" : "catalogo_registrar_pedido_itens";
     const resposta = await fetch(`${window.DipsulConfiguracao.supabaseUrl}/rest/v1/rpc/${funcao}`, {
       method: "POST",
@@ -434,18 +441,43 @@
   }
 
   async function preencherCliente() {
-    if (!noCarrinho || !window.DipsulConta) return;
+    if (!noCarrinho) return false;
+    const consulta = ++consultaConta;
+    contaPronta = false;
+    const campos = [tela.pedidoEmpresa, tela.pedidoCnpj, tela.pedidoTelefone];
+    campos.forEach(campo => { campo.readOnly = true; });
+    renderizarPedido();
     try {
+      if (!window.DipsulConta) throw new Error("Não foi possível verificar a conta. Recarregue a página.");
       const { data, error } = await window.DipsulConta.auth.getSession();
-      if (error || !data.session) return;
-      const resposta = await window.DipsulConta.from("catalogo_clientes").select("empresa,cnpj,telefone").eq("usuario_id", data.session.user.id).single();
-      if (resposta.error) return;
+      if (consulta !== consultaConta) return false;
+      if (error) throw new Error("Não foi possível verificar a sessão. Entre novamente na sua conta.");
       const campoConta = document.getElementById("carrinho-conta");
-      if (campoConta) campoConta.textContent = "Minha conta";
-      if (!tela.pedidoEmpresa.value) tela.pedidoEmpresa.value = resposta.data.empresa;
-      if (!tela.pedidoCnpj.value) tela.pedidoCnpj.value = formatarCnpj(resposta.data.cnpj);
-      if (!tela.pedidoTelefone.value) tela.pedidoTelefone.value = formatarTelefone(resposta.data.telefone);
-    } catch { /* O preenchimento não impede a edição manual dos dados. */ }
+      if (!data.session) {
+        if (clientePedido) campos.forEach(campo => { campo.value = ""; });
+        clientePedido = null;
+        campos.forEach(campo => { campo.readOnly = false; });
+        campoConta.textContent = "Entrar na minha conta"; campoConta.hash = "";
+      } else {
+        campoConta.textContent = "Editar dados no perfil"; campoConta.hash = "perfil";
+        const resposta = await window.DipsulConta.from("catalogo_clientes").select("usuario_id,empresa,cnpj,telefone,situacao").eq("usuario_id", data.session.user.id).maybeSingle();
+        if (consulta !== consultaConta) return false;
+        if (resposta.error || !resposta.data) throw new Error("Não foi possível carregar o perfil. Acesse sua conta para conferir o cadastro.");
+        clientePedido = resposta.data;
+        tela.pedidoEmpresa.value = clientePedido.empresa;
+        tela.pedidoCnpj.value = formatarCnpj(clientePedido.cnpj);
+        tela.pedidoTelefone.value = formatarTelefone(clientePedido.telefone);
+      }
+      contaPronta = true;
+      avisarPedido(clientePedido?.situacao === "pendente" ? "Cadastro aguardando aprovação." : clientePedido?.situacao === "bloqueado" ? "Cadastro bloqueado. Entre em contato com o televendas." : "");
+      return true;
+    } catch (erro) {
+      if (consulta === consultaConta) {
+        if (clientePedido) campos.forEach(campo => { campo.value = ""; });
+        avisarPedido(erro.message || "Não foi possível carregar o perfil. Recarregue a página.", true);
+      }
+      return false;
+    } finally { if (consulta === consultaConta) renderizarPedido(); }
   }
 
   function definirEnvioPedidoAtivo(ativo) {
@@ -453,7 +485,6 @@
 
     pedidoEnviando = ativo;
     renderizarPedido();
-    tela.pedidoEnviar.disabled = pedidoEnviando || !obterItensPedido().length;
     tela.pedidoEnviar.textContent = ativo ? "Selecionando televendas..." : "Finalizar pelo WhatsApp";
   }
 
@@ -466,10 +497,11 @@
     }
 
     try {
+      definirEnvioPedidoAtivo(true);
+      if (!await preencherCliente()) return;
       const cliente = obterClientePedido();
       const itens = obterItensPedido().map(({ codigo, descricao, quantidade }) => ({ codigo, descricao, quantidade }));
 
-      definirEnvioPedidoAtivo(true);
       avisarPedido("Selecionando televendas...");
 
       const atendimento = await registrarPedidoSupabase(cliente, itens);
@@ -496,6 +528,13 @@
     carregarFotos();
     configurarCampoCnpj();
     preencherCliente();
+    if (noCarrinho && window.DipsulConta) window.DipsulConta.auth.onAuthStateChange(evento => {
+      if (!["SIGNED_OUT", "SIGNED_IN", "USER_UPDATED"].includes(evento)) return;
+      consultaConta++; contaPronta = false;
+      [tela.pedidoEmpresa, tela.pedidoCnpj, tela.pedidoTelefone].forEach(campo => { campo.value = ""; campo.readOnly = true; });
+      renderizarPedido();
+      setTimeout(() => { if (!pedidoEnviando) preencherCliente(); }, 0);
+    });
     tela.pedidoAdicionar?.addEventListener("click", adicionarAoCarrinho);
     tela.pedidoLimpar?.addEventListener("click", limparPedido);
     tela.pedidoBotao?.addEventListener("click", alternarPainelPedido);
@@ -508,7 +547,11 @@
   window.addEventListener("storage", evento => {
     if (evento.key === CHAVE_PEDIDOS || evento.key === CHAVE_LISTA_ANTIGA || evento.key === null) carregarPedidos();
   });
-  window.addEventListener("pageshow", carregarPedidos);
+  window.addEventListener("pageshow", evento => {
+    carregarPedidos();
+    if (evento.persisted && !pedidoEnviando) preencherCliente();
+  });
+  window.addEventListener("focus", () => { if (noCarrinho && !pedidoEnviando) preencherCliente(); });
   document.addEventListener("keydown", evento => {
     if (evento.key === "Escape") fecharPainelPedido();
   });

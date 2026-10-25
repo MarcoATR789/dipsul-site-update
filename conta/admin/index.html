@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../../css/notificacoes.css">
-  <link rel="stylesheet" href="../../css/botoes.css?v=20261023-2">
-  <link rel="stylesheet" href="../../css/catalogo.css?v=20261025-1">
-  <link rel="stylesheet" href="../../css/administracao.css?v=20261025-1">
+  <link rel="stylesheet" href="../../css/botoes.css?v=20261025-2">
+  <link rel="stylesheet" href="../../css/catalogo.css?v=20261025-2">
+  <link rel="stylesheet" href="../../css/administracao.css?v=20261025-2">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
-  <script defer src="../../js/main.js?v=20261025-1"></script>
+  <script defer src="../../js/main.js?v=20261025-2"></script>
   <script defer src="../../js/catalogo-pdf.js?v=20261024-1"></script>
-  <script defer src="../../js/administracao.js?v=20261025-1"></script>
+  <script defer src="../../js/administracao.js?v=20261025-2"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -154,12 +154,12 @@
   </dialog>
 
   <dialog id="confirmacao-cliente" class="admin-confirmacao" aria-labelledby="titulo-cliente">
-    <div class="admin-dialogo-cabecalho"><h2 id="titulo-cliente">Alterar cadastro:</h2><button id="fechar-cliente" type="button" class="catalogo-pedido-fechar" title="Fechar" aria-label="Fechar confirmação">×</button></div>
+    <div class="admin-dialogo-cabecalho"><h2 id="titulo-cliente">Cadastro:</h2><button id="fechar-cliente" type="button" class="catalogo-pedido-fechar" title="Fechar cadastro" aria-label="Fechar cadastro">×</button></div>
     <dl id="cliente-dados" class="admin-dados"></dl>
-    <p id="cliente-mensagem" class="admin-mensagem" role="status"></p>
+    <p id="cliente-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
     <div class="admin-acoes-pedido">
-      <button id="cancelar-cliente" type="button" class="btn btn-outline-secondary">Cancelar</button>
-      <button id="confirmar-cliente" type="button" class="btn btn-primary catalogo-botao-primario">Confirmar</button>
+      <button id="cancelar-cliente" type="button" class="btn btn-outline-secondary">Fechar</button>
+      <button id="confirmar-cliente" type="button" class="btn btn-primary catalogo-botao-primario" hidden disabled>Confirmar</button>
     </div>
   </dialog>
 

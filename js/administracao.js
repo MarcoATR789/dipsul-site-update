@@ -4,6 +4,7 @@
   const campo = (id) => document.getElementById(id);
   const raiz = new URL("../../", window.location.href);
   const nomesSituacao = { novo: "Novo", em_atendimento: "Em atendimento", concluido: "Concluído", cancelado: "Cancelado" };
+  const nomesSituacaoCliente = { pendente: "Pendente", aprovado: "Aprovado", bloqueado: "Bloqueado" };
   const porPagina = 25;
   let cliente;
   let usuario = null;
@@ -13,6 +14,7 @@
   let pagina = 0;
   let paginaClientes = 0;
   let consultaClientes = 0;
+  let detalheClienteAtual = 0;
   let clienteParaAlterar = null;
   let pedidoAberto = null;
   let pedidoParaExcluir = null;
@@ -113,10 +115,8 @@
     mensagem("exclusao-mensagem", "");
     for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = false;
     campo("detalhes").close();
-    campo("confirmacao-cliente").close();
-    clienteParaAlterar = null;
+    fecharCliente();
     campo("clientes-lista").replaceChildren();
-    campo("cliente-dados").replaceChildren();
     campo("clientes-pagina").textContent = "";
     campo("clientes-mensagem").textContent = "";
     campo("clientes-situacao").value = "pendente";
@@ -322,7 +322,7 @@
     campo("clientes-anterior").disabled = campo("clientes-proxima").disabled = true;
     mensagem("clientes-mensagem", "Carregando cadastros...");
     try {
-      let busca = cliente.from("catalogo_clientes").select("usuario_id,empresa,cnpj,telefone,email,cep,tipo_logradouro,logradouro,numero,complemento,bairro,cidade,uf,situacao,created_at,updated_at", { count: "exact" })
+      let busca = cliente.from("catalogo_clientes").select("usuario_id,empresa,cnpj,telefone,situacao,created_at", { count: "exact" })
         .order("created_at", { ascending: false }).order("usuario_id");
       if (campo("clientes-situacao").value) busca = busca.eq("situacao", campo("clientes-situacao").value);
       const resposta = await busca.range(paginaClientes * porPagina, (paginaClientes + 1) * porPagina - 1);
@@ -333,33 +333,15 @@
       for (const cadastro of resposta.data) {
         const linha = elemento("tr"), empresa = elemento("td", cadastro.empresa), acoes = elemento("td"), grupo = elemento("div", null, "admin-acoes-cliente");
         empresa.append(elemento("small", dataBrasil(cadastro.created_at)));
-        const situacao = elemento("td"), nomes = { pendente: "Pendente", aprovado: "Aprovado", bloqueado: "Bloqueado" };
+        const situacao = elemento("td");
         const classe = cadastro.situacao === "aprovado" ? "concluido" : cadastro.situacao === "bloqueado" ? "cancelado" : "novo";
-        situacao.append(elemento("span", nomes[cadastro.situacao], `admin-situacao ${classe}`));
-        for (const [destino, titulo, icone, cor] of [["aprovado", "Aprovar cadastro", "check", "success"], ["bloqueado", "Bloquear cadastro", "ban", "danger"]]) {
+        situacao.append(elemento("span", nomesSituacaoCliente[cadastro.situacao] || cadastro.situacao, `admin-situacao ${classe}`));
+        for (const [destino, titulo, icone, cor] of [[null, "Ver cadastro", "eye", "secondary"], ["aprovado", "Aprovar cadastro", "check", "success"], ["bloqueado", "Bloquear cadastro", "ban", "danger"]]) {
           const botao = elemento("button", null, `btn btn-outline-${cor} botao-icone`);
           botao.type = "button"; botao.title = titulo; botao.setAttribute("aria-label", titulo);
           const simbolo = elemento("i", null, `fa fa-${icone}`); simbolo.setAttribute("aria-hidden", "true"); botao.append(simbolo);
-          botao.disabled = cadastro.situacao === destino;
-          botao.addEventListener("click", () => {
-            clienteParaAlterar = { cadastro, destino };
-            campo("titulo-cliente").textContent = titulo + ":";
-            campo("cliente-dados").replaceChildren();
-            const endereco = [cadastro.tipo_logradouro, cadastro.logradouro, cadastro.numero].filter(Boolean).join(" ");
-            for (const [nome, valor] of Object.entries({
-              Empresa: cadastro.empresa, CNPJ: cadastro.cnpj ? formatarCnpj(cadastro.cnpj) : "",
-              "E-mail": cadastro.email, Telefone: formatarTelefone(cadastro.telefone),
-              CEP: cadastro.cep?.replace(/^(\d{5})(\d{3})$/, "$1-$2"), Endereço: endereco,
-              Complemento: cadastro.complemento, Bairro: cadastro.bairro,
-              Cidade: [cadastro.cidade, cadastro.uf].filter(Boolean).join(" / ")
-            })) {
-              campo("cliente-dados").append(elemento("dt", nome + ":"), elemento("dd", valor || "Não informado"));
-            }
-            campo("confirmar-cliente").textContent = destino === "aprovado" ? "Aprovar" : "Bloquear";
-            mensagem("cliente-mensagem", "");
-            campo("confirmacao-cliente").showModal();
-            campo("cancelar-cliente").focus();
-          });
+          botao.disabled = Boolean(destino && cadastro.situacao === destino);
+          botao.addEventListener("click", () => abrirCliente(cadastro.usuario_id, destino));
           grupo.append(botao);
         }
         acoes.append(grupo);
@@ -373,26 +355,100 @@
     } catch (erro) { if (versao === versaoSessao && consulta === consultaClientes) mensagem("clientes-mensagem", erro.message, true); }
   }
 
+  function limparDetalhesCliente() {
+    detalheClienteAtual++;
+    clienteParaAlterar = null;
+    campo("cliente-dados").replaceChildren();
+    campo("titulo-cliente").textContent = "Cadastro:";
+    mensagem("cliente-mensagem", "");
+    campo("confirmar-cliente").hidden = campo("confirmar-cliente").disabled = true;
+    campo("confirmar-cliente").textContent = "Confirmar";
+    campo("cancelar-cliente").textContent = "Fechar";
+    campo("cancelar-cliente").disabled = campo("fechar-cliente").disabled = false;
+    campo("confirmacao-cliente").removeAttribute("aria-busy");
+  }
+
+  function fecharCliente() {
+    campo("confirmacao-cliente").close();
+    limparDetalhesCliente();
+  }
+
+  function detalheClienteAtivo(versao, detalhe) {
+    return usuario && versao === versaoSessao && detalhe === detalheClienteAtual && campo("confirmacao-cliente").open;
+  }
+
+  async function abrirCliente(usuarioId, destino = null) {
+    if (!usuario) return;
+    limparDetalhesCliente();
+    const versao = versaoSessao, detalhe = detalheClienteAtual;
+    campo("titulo-cliente").textContent = destino === "aprovado" ? "Aprovar cadastro:" : destino === "bloqueado" ? "Bloquear cadastro:" : "Ver cadastro:";
+    campo("confirmar-cliente").hidden = !destino;
+    campo("confirmar-cliente").textContent = destino === "aprovado" ? "Aprovar" : "Bloquear";
+    campo("cancelar-cliente").textContent = destino ? "Cancelar" : "Fechar";
+    campo("confirmacao-cliente").setAttribute("aria-busy", "true");
+    mensagem("cliente-mensagem", "Carregando cadastro...");
+    if (!campo("confirmacao-cliente").open) campo("confirmacao-cliente").showModal();
+    campo("cancelar-cliente").focus();
+    try {
+      const resposta = await cliente.from("catalogo_clientes")
+        .select("usuario_id,empresa,cnpj,telefone,email,cep,tipo_logradouro,logradouro,numero,complemento,bairro,cidade,uf,situacao,created_at,updated_at")
+        .eq("usuario_id", usuarioId).single();
+      if (!detalheClienteAtivo(versao, detalhe)) return;
+      if (resposta.error || !resposta.data) throw new Error("Não foi possível carregar o cadastro. Atualize a lista e tente novamente.");
+      const cadastro = resposta.data;
+      for (const [nome, valor] of Object.entries({
+        ...window.Dipsul.dadosCliente(cadastro),
+        Situação: nomesSituacaoCliente[cadastro.situacao] || cadastro.situacao,
+        "Data de cadastro": cadastro.created_at ? dataBrasil(cadastro.created_at) : "",
+        "Última atualização": cadastro.updated_at ? dataBrasil(cadastro.updated_at) : ""
+      })) {
+        campo("cliente-dados").append(elemento("dt", nome + ":"), elemento("dd", valor || "Não informado"));
+      }
+      if (destino && !cadastro.updated_at) throw new Error("Não foi possível verificar a atualização do cadastro. Feche e abra novamente.");
+      if (destino && cadastro.situacao !== destino) {
+        clienteParaAlterar = { cadastro, destino };
+        campo("confirmar-cliente").disabled = false;
+      }
+      mensagem("cliente-mensagem", destino && cadastro.situacao === destino ? "O cadastro já está nessa situação." : "");
+    } catch (erro) {
+      if (detalheClienteAtivo(versao, detalhe)) mensagem("cliente-mensagem", erro.message, true);
+    } finally {
+      if (detalheClienteAtivo(versao, detalhe)) campo("confirmacao-cliente").removeAttribute("aria-busy");
+    }
+  }
+
   campo("atualizar-clientes").addEventListener("click", carregarClientes);
   campo("clientes-situacao").addEventListener("change", () => { paginaClientes = 0; carregarClientes(); });
   campo("clientes-anterior").addEventListener("click", () => { paginaClientes = Math.max(0, paginaClientes - 1); carregarClientes(); });
   campo("clientes-proxima").addEventListener("click", () => { paginaClientes++; carregarClientes(); });
-  for (const id of ["fechar-cliente", "cancelar-cliente"]) campo(id).addEventListener("click", () => campo("confirmacao-cliente").close());
-  campo("confirmacao-cliente").addEventListener("cancel", evento => { if (campo("confirmar-cliente").disabled) evento.preventDefault(); });
-  campo("confirmacao-cliente").addEventListener("close", () => { clienteParaAlterar = null; campo("cliente-dados").replaceChildren(); });
+  for (const id of ["fechar-cliente", "cancelar-cliente"]) campo(id).addEventListener("click", fecharCliente);
+  campo("confirmacao-cliente").addEventListener("cancel", evento => {
+    evento.preventDefault();
+    if (!campo("cancelar-cliente").disabled) fecharCliente();
+  });
+  campo("confirmacao-cliente").addEventListener("close", () => {
+    if (!campo("confirmacao-cliente").open) limparDetalhesCliente();
+  });
   campo("confirmar-cliente").addEventListener("click", async () => {
-    if (!usuario || !clienteParaAlterar || campo("confirmar-cliente").disabled) return;
-    const { cadastro, destino } = clienteParaAlterar, versao = versaoSessao;
+    if (!usuario || !clienteParaAlterar || !campo("confirmacao-cliente").open || campo("confirmar-cliente").disabled) return;
+    const { cadastro, destino } = clienteParaAlterar, versao = versaoSessao, detalhe = detalheClienteAtual;
     const controles = ["confirmar-cliente", "cancelar-cliente", "fechar-cliente"];
     controles.forEach(id => { campo(id).disabled = true; });
+    campo("confirmacao-cliente").setAttribute("aria-busy", "true");
+    mensagem("cliente-mensagem", "Salvando alteração...");
     try {
       const resposta = await cliente.rpc("catalogo_admin_atualizar_cliente", { p_usuario_id: cadastro.usuario_id, p_situacao: destino, p_updated_at: cadastro.updated_at });
-      if (versao !== versaoSessao) return;
+      if (!detalheClienteAtivo(versao, detalhe)) return;
       if (resposta.error) throw new Error(resposta.error.message || "Não foi possível alterar o cadastro.");
-      campo("confirmacao-cliente").close();
+      fecharCliente();
       await carregarClientes();
-    } catch (erro) { if (versao === versaoSessao) mensagem("cliente-mensagem", erro.message, true); }
-    finally { controles.forEach(id => { campo(id).disabled = false; }); }
+    } catch (erro) { if (detalheClienteAtivo(versao, detalhe)) mensagem("cliente-mensagem", erro.message, true); }
+    finally {
+      if (detalheClienteAtivo(versao, detalhe)) {
+        controles.forEach(id => { campo(id).disabled = false; });
+        campo("confirmacao-cliente").removeAttribute("aria-busy");
+      }
+    }
   });
 
   document.querySelectorAll("[data-visualizar-senha]").forEach((botao) => {

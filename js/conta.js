@@ -9,11 +9,24 @@
   if (!document.getElementById("conta")) return;
 
   const campo = id => document.getElementById(id);
-  const { obterDigitos, formatarCnpj, formatarTelefone, cnpjValido } = window.Dipsul;
+  const { obterDigitos, formatarCnpj, formatarTelefone, formatarCep, cnpjValido } = window.Dipsul;
   const nomes = { novo: "Novo", em_atendimento: "Em atendimento", concluido: "Concluído", cancelado: "Cancelado" };
   const porPagina = 10;
   let usuario = null, versao = 0, consulta = 0, detalhe = 0, pagina = 0, pedidoAberto = null;
   let autenticando = false;
+  let perfil = null, perfilEditado = null, salvandoPerfil = false;
+  const camposPerfil = ["cnpj", "email", "empresa", "cep", "tipo-logradouro", "logradouro", "numero", "complemento", "bairro", "cidade", "uf"];
+
+  // Reaproveita os campos, limites e opções do formulário de cadastro.
+  for (const nome of camposPerfil) {
+    const original = campo(`conta-${nome}`), controle = original.cloneNode(true);
+    const rotulo = document.querySelector(`label[for="${original.id}"]`).cloneNode(true);
+    controle.id = `perfil-${nome}`; rotulo.htmlFor = controle.id;
+    const grupo = elemento("div", null, `form-group ${nome === "empresa" ? "col-12" : "col-sm-6"}`);
+    grupo.append(rotulo, controle); campo("conta-perfil-campos").append(grupo);
+  }
+  campo("perfil-cnpj").addEventListener("input", evento => { evento.target.value = formatarCnpj(evento.target.value); });
+  campo("perfil-cep").addEventListener("input", evento => { evento.target.value = formatarCep(evento.target.value); });
 
   function mensagem(id, texto, erro = false) {
     campo(id).textContent = texto;
@@ -41,8 +54,13 @@
   function limparSessao() {
     versao++; consulta++; detalhe++;
     usuario = null;
+    perfil = perfilEditado = null;
     pedidoAberto = null;
     campo("conta-detalhes").close();
+    campo("conta-perfil-dialogo").close();
+    campo("conta-telefone-dialogo").close();
+    campo("conta-perfil-dados").replaceChildren();
+    mensagem("conta-perfil-mensagem", "");
     campo("conta-acesso").hidden = false;
     campo("conta-painel").hidden = campo("conta-sair").hidden = campo("conta-pedidos").hidden = true;
     for (const id of ["conta-lista", "conta-dados", "conta-itens", "conta-data", "conta-nome", "conta-pagina", "conta-situacao"]) campo(id).replaceChildren();
@@ -58,15 +76,22 @@
     campo("conta-lista").replaceChildren();
     campo("conta-anterior").disabled = campo("conta-proxima").disabled = true;
     campo("conta-pedidos").hidden = true;
+    perfil = null;
+    campo("conta-perfil-dados").replaceChildren();
+    campo("conta-editar-perfil").disabled = campo("conta-editar-telefone").disabled = true;
+    mensagem("conta-perfil-mensagem", "Carregando cadastro...");
     mensagem("conta-situacao", "Carregando pedidos...");
     try {
-      const perfil = await cliente.from("catalogo_clientes").select("empresa,situacao").eq("usuario_id", usuario.id).single();
+      const cadastro = await cliente.from("catalogo_clientes").select("empresa,cnpj,telefone,email,cep,tipo_logradouro,logradouro,numero,complemento,bairro,cidade,uf,situacao,created_at,updated_at").eq("usuario_id", usuario.id).maybeSingle();
       if (sessao !== versao || leitura !== consulta) return;
-      if (perfil.error) throw new Error("Não foi possível carregar o cadastro. Tente novamente.");
-      campo("conta-nome").textContent = perfil.data.empresa;
-      if (perfil.data.situacao !== "aprovado") {
-        mensagem("conta-situacao", perfil.data.situacao === "pendente" ? "Cadastro aguardando aprovação." : "Cadastro bloqueado. Entre em contato com o televendas.");
-        return;
+      if (cadastro.error) throw new Error("Não foi possível carregar o cadastro. Tente novamente.");
+      if (!cadastro.data) throw new Error("Perfil não encontrado. Entre em contato com o televendas para regularizar o cadastro.");
+      perfil = cadastro.data;
+      renderizarPerfil();
+      campo("conta-nome").textContent = perfil.empresa;
+      if (perfil.situacao !== "aprovado") {
+        mensagem("conta-situacao", perfil.situacao === "pendente" ? "Cadastro aguardando aprovação." : "Cadastro bloqueado. Entre em contato com o televendas.");
+        return true;
       }
       const resposta = await cliente.from("catalogo_pedidos_log").select("id,empresa,situacao,created_at", { count: "exact" })
         .eq("usuario_id", usuario.id).order("created_at", { ascending: false }).order("id", { ascending: false })
@@ -91,9 +116,106 @@
       campo("conta-proxima").disabled = (pagina + 1) * porPagina >= total;
       campo("conta-pagina").textContent = total ? `Página ${pagina + 1} de ${Math.ceil(total / porPagina)}` : "";
       mensagem("conta-situacao", total ? `${total} pedido(s) encontrado(s).` : "Nenhum pedido feito com esta conta.");
+      return true;
     } catch (erro) {
-      if (sessao === versao && leitura === consulta) mensagem("conta-situacao", erro.message, true);
+      if (sessao === versao && leitura === consulta) {
+        mensagem("conta-situacao", erro.message, true);
+        if (!perfil) mensagem("conta-perfil-mensagem", erro.message, true);
+      }
+      return false;
     }
+  }
+
+  function renderizarPerfil() {
+    const nomesSituacao = { pendente: "Pendente", aprovado: "Aprovado", bloqueado: "Bloqueado" };
+    const dados = { ...window.Dipsul.dadosCliente(perfil), Situação: nomesSituacao[perfil.situacao],
+      Cadastro: dataBrasil(perfil.created_at), Atualização: dataBrasil(perfil.updated_at) };
+    campo("conta-perfil-dados").replaceChildren();
+    for (const [nome, valor] of Object.entries(dados)) campo("conta-perfil-dados").append(elemento("dt", nome + ":"), elemento("dd", valor || "Não informado"));
+    campo("conta-editar-perfil").disabled = campo("conta-editar-telefone").disabled = false;
+    mensagem("conta-perfil-mensagem", "");
+  }
+
+  function selecionarSecao(secao) {
+    for (const nome of ["pedidos", "perfil"]) {
+      const ativa = nome === secao;
+      campo(`conta-secao-${nome}`).hidden = !ativa;
+      campo(`conta-aba-${nome}`).classList.toggle("ativa", ativa);
+      campo(`conta-aba-${nome}`).setAttribute("aria-pressed", String(ativa));
+    }
+  }
+
+  for (const secao of ["pedidos", "perfil"]) campo(`conta-aba-${secao}`).addEventListener("click", () => {
+    selecionarSecao(secao); history.replaceState(null, "", `#${secao}`);
+  });
+
+  campo("conta-editar-perfil").addEventListener("click", () => {
+    if (!perfil || salvandoPerfil) return;
+    perfilEditado = { ...perfil };
+    for (const nome of camposPerfil) campo(`perfil-${nome}`).value = perfil[nome.replaceAll("-", "_")] || "";
+    campo("perfil-cnpj").value = formatarCnpj(perfil.cnpj);
+    campo("perfil-cep").value = formatarCep(perfil.cep);
+    mensagem("conta-perfil-erro", ""); campo("conta-perfil-dialogo").showModal();
+  });
+  campo("conta-editar-telefone").addEventListener("click", () => {
+    if (!perfil || salvandoPerfil) return;
+    campo("conta-novo-telefone").value = formatarTelefone(perfil.telefone);
+    mensagem("conta-telefone-erro", ""); campo("conta-telefone-dialogo").showModal();
+  });
+  for (const nome of ["perfil", "telefone"]) {
+    const dialogo = campo(`conta-${nome}-dialogo`);
+    dialogo.querySelectorAll(`[data-fechar-${nome}]`).forEach(botao => botao.addEventListener("click", () => { if (!salvandoPerfil) dialogo.close(); }));
+    dialogo.addEventListener("cancel", evento => { if (salvandoPerfil) evento.preventDefault(); });
+    dialogo.addEventListener("close", () => {
+      campo(`conta-${nome}-formulario`).reset();
+      if (nome === "perfil") perfilEditado = null;
+      mensagem(`conta-${nome}-erro`, "");
+    });
+    campo(`conta-${nome}-formulario`).addEventListener("submit", async evento => {
+      evento.preventDefault();
+      if (!usuario || !perfil || salvandoPerfil) return;
+      const sessao = versao;
+      salvandoPerfil = true;
+      dialogo.querySelectorAll("input, select, button").forEach(controle => { controle.disabled = true; });
+      mensagem(`conta-${nome}-erro`, "Salvando...");
+      try {
+        if (nome === "perfil") {
+          if (!perfilEditado) return;
+          const dados = {};
+          for (const chave of camposPerfil) dados[chave.replaceAll("-", "_")] = campo(`perfil-${chave}`).value.trim();
+          dados.cnpj = obterDigitos(dados.cnpj); dados.cep = obterDigitos(dados.cep); dados.email = dados.email.toLowerCase();
+          if (!cnpjValido(dados.cnpj)) throw new Error("Informe um CNPJ válido.");
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dados.email)) throw new Error("Informe um e-mail válido.");
+          if (dados.cep.length !== 8) throw new Error("Informe um CEP com 8 dígitos.");
+          for (const chave of camposPerfil) {
+            const controle = campo(`perfil-${chave}`), valor = controle.value.trim();
+            if ((controle.required && !valor) || (controle.maxLength > 0 && valor.length > controle.maxLength)) throw new Error("Confira os campos obrigatórios e seus limites.");
+          }
+          if ([dados.empresa, dados.logradouro, dados.bairro, dados.cidade].some(valor => valor.length < 2)) throw new Error("Confira a razão social e o endereço completo.");
+          const resposta = await cliente.rpc("catalogo_cliente_atualizar_perfil", { p_dados: dados, p_updated_at: perfilEditado.updated_at });
+          if (sessao !== versao) return;
+          if (resposta.error) throw new Error(resposta.error.code === "PGRST202" ? "Edição de perfil indisponível. Entre em contato com o televendas." : resposta.error.message || "Não foi possível salvar o perfil.");
+        } else {
+          const telefone = obterDigitos(campo("conta-novo-telefone").value);
+          if (!/^[1-9]{2}\d{8,9}$/.test(telefone)) throw new Error("Informe um telefone com DDD.");
+          if (telefone !== perfil.telefone) {
+            const resposta = await cliente.auth.updateUser({ phone: "+55" + telefone });
+            if (sessao !== versao) return;
+            if (resposta.error) throw new Error("Não foi possível alterar o telefone. Confira os dados ou entre em contato com o televendas.");
+            if (obterDigitos(resposta.data.user.phone) !== "55" + telefone) throw new Error("A alteração do telefone aguarda confirmação. Entre em contato com o televendas.");
+          }
+        }
+        if (sessao !== versao) return;
+        dialogo.close();
+        await carregarPedidos();
+        if (sessao === versao && perfil) mensagem("conta-perfil-mensagem", perfil.situacao === "pendente" ? "Dados salvos. Cadastro aguardando aprovação." : "Dados salvos.");
+      } catch (erro) {
+        if (sessao === versao) mensagem(`conta-${nome}-erro`, erro.message, true);
+      } finally {
+        salvandoPerfil = false;
+        dialogo.querySelectorAll("input, select, button").forEach(controle => { controle.disabled = false; });
+      }
+    });
   }
 
   async function lerPedido(id) {
@@ -141,6 +263,7 @@
     limparSenhas();
     campo("conta-acesso").hidden = true;
     campo("conta-painel").hidden = campo("conta-sair").hidden = false;
+    selecionarSecao(location.hash === "#perfil" ? "perfil" : "pedidos");
     mensagem("conta-mensagem", "");
     await carregarPedidos();
   }
@@ -185,7 +308,7 @@
   campo("conta-aba-entrar").addEventListener("click", () => selecionarAcesso(false));
   campo("conta-aba-cadastrar").addEventListener("click", () => selecionarAcesso(true));
   campo("conta-cnpj").addEventListener("input", evento => { evento.target.value = formatarCnpj(evento.target.value); });
-  campo("conta-cep").addEventListener("input", evento => { evento.target.value = obterDigitos(evento.target.value).slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2"); });
+  campo("conta-cep").addEventListener("input", evento => { evento.target.value = formatarCep(evento.target.value); });
   campo("conta-avancar").addEventListener("click", avancarCadastro);
   campo("conta-voltar-cadastro").addEventListener("click", () => { definirEtapaCadastro(false); limparSenhas(); mensagem("conta-mensagem", ""); campo("conta-cnpj").focus(); });
   document.querySelectorAll("[data-conta-senha]").forEach(botao => botao.addEventListener("click", () => {
@@ -249,6 +372,7 @@
   });
 
   campo("conta-atualizar").addEventListener("click", carregarPedidos);
+  campo("conta-atualizar-perfil").addEventListener("click", carregarPedidos);
   campo("conta-anterior").addEventListener("click", () => { pagina = Math.max(0, pagina - 1); carregarPedidos(); });
   campo("conta-proxima").addEventListener("click", () => { pagina++; carregarPedidos(); });
   campo("conta-sair").addEventListener("click", async () => {

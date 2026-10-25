@@ -10,21 +10,22 @@
   <link rel="icon" href="../img/favicon.png">
   <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="../lib/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/botoes.css?v=20261023-2">
-  <link rel="stylesheet" href="../css/catalogo.css?v=20261025-1">
-  <link rel="stylesheet" href="../css/administracao.css?v=20261025-1">
+  <link rel="stylesheet" href="../css/botoes.css?v=20261025-2">
+  <link rel="stylesheet" href="../css/catalogo.css?v=20261025-2">
+  <link rel="stylesheet" href="../css/administracao.css?v=20261025-2">
   <script defer src="../lib/supabase/supabase.js"></script>
   <script defer src="../js/configuracao.js"></script>
-  <script defer src="../js/main.js?v=20261025-1"></script>
-  <script defer src="../js/conta.js?v=20261025-1"></script>
+  <script defer src="../js/main.js?v=20261025-2"></script>
+  <script defer src="../js/conta.js?v=20261025-2"></script>
+  <script defer src="../js/pedidos.js?v=20261025-2"></script>
 </head>
 <body class="administracao conta-cliente">
   <header class="admin-cabecalho">
     <div class="container">
       <a href="../" aria-label="Dipsul, página inicial"><img src="../img/logo.png" width="115" height="40" alt="Dipsul Distribuidora"></a>
       <nav class="conta-navegacao" aria-label="Minha conta">
-        <a href="../pages/catalogo/" class="btn btn-primary catalogo-botao-primario">Catálogo</a>
-        <a href="../pages/carrinho/" class="btn btn-outline-secondary botao-icone" title="Carrinho de compras" aria-label="Carrinho de compras"><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>
+        <a href="../pages/catalogo/" class="catalogo-nav-link">Catálogo</a>
+        <a href="../pages/carrinho/" class="btn btn-outline-secondary botao-icone header-carrinho" data-carrinho-link title="Carrinho de compras" aria-label="Carrinho de compras"><i class="fa fa-shopping-cart" aria-hidden="true"></i><span data-carrinho-contador class="carrinho-contador" aria-hidden="true">0</span></a>
         <button id="conta-sair" type="button" class="btn btn-outline-secondary botao-icone" title="Sair" aria-label="Sair" hidden><i class="fa fa-sign-out" aria-hidden="true"></i></button>
       </nav>
     </div>
@@ -91,6 +92,17 @@
       <p id="conta-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
     </section>
     <section id="conta-painel" hidden>
+      <nav class="admin-abas" aria-label="Minha conta">
+        <button id="conta-aba-pedidos" type="button" class="ativa" aria-pressed="true" aria-controls="conta-secao-pedidos">MEUS PEDIDOS</button>
+        <button id="conta-aba-perfil" type="button" aria-pressed="false" aria-controls="conta-secao-perfil">MEU PERFIL</button>
+      </nav>
+      <section id="conta-secao-perfil" hidden>
+        <div class="admin-titulo"><h1>Meu perfil:</h1><div class="admin-acoes-cliente"><button id="conta-atualizar-perfil" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar perfil" aria-label="Atualizar perfil"><i class="fa fa-refresh" aria-hidden="true"></i></button><button id="conta-editar-perfil" type="button" class="btn btn-outline-secondary botao-icone" title="Editar perfil" aria-label="Editar perfil" disabled><i class="fa fa-pencil" aria-hidden="true"></i></button></div></div>
+        <p id="conta-perfil-mensagem" class="admin-mensagem" role="status"></p>
+        <dl id="conta-perfil-dados" class="admin-dados"></dl>
+        <button id="conta-editar-telefone" type="button" class="btn btn-outline-secondary" disabled><i class="fa fa-phone" aria-hidden="true"></i> Alterar telefone</button>
+      </section>
+      <section id="conta-secao-pedidos">
       <div class="admin-titulo mt-4">
         <div><h1>Meus pedidos:</h1><p id="conta-nome" class="text-muted mb-0 mt-2"></p></div>
         <button id="conta-atualizar" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar pedidos" aria-label="Atualizar pedidos"><i class="fa fa-refresh" aria-hidden="true"></i></button>
@@ -106,6 +118,7 @@
           <button id="conta-proxima" type="button" class="btn btn-outline-secondary botao-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
         </div>
       </div>
+      </section>
     </section>
     <noscript><p>Ative o JavaScript para acessar sua conta.</p></noscript>
   </main>
@@ -118,6 +131,25 @@
       <button id="conta-reenviar" type="button" class="btn btn-outline-success mt-4"><i class="fa fa-whatsapp" aria-hidden="true"></i> Reenviar pelo WhatsApp</button>
       <p id="conta-data" class="small text-muted mt-4 mb-0"></p>
     </div>
+  </dialog>
+  <dialog id="conta-perfil-dialogo" aria-labelledby="conta-perfil-titulo">
+    <div class="admin-dialogo-cabecalho"><h2 id="conta-perfil-titulo">Editar perfil:</h2><button type="button" class="catalogo-pedido-fechar" data-fechar-perfil title="Fechar" aria-label="Fechar edição de perfil">×</button></div>
+    <form id="conta-perfil-formulario" novalidate>
+      <div id="conta-perfil-campos" class="form-row mt-4"></div>
+      <p class="small text-muted">Alterações de CNPJ, razão social ou e-mail exigem nova aprovação.</p>
+      <p id="conta-perfil-erro" class="admin-mensagem" role="status"></p>
+      <div class="admin-acoes-pedido"><button type="button" class="btn btn-outline-danger" data-fechar-perfil>Cancelar</button><button type="submit" class="btn btn-primary catalogo-botao-primario">Salvar</button></div>
+    </form>
+  </dialog>
+  <dialog id="conta-telefone-dialogo" class="admin-confirmacao" aria-labelledby="conta-telefone-titulo">
+    <div class="admin-dialogo-cabecalho"><h2 id="conta-telefone-titulo">Alterar telefone:</h2><button type="button" class="catalogo-pedido-fechar" data-fechar-telefone title="Fechar" aria-label="Fechar alteração de telefone">×</button></div>
+    <form id="conta-telefone-formulario" class="mt-4" novalidate>
+      <label for="conta-novo-telefone">Telefone:</label>
+      <input id="conta-novo-telefone" class="form-control" type="tel" maxlength="20" autocomplete="tel-national" placeholder="(00) 00000-0000" data-telefone required>
+      <p class="small text-muted mt-2">O novo telefone será usado para entrar na conta. A alteração exige nova aprovação.</p>
+      <p id="conta-telefone-erro" class="admin-mensagem" role="status"></p>
+      <div class="admin-acoes-pedido"><button type="button" class="btn btn-outline-danger" data-fechar-telefone>Cancelar</button><button type="submit" class="btn btn-primary catalogo-botao-primario">Salvar</button></div>
+    </form>
   </dialog>
 </body>
 </html>
