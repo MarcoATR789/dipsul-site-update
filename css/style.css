@@ -241,12 +241,15 @@ h6 {
 }
 
 @media (min-width: 992px) and (max-width: 1199px) {
-  #header .main-nav a { padding-inline: 8px; font-size: 14px; }
-  #header .main-nav .focus { margin-left: 10px; padding-inline: 12px; }
+  #header > .container { gap: 8px; }
+  #header .main-nav a { padding-inline: 6px; font-size: 14px; }
+  #header .main-nav .focus { margin-left: 8px; padding-inline: 10px; }
 }
 
 @media (max-width: 991px) {
-  #header .header-carrinho { margin-left: auto; margin-right: 40px; }
+  #header > .container { gap: 10px; }
+  #header .header-conta { margin-left: auto; }
+  #header .header-carrinho { margin-right: 40px; }
 }
 
 .main-pages {

@@ -21,7 +21,7 @@
 .admin-acesso button[type="submit"] { width: 100%; }
 .admin-mensagem { min-height: 24px; margin: 16px 0; color: #556877; overflow-wrap: anywhere; }
 .admin-mensagem.erro { color: #a12330; }
-.admin-abas { display: flex; gap: 24px; border-bottom: 1px solid #d6eaff; margin: 24px 0; }
+.admin-abas { display: flex; flex-wrap: wrap; gap: 24px; border-bottom: 1px solid #d6eaff; margin: 24px 0; }
 .admin-abas button { padding: 12px 0; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #556877; font-weight: 700; }
 .admin-abas .ativa { border-bottom-color: #007bff; color: #004289; }
 .admin-abas button:focus { outline: none; box-shadow: none; }
@@ -37,7 +37,7 @@
 .admin-tabela td { overflow-wrap: anywhere; max-width: 360px; }
 .admin-tabela td small { display: block; margin-top: 4px; color: #556877; }
 .admin-tabela tbody tr:hover { background: #f8fbff; }
-#secao-pedidos .admin-tabela { min-width: 720px; }
+#secao-pedidos .admin-tabela, #secao-clientes .admin-tabela { min-width: 720px; }
 .admin-situacao { display: inline-block; font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 4px; white-space: nowrap; background: #e5f1fd; color: #004289; }
 .admin-situacao.em_atendimento { background: #fff3d7; color: #795300; }
 .admin-situacao.concluido { background: #e2f4ea; color: #176840; }
@@ -57,6 +57,14 @@
 .admin-dados dd { margin: 0; overflow-wrap: anywhere; }
 #formulario-situacao { display: grid; gap: 16px; padding: 24px 0 0; }
 .admin-acoes-pedido { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.admin-acoes-cliente, .conta-navegacao { display: flex; gap: 12px; align-items: center; }
+.conta-navegacao { margin-left: auto; }
+.conta-cliente #conta-pagina { margin-right: auto; }
+.conta-cliente #conta-pedidos .admin-tabela { min-width: 540px; }
+.conta-cliente #conta-mensagem { max-width: 400px; margin: 16px auto; }
+.conta-cliente .conta-cadastro-completo { width: min(720px, 100%); }
+.conta-cliente #conta-cadastro .admin-acoes-pedido > button { width: auto; }
+.conta-cliente #conta-cadastro .form-group label { margin-top: 0; }
 @media (max-width: 1199px) {
   .admin-filtros { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .admin-busca { grid-column: span 3; }

@@ -8,6 +8,7 @@
   const urlCatalogo = new URL("../data/catalogo/produtos.json", document.currentScript.src);
   const noCarrinho = !!document.getElementById("carrinho");
   const listaAtual = noCarrinho ? "carrinho" : "lista";
+  const { obterDigitos, formatarCnpj, cnpjValido, formatarTelefone, montarMensagemPedido } = window.Dipsul;
   const tela = {
     pedidoResumo: document.getElementById("catalogo-pedido-resumo"),
     pedidoItens: document.getElementById("catalogo-pedido-itens"),
@@ -59,43 +60,6 @@
     campo.addEventListener("change", () => {
       campo.value = String(normalizarQuantidade(campo.value));
     });
-  }
-
-  function obterDigitos(valor) {
-    return String(valor || "").replace(/\D/g, "");
-  }
-
-  function formatarCnpj(valor) {
-    const digitos = obterDigitos(valor).slice(0, 14);
-
-    return digitos
-      .replace(/^(\d{2})(\d)/, "$1.$2")
-      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
-      .replace(/\.(\d{3})(\d)/, ".$1/$2")
-      .replace(/(\d{4})(\d)/, "$1-$2");
-  }
-
-  function cnpjValido(valor) {
-    const cnpj = obterDigitos(valor);
-
-    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
-
-    const calcularDigito = (base) => {
-      const pesos = base.length === 12
-        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      const soma = base.split("").reduce((total, digito, indice) => {
-        return total + Number(digito) * pesos[indice];
-      }, 0);
-      const resto = soma % 11;
-
-      return resto < 2 ? "0" : String(11 - resto);
-    };
-
-    const primeiro = calcularDigito(cnpj.slice(0, 12));
-    const segundo = calcularDigito(cnpj.slice(0, 12) + primeiro);
-
-    return cnpj.endsWith(`${primeiro}${segundo}`);
   }
 
   function configurarCampoCnpj() {
@@ -431,10 +395,16 @@
 
   async function registrarPedidoSupabase(cliente, itens) {
     if (itens.length > 1000) throw new Error("O pedido deve ter no máximo 1000 itens diferentes.");
-    const resposta = await fetch(`${window.DipsulConfiguracao.supabaseUrl}/rest/v1/rpc/catalogo_registrar_pedido_itens`, {
+    if (!window.DipsulConta) throw new Error("Não foi possível verificar a conta. Recarregue a página.");
+    const { data, error } = await window.DipsulConta.auth.getSession();
+    if (error) throw new Error("Não foi possível verificar a sessão. Entre novamente na sua conta.");
+    const sessao = data.session;
+    const funcao = sessao ? "catalogo_cliente_registrar_pedido" : "catalogo_registrar_pedido_itens";
+    const resposta = await fetch(`${window.DipsulConfiguracao.supabaseUrl}/rest/v1/rpc/${funcao}`, {
       method: "POST",
       headers: {
         apikey: window.DipsulConfiguracao.supabaseChavePublica,
+        ...(sessao ? { Authorization: `Bearer ${sessao.access_token}` } : {}),
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ p_cnpj: cliente.cnpj, p_empresa: cliente.empresa, p_telefone: cliente.telefone, p_itens: itens })
@@ -463,21 +433,19 @@
     return resultado;
   }
 
-  function montarMensagemPedido(cliente, itens) {
-    const linhasItens = itens.map((item, indice) => {
-      return `${indice + 1}- (${item.quantidade}Uni) ${item.descricao} - ${item.codigo}`;
-    });
-
-    return [
-      "Olá, quero fazer um pedido. Fiz um carrinho de itens pelo site, gostaria de prosseguir com a compra.",
-      "",
-      `Empresa: ${cliente.empresa}`,
-      `CNPJ: ${formatarCnpj(cliente.cnpj)}`,
-      `Telefone: ${cliente.telefone.replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3")}`,
-      "",
-      "Segue abaixo os itens selecionados:",
-      ...linhasItens
-    ].join("\n");
+  async function preencherCliente() {
+    if (!noCarrinho || !window.DipsulConta) return;
+    try {
+      const { data, error } = await window.DipsulConta.auth.getSession();
+      if (error || !data.session) return;
+      const resposta = await window.DipsulConta.from("catalogo_clientes").select("empresa,cnpj,telefone").eq("usuario_id", data.session.user.id).single();
+      if (resposta.error) return;
+      const campoConta = document.getElementById("carrinho-conta");
+      if (campoConta) campoConta.textContent = "Minha conta";
+      if (!tela.pedidoEmpresa.value) tela.pedidoEmpresa.value = resposta.data.empresa;
+      if (!tela.pedidoCnpj.value) tela.pedidoCnpj.value = formatarCnpj(resposta.data.cnpj);
+      if (!tela.pedidoTelefone.value) tela.pedidoTelefone.value = formatarTelefone(resposta.data.telefone);
+    } catch { /* O preenchimento não impede a edição manual dos dados. */ }
   }
 
   function definirEnvioPedidoAtivo(ativo) {
@@ -527,6 +495,7 @@
     carregarPedidos();
     carregarFotos();
     configurarCampoCnpj();
+    preencherCliente();
     tela.pedidoAdicionar?.addEventListener("click", adicionarAoCarrinho);
     tela.pedidoLimpar?.addEventListener("click", limparPedido);
     tela.pedidoBotao?.addEventListener("click", alternarPainelPedido);

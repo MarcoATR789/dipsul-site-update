@@ -15,6 +15,8 @@
   color: #007bff;
 }
 
+.catalogo-main .catalogo-title { letter-spacing: 0; }
+
 .main-nav .catalogo-nav-link {
   color: #ffffff !important;
   transition: color 0.3s ease !important;
@@ -602,6 +604,8 @@
 }
 
 @media (max-width: 767px) {
+  .catalogo-main .catalogo-title { font-size: 30px; }
+
   .catalogo-controles {
     grid-template-columns: 1fr;
     padding: 16px;

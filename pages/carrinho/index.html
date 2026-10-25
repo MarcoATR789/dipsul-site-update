@@ -11,9 +11,9 @@
     <link rel="icon" href="../../img/favicon.png">
 
     <!-- CSS BASE -->
-    <link rel="stylesheet" href="../../css/style.css?v=20261024-1">
+    <link rel="stylesheet" href="../../css/style.css?v=20261025-1">
     <link rel="stylesheet" href="../../css/televendas.css?v=20260902-3">
-    <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-3">
+    <link rel="stylesheet" href="../../css/catalogo.css?v=20261025-1">
 
     <!-- BOOTSTRAP CSS -->
     <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
@@ -51,6 +51,7 @@
                     </li>
                 </ul>
             </nav>
+            <a href="../../conta/" class="btn btn-outline-secondary botao-icone header-conta" title="Minha conta" aria-label="Minha conta"><i class="fa fa-user" aria-hidden="true"></i></a>
             <a href="../carrinho/" class="btn btn-outline-secondary botao-icone header-carrinho" data-carrinho-link title="Carrinho de compras" aria-label="Carrinho de compras">
                 <i class="fa fa-shopping-cart" aria-hidden="true"></i><span data-carrinho-contador class="carrinho-contador" aria-hidden="true">0</span>
             </a>
@@ -74,6 +75,7 @@
             </section>
             <form id="carrinho-finalizar" novalidate>
                 <h2>Dados da empresa:</h2>
+                <a id="carrinho-conta" class="d-inline-block mt-2" href="../../conta/">Entrar na minha conta</a>
                 <fieldset class="catalogo-pedido-cliente" disabled>
                     <legend class="sr-only">Identificação do cliente</legend>
                     <div class="catalogo-pedido-campo">
@@ -86,7 +88,7 @@
                     </div>
                     <div class="catalogo-pedido-campo">
                         <label for="catalogo-pedido-telefone">Telefone:</label>
-                        <input id="catalogo-pedido-telefone" class="form-control" type="tel" maxlength="15" autocomplete="tel-national" placeholder="(00) 00000-0000" required>
+                        <input id="catalogo-pedido-telefone" class="form-control" type="tel" maxlength="20" autocomplete="tel-national" placeholder="(00) 00000-0000" data-telefone required>
                     </div>
                     <button type="submit" id="catalogo-pedido-enviar" class="btn btn-primary" disabled>Finalizar pelo WhatsApp</button>
                 </fieldset>
@@ -201,10 +203,12 @@
     <script src="../../lib/wow/wow.min.js"></script>
     <script src="../../lib/waypoints/waypoints.min.js"></script>
     <script src="../../lib/counterup/counterup.min.js"></script>
-    <script src="../../js/main.js?v=20261024-3"></script>
-    <script src="../../js/pedidos.js?v=20261024-3"></script>
+    <script src="../../js/main.js?v=20261025-1"></script>
+    <script src="../../js/pedidos.js?v=20261025-1"></script>
     <script src="../../js/cookies.js"></script>
     <script src="../../js/configuracao.js?v=20261021"></script>
+    <script src="../../lib/supabase/supabase.js"></script>
+    <script src="../../js/conta.js?v=20261025-1"></script>
 
 </body>
 <!-- FIM DO BODY -->

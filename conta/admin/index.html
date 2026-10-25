@@ -12,13 +12,13 @@
   <link rel="stylesheet" href="../../lib/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../../css/notificacoes.css">
   <link rel="stylesheet" href="../../css/botoes.css?v=20261023-2">
-  <link rel="stylesheet" href="../../css/catalogo.css?v=20261024-3">
-  <link rel="stylesheet" href="../../css/administracao.css?v=20261024-1">
+  <link rel="stylesheet" href="../../css/catalogo.css?v=20261025-1">
+  <link rel="stylesheet" href="../../css/administracao.css?v=20261025-1">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
-  <script defer src="../../js/main.js?v=20261024-3"></script>
+  <script defer src="../../js/main.js?v=20261025-1"></script>
   <script defer src="../../js/catalogo-pdf.js?v=20261024-1"></script>
-  <script defer src="../../js/administracao.js?v=20261024-3"></script>
+  <script defer src="../../js/administracao.js?v=20261025-1"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -54,6 +54,7 @@
       <nav class="admin-abas" aria-label="Administração">
         <button type="button" id="aba-pedidos" class="ativa" aria-pressed="true" aria-controls="secao-pedidos">PEDIDOS</button>
         <button type="button" id="aba-catalogo" aria-pressed="false" aria-controls="secao-catalogo">CATÁLOGO</button>
+        <button type="button" id="aba-clientes" aria-pressed="false" aria-controls="secao-clientes">CLIENTES</button>
       </nav>
       <section id="secao-pedidos" aria-labelledby="titulo-pedidos">
         <div class="admin-titulo">
@@ -85,6 +86,24 @@
           <span id="pagina-atual"></span>
           <button id="anterior" type="button" class="btn btn-outline-secondary botao-icone" title="Página anterior" aria-label="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
           <button id="proxima" type="button" class="btn btn-outline-secondary botao-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+      </section>
+      <section id="secao-clientes" aria-labelledby="titulo-clientes" hidden>
+        <div class="admin-titulo">
+          <h1 id="titulo-clientes">CADASTROS DE CLIENTES:</h1>
+          <button id="atualizar-clientes" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar cadastros" aria-label="Atualizar cadastros"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+        </div>
+        <div class="catalogo-controles admin-opcoes-pdf">
+          <div><label for="clientes-situacao">Situação:</label><select id="clientes-situacao" class="form-control" data-abrir-ao-clicar><option value="">Todas</option><option value="pendente" selected>Pendente</option><option value="aprovado">Aprovado</option><option value="bloqueado">Bloqueado</option></select></div>
+        </div>
+        <p id="clientes-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
+        <div class="admin-tabela-rolagem" tabindex="0" aria-label="Cadastros de clientes">
+          <table class="admin-tabela"><thead><tr><th>Empresa / cadastro:</th><th>CNPJ:</th><th>Telefone:</th><th>Situação:</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="clientes-lista"></tbody></table>
+        </div>
+        <div class="admin-paginacao">
+          <span id="clientes-pagina" class="mr-auto"></span>
+          <button id="clientes-anterior" type="button" class="btn btn-outline-secondary botao-icone" title="Página anterior" aria-label="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+          <button id="clientes-proxima" type="button" class="btn btn-outline-secondary botao-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
         </div>
       </section>
       <section id="secao-catalogo" aria-labelledby="titulo-catalogo" hidden>
@@ -131,6 +150,16 @@
         </div>
       </form>
       <p id="pedido-data" class="small text-muted mt-4 mb-0"></p>
+    </div>
+  </dialog>
+
+  <dialog id="confirmacao-cliente" class="admin-confirmacao" aria-labelledby="titulo-cliente">
+    <div class="admin-dialogo-cabecalho"><h2 id="titulo-cliente">Alterar cadastro:</h2><button id="fechar-cliente" type="button" class="catalogo-pedido-fechar" title="Fechar" aria-label="Fechar confirmação">×</button></div>
+    <dl id="cliente-dados" class="admin-dados"></dl>
+    <p id="cliente-mensagem" class="admin-mensagem" role="status"></p>
+    <div class="admin-acoes-pedido">
+      <button id="cancelar-cliente" type="button" class="btn btn-outline-secondary">Cancelar</button>
+      <button id="confirmar-cliente" type="button" class="btn btn-primary catalogo-botao-primario">Confirmar</button>
     </div>
   </dialog>
 

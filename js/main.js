@@ -5,6 +5,60 @@
   const baseImagens = new URL("../img/catalogo/", document.currentScript.src);
   let temporizadorNotificacao = null;
 
+  function obterDigitos(valor) {
+    return String(valor || "").replace(/\D/g, "");
+  }
+
+  function formatarTelefone(valor) {
+    let numeros = obterDigitos(valor);
+    if (numeros.startsWith("55") && [12, 13].includes(numeros.length)) numeros = numeros.slice(2);
+    numeros = numeros.slice(0, 11);
+    if (numeros.length > 10) return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+    if (numeros.length > 6) return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
+    if (numeros.length > 2) return `(${numeros.slice(0, 2)}) ${numeros.slice(2)}`;
+    return numeros ? `(${numeros}` : "";
+  }
+
+  function formatarCnpj(valor) {
+    return obterDigitos(valor).slice(0, 14)
+      .replace(/^(\d{2})(\d)/, "$1.$2")
+      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  }
+
+  function cnpjValido(valor) {
+    const cnpj = obterDigitos(valor);
+    if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+    const digito = base => {
+      const pesos = base.length === 12 ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2] : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      const resto = base.split("").reduce((soma, numero, indice) => soma + Number(numero) * pesos[indice], 0) % 11;
+      return resto < 2 ? "0" : String(11 - resto);
+    };
+    const primeiro = digito(cnpj.slice(0, 12));
+    return cnpj.endsWith(primeiro + digito(cnpj.slice(0, 12) + primeiro));
+  }
+
+  function mostrarSenha(botao, visivel) {
+    document.getElementById(botao.getAttribute("aria-controls")).type = visivel ? "text" : "password";
+    botao.title = visivel ? "Ocultar senha" : "Mostrar senha";
+    botao.setAttribute("aria-label", botao.title);
+    botao.firstElementChild.className = visivel ? "fa fa-eye-slash" : "fa fa-eye";
+  }
+
+  function montarMensagemPedido(cliente, itens) {
+    return [
+      "Olá, quero fazer um pedido. Fiz um carrinho de itens pelo site, gostaria de prosseguir com a compra.",
+      "",
+      `Empresa: ${cliente.empresa}`,
+      `CNPJ: ${formatarCnpj(cliente.cnpj)}`,
+      `Telefone: ${formatarTelefone(cliente.telefone)}`,
+      "",
+      "Segue abaixo os itens selecionados:",
+      ...itens.map((item, indice) => `${indice + 1}- (${item.quantidade}Uni) ${item.descricao} - ${item.codigo}`)
+    ].join("\n");
+  }
+
   function obterUrlImagemProduto(produto) {
     const nome = String(produto?.imagem || "").trim();
     const valido = nome && !nome.includes("..") && !/[\\/]/.test(nome) && !/^[a-z]+:/i.test(nome);
@@ -100,10 +154,30 @@
     notificar,
     copiarTexto,
     obterUrlImagemProduto,
-    definirImagemProduto
+    definirImagemProduto,
+    obterDigitos,
+    formatarTelefone,
+    formatarCnpj,
+    cnpjValido,
+    mostrarSenha,
+    montarMensagemPedido
   });
 
   document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("[data-telefone]").forEach(campo => {
+      campo.addEventListener("input", () => {
+        const posicao = campo.selectionStart;
+        const quantidade = obterDigitos(campo.value.slice(0, posicao)).length;
+        campo.value = formatarTelefone(campo.value);
+        let cursor = 0, numeros = 0;
+        while (cursor < campo.value.length && numeros < quantidade) {
+          if (/\d/.test(campo.value[cursor])) numeros++;
+          cursor++;
+        }
+        campo.setSelectionRange(cursor, cursor);
+      });
+      campo.addEventListener("change", () => { campo.value = formatarTelefone(campo.value); });
+    });
     if (CSS.supports("(appearance: base-select) and selector(::picker(select))")) return;
 
     document.querySelectorAll("select[data-abrir-ao-clicar]").forEach((seletor) => {

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://yypsfvlajycinrhmwykn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Minha conta - Dipsul</title>
+  <link rel="icon" href="../img/favicon.png">
+  <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../css/botoes.css?v=20261023-2">
+  <link rel="stylesheet" href="../css/catalogo.css?v=20261025-1">
+  <link rel="stylesheet" href="../css/administracao.css?v=20261025-1">
+  <script defer src="../lib/supabase/supabase.js"></script>
+  <script defer src="../js/configuracao.js"></script>
+  <script defer src="../js/main.js?v=20261025-1"></script>
+  <script defer src="../js/conta.js?v=20261025-1"></script>
+</head>
+<body class="administracao conta-cliente">
+  <header class="admin-cabecalho">
+    <div class="container">
+      <a href="../" aria-label="Dipsul, página inicial"><img src="../img/logo.png" width="115" height="40" alt="Dipsul Distribuidora"></a>
+      <nav class="conta-navegacao" aria-label="Minha conta">
+        <a href="../pages/catalogo/" class="btn btn-primary catalogo-botao-primario">Catálogo</a>
+        <a href="../pages/carrinho/" class="btn btn-outline-secondary botao-icone" title="Carrinho de compras" aria-label="Carrinho de compras"><i class="fa fa-shopping-cart" aria-hidden="true"></i></a>
+        <button id="conta-sair" type="button" class="btn btn-outline-secondary botao-icone" title="Sair" aria-label="Sair" hidden><i class="fa fa-sign-out" aria-hidden="true"></i></button>
+      </nav>
+    </div>
+  </header>
+  <main id="conta" class="container">
+    <section id="conta-acesso" class="admin-acesso">
+      <h1>Minha conta:</h1>
+      <nav class="admin-abas" aria-label="Acesso à conta">
+        <button id="conta-aba-entrar" type="button" class="ativa" aria-pressed="true" aria-controls="conta-login">Entrar</button>
+        <button id="conta-aba-cadastrar" type="button" aria-pressed="false" aria-controls="conta-cadastro">Criar conta</button>
+      </nav>
+      <form id="conta-login" novalidate>
+        <label for="conta-identificacao">CNPJ ou telefone:</label>
+        <input id="conta-identificacao" class="form-control" type="text" inputmode="numeric" maxlength="20" autocomplete="username" required>
+        <label for="conta-senha">Senha:</label>
+        <div class="input-group">
+          <input id="conta-senha" class="form-control" type="password" autocomplete="current-password" required>
+          <div class="input-group-append"><button type="button" class="btn btn-outline-secondary botao-icone" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="conta-senha" data-conta-senha><i class="fa fa-eye" aria-hidden="true"></i></button></div>
+        </div>
+        <button type="submit" class="btn btn-primary catalogo-botao-primario mt-4">Entrar</button>
+        <a class="d-inline-block mt-3" href="../pages/televendas/">Esqueci minha senha</a>
+      </form>
+      <form id="conta-cadastro" hidden novalidate>
+        <div id="conta-cadastro-inicio">
+          <label for="conta-cnpj">CNPJ:</label>
+          <input id="conta-cnpj" class="form-control" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" required>
+          <label for="conta-email">E-mail:</label>
+          <input id="conta-email" class="form-control" type="email" maxlength="254" autocomplete="email" required>
+          <label for="conta-telefone">Telefone:</label>
+          <input id="conta-telefone" class="form-control" type="tel" maxlength="20" autocomplete="tel-national" placeholder="(00) 00000-0000" data-telefone required>
+          <button id="conta-avancar" type="button" class="btn btn-primary catalogo-botao-primario mt-4 w-100">Avançar <i class="fa fa-arrow-right" aria-hidden="true"></i></button>
+        </div>
+        <div id="conta-cadastro-dados" hidden>
+        <dl id="conta-identificacao-resumo" class="admin-dados"></dl>
+        <label for="conta-empresa">Razão social:</label>
+        <input id="conta-empresa" class="form-control" maxlength="120" autocomplete="organization" required>
+        <div class="form-row mt-3">
+          <div class="form-group col-sm-4"><label for="conta-cep">CEP:</label><input id="conta-cep" class="form-control" inputmode="numeric" maxlength="9" autocomplete="postal-code" placeholder="00000-000" required></div>
+          <div class="form-group col-sm-8"><label for="conta-tipo-logradouro">Tipo de logradouro:</label><select id="conta-tipo-logradouro" class="form-control" data-abrir-ao-clicar required><option value="">Selecione</option><option>Rua</option><option>Avenida</option><option>Rodovia</option><option>Estrada</option><option>Alameda</option><option>Travessa</option><option>Praça</option><option>Outro</option></select></div>
+          <div class="form-group col-sm-9"><label for="conta-logradouro">Logradouro:</label><input id="conta-logradouro" class="form-control" maxlength="160" autocomplete="address-line1" required></div>
+          <div class="form-group col-sm-3"><label for="conta-numero">Número:</label><input id="conta-numero" class="form-control" maxlength="20" required></div>
+          <div class="form-group col-sm-6"><label for="conta-complemento">Complemento (opcional):</label><input id="conta-complemento" class="form-control" maxlength="120" autocomplete="address-line2"></div>
+          <div class="form-group col-sm-6"><label for="conta-bairro">Bairro:</label><input id="conta-bairro" class="form-control" maxlength="80" autocomplete="address-level3" required></div>
+          <div class="form-group col-sm-9"><label for="conta-cidade">Cidade:</label><input id="conta-cidade" class="form-control" maxlength="80" autocomplete="address-level2" required></div>
+          <div class="form-group col-sm-3"><label for="conta-uf">UF:</label><select id="conta-uf" class="form-control" autocomplete="address-level1" data-abrir-ao-clicar required><option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></div>
+        </div>
+        <label for="conta-nova-senha">Senha:</label>
+        <div class="input-group">
+          <input id="conta-nova-senha" class="form-control" type="password" minlength="8" maxlength="15" autocomplete="new-password" required>
+          <div class="input-group-append"><button type="button" class="btn btn-outline-secondary botao-icone" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="conta-nova-senha" data-conta-senha><i class="fa fa-eye" aria-hidden="true"></i></button></div>
+        </div>
+        <p class="small text-muted mt-2 mb-0">De 8 a 15 caracteres.</p>
+        <label for="conta-confirmar-senha">Confirmar senha:</label>
+        <div class="input-group">
+          <input id="conta-confirmar-senha" class="form-control" type="password" minlength="8" maxlength="15" autocomplete="new-password" required>
+          <div class="input-group-append"><button type="button" class="btn btn-outline-secondary botao-icone" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="conta-confirmar-senha" data-conta-senha><i class="fa fa-eye" aria-hidden="true"></i></button></div>
+        </div>
+        <div class="admin-acoes-pedido mt-4">
+          <button id="conta-voltar-cadastro" type="button" class="btn btn-outline-secondary"><i class="fa fa-arrow-left" aria-hidden="true"></i> Voltar</button>
+          <button type="submit" class="btn btn-primary catalogo-botao-primario">Criar conta</button>
+        </div>
+        </div>
+      </form>
+      <p id="conta-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
+    </section>
+    <section id="conta-painel" hidden>
+      <div class="admin-titulo mt-4">
+        <div><h1>Meus pedidos:</h1><p id="conta-nome" class="text-muted mb-0 mt-2"></p></div>
+        <button id="conta-atualizar" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar pedidos" aria-label="Atualizar pedidos"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+      </div>
+      <p id="conta-situacao" class="admin-mensagem" role="status"></p>
+      <div id="conta-pedidos" hidden>
+        <div class="admin-tabela-rolagem" tabindex="0" aria-label="Meus pedidos">
+          <table class="admin-tabela"><thead><tr><th>Pedido / data:</th><th>Empresa:</th><th>Situação:</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="conta-lista"></tbody></table>
+        </div>
+        <div class="admin-paginacao">
+          <span id="conta-pagina"></span>
+          <button id="conta-anterior" type="button" class="btn btn-outline-secondary botao-icone" title="Página anterior" aria-label="Página anterior" disabled><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+          <button id="conta-proxima" type="button" class="btn btn-outline-secondary botao-icone" title="Próxima página" aria-label="Próxima página" disabled><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    </section>
+    <noscript><p>Ative o JavaScript para acessar sua conta.</p></noscript>
+  </main>
+  <dialog id="conta-detalhes" aria-labelledby="conta-titulo-pedido">
+    <div class="admin-dialogo-cabecalho"><h2 id="conta-titulo-pedido">Pedido:</h2><button id="conta-fechar" type="button" class="catalogo-pedido-fechar" title="Fechar" aria-label="Fechar pedido">×</button></div>
+    <p id="conta-detalhes-mensagem" class="admin-mensagem" role="status"></p>
+    <div id="conta-detalhes-conteudo" hidden>
+      <dl id="conta-dados" class="admin-dados"></dl>
+      <div class="admin-tabela-rolagem"><table class="admin-tabela"><thead><tr><th>Código:</th><th>Descrição:</th><th>Quantidade:</th></tr></thead><tbody id="conta-itens"></tbody></table></div>
+      <button id="conta-reenviar" type="button" class="btn btn-outline-success mt-4"><i class="fa fa-whatsapp" aria-hidden="true"></i> Reenviar pelo WhatsApp</button>
+      <p id="conta-data" class="small text-muted mt-4 mb-0"></p>
+    </div>
+  </dialog>
+</body>
+</html>

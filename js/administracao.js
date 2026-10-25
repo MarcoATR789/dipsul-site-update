@@ -11,6 +11,9 @@
   let consultaAtual = 0;
   let detalheAtual = 0;
   let pagina = 0;
+  let paginaClientes = 0;
+  let consultaClientes = 0;
+  let clienteParaAlterar = null;
   let pedidoAberto = null;
   let pedidoParaExcluir = null;
   let vendedores = new Map();
@@ -32,10 +35,7 @@
   }
 
   function mostrarSenha(visivel, botao = campo("alternar-senha")) {
-    campo(botao.getAttribute("aria-controls")).type = visivel ? "text" : "password";
-    botao.title = visivel ? "Ocultar senha" : "Mostrar senha";
-    botao.setAttribute("aria-label", botao.title);
-    botao.firstElementChild.className = visivel ? "fa fa-eye-slash" : "fa fa-eye";
+    window.Dipsul.mostrarSenha(botao, visivel);
   }
 
   function validarTamanhoSenha() {
@@ -90,6 +90,7 @@
   function limparSessao(texto = "") {
     versaoSessao++;
     consultaAtual++;
+    consultaClientes++;
     detalheAtual++;
     usuario = null;
     pedidoAberto = null;
@@ -112,6 +113,14 @@
     mensagem("exclusao-mensagem", "");
     for (const id of ["confirmar-exclusao", "cancelar-exclusao", "fechar-exclusao"]) campo(id).disabled = false;
     campo("detalhes").close();
+    campo("confirmacao-cliente").close();
+    clienteParaAlterar = null;
+    campo("clientes-lista").replaceChildren();
+    campo("cliente-dados").replaceChildren();
+    campo("clientes-pagina").textContent = "";
+    campo("clientes-mensagem").textContent = "";
+    campo("clientes-situacao").value = "pendente";
+    paginaClientes = 0;
     for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "pedido-data"]) campo(id).replaceChildren();
     campo("televendas").replaceChildren(new Option("Todos", ""));
     campo("categoria-pdf").replaceChildren(new Option("Todas as categorias", ""));
@@ -306,6 +315,86 @@
     } finally { if (leituraCatalogo === leitura) leituraCatalogo = null; }
   }
 
+  async function carregarClientes() {
+    if (!usuario) return;
+    const consulta = ++consultaClientes, versao = versaoSessao;
+    campo("clientes-lista").replaceChildren();
+    campo("clientes-anterior").disabled = campo("clientes-proxima").disabled = true;
+    mensagem("clientes-mensagem", "Carregando cadastros...");
+    try {
+      let busca = cliente.from("catalogo_clientes").select("usuario_id,empresa,cnpj,telefone,email,cep,tipo_logradouro,logradouro,numero,complemento,bairro,cidade,uf,situacao,created_at,updated_at", { count: "exact" })
+        .order("created_at", { ascending: false }).order("usuario_id");
+      if (campo("clientes-situacao").value) busca = busca.eq("situacao", campo("clientes-situacao").value);
+      const resposta = await busca.range(paginaClientes * porPagina, (paginaClientes + 1) * porPagina - 1);
+      if (versao !== versaoSessao || consulta !== consultaClientes) return;
+      if (resposta.error) throw new Error("Não foi possível carregar os cadastros.");
+      const total = resposta.count || 0;
+      if (paginaClientes && paginaClientes * porPagina >= total) { paginaClientes = 0; return carregarClientes(); }
+      for (const cadastro of resposta.data) {
+        const linha = elemento("tr"), empresa = elemento("td", cadastro.empresa), acoes = elemento("td"), grupo = elemento("div", null, "admin-acoes-cliente");
+        empresa.append(elemento("small", dataBrasil(cadastro.created_at)));
+        const situacao = elemento("td"), nomes = { pendente: "Pendente", aprovado: "Aprovado", bloqueado: "Bloqueado" };
+        const classe = cadastro.situacao === "aprovado" ? "concluido" : cadastro.situacao === "bloqueado" ? "cancelado" : "novo";
+        situacao.append(elemento("span", nomes[cadastro.situacao], `admin-situacao ${classe}`));
+        for (const [destino, titulo, icone, cor] of [["aprovado", "Aprovar cadastro", "check", "success"], ["bloqueado", "Bloquear cadastro", "ban", "danger"]]) {
+          const botao = elemento("button", null, `btn btn-outline-${cor} botao-icone`);
+          botao.type = "button"; botao.title = titulo; botao.setAttribute("aria-label", titulo);
+          const simbolo = elemento("i", null, `fa fa-${icone}`); simbolo.setAttribute("aria-hidden", "true"); botao.append(simbolo);
+          botao.disabled = cadastro.situacao === destino;
+          botao.addEventListener("click", () => {
+            clienteParaAlterar = { cadastro, destino };
+            campo("titulo-cliente").textContent = titulo + ":";
+            campo("cliente-dados").replaceChildren();
+            const endereco = [cadastro.tipo_logradouro, cadastro.logradouro, cadastro.numero].filter(Boolean).join(" ");
+            for (const [nome, valor] of Object.entries({
+              Empresa: cadastro.empresa, CNPJ: cadastro.cnpj ? formatarCnpj(cadastro.cnpj) : "",
+              "E-mail": cadastro.email, Telefone: formatarTelefone(cadastro.telefone),
+              CEP: cadastro.cep?.replace(/^(\d{5})(\d{3})$/, "$1-$2"), Endereço: endereco,
+              Complemento: cadastro.complemento, Bairro: cadastro.bairro,
+              Cidade: [cadastro.cidade, cadastro.uf].filter(Boolean).join(" / ")
+            })) {
+              campo("cliente-dados").append(elemento("dt", nome + ":"), elemento("dd", valor || "Não informado"));
+            }
+            campo("confirmar-cliente").textContent = destino === "aprovado" ? "Aprovar" : "Bloquear";
+            mensagem("cliente-mensagem", "");
+            campo("confirmacao-cliente").showModal();
+            campo("cancelar-cliente").focus();
+          });
+          grupo.append(botao);
+        }
+        acoes.append(grupo);
+        linha.append(empresa, elemento("td", cadastro.cnpj ? formatarCnpj(cadastro.cnpj) : "Não informado"), elemento("td", formatarTelefone(cadastro.telefone)), situacao, acoes);
+        campo("clientes-lista").append(linha);
+      }
+      mensagem("clientes-mensagem", total ? `${total} cadastro(s) encontrado(s).` : "Nenhum cadastro encontrado.");
+      campo("clientes-pagina").textContent = total ? `Página ${paginaClientes + 1} de ${Math.ceil(total / porPagina)}` : "";
+      campo("clientes-anterior").disabled = paginaClientes === 0;
+      campo("clientes-proxima").disabled = (paginaClientes + 1) * porPagina >= total;
+    } catch (erro) { if (versao === versaoSessao && consulta === consultaClientes) mensagem("clientes-mensagem", erro.message, true); }
+  }
+
+  campo("atualizar-clientes").addEventListener("click", carregarClientes);
+  campo("clientes-situacao").addEventListener("change", () => { paginaClientes = 0; carregarClientes(); });
+  campo("clientes-anterior").addEventListener("click", () => { paginaClientes = Math.max(0, paginaClientes - 1); carregarClientes(); });
+  campo("clientes-proxima").addEventListener("click", () => { paginaClientes++; carregarClientes(); });
+  for (const id of ["fechar-cliente", "cancelar-cliente"]) campo(id).addEventListener("click", () => campo("confirmacao-cliente").close());
+  campo("confirmacao-cliente").addEventListener("cancel", evento => { if (campo("confirmar-cliente").disabled) evento.preventDefault(); });
+  campo("confirmacao-cliente").addEventListener("close", () => { clienteParaAlterar = null; campo("cliente-dados").replaceChildren(); });
+  campo("confirmar-cliente").addEventListener("click", async () => {
+    if (!usuario || !clienteParaAlterar || campo("confirmar-cliente").disabled) return;
+    const { cadastro, destino } = clienteParaAlterar, versao = versaoSessao;
+    const controles = ["confirmar-cliente", "cancelar-cliente", "fechar-cliente"];
+    controles.forEach(id => { campo(id).disabled = true; });
+    try {
+      const resposta = await cliente.rpc("catalogo_admin_atualizar_cliente", { p_usuario_id: cadastro.usuario_id, p_situacao: destino, p_updated_at: cadastro.updated_at });
+      if (versao !== versaoSessao) return;
+      if (resposta.error) throw new Error(resposta.error.message || "Não foi possível alterar o cadastro.");
+      campo("confirmacao-cliente").close();
+      await carregarClientes();
+    } catch (erro) { if (versao === versaoSessao) mensagem("cliente-mensagem", erro.message, true); }
+    finally { controles.forEach(id => { campo(id).disabled = false; }); }
+  });
+
   document.querySelectorAll("[data-visualizar-senha]").forEach((botao) => {
     botao.addEventListener("click", () => mostrarSenha(campo(botao.getAttribute("aria-controls")).type === "password", botao));
   });
@@ -480,14 +569,15 @@
     }
   });
   function selecionarAba(aba) {
-    for (const nome of ["pedidos", "catalogo"]) {
+    for (const nome of ["pedidos", "catalogo", "clientes"]) {
       campo(`secao-${nome}`).hidden = nome !== aba;
       campo(`aba-${nome}`).classList.toggle("ativa", nome === aba);
       campo(`aba-${nome}`).setAttribute("aria-pressed", String(nome === aba));
     }
     if (aba === "catalogo") carregarCatalogo();
+    if (aba === "clientes") carregarClientes();
   }
-  for (const aba of ["pedidos", "catalogo"]) campo(`aba-${aba}`).addEventListener("click", () => selecionarAba(aba));
+  for (const aba of ["pedidos", "catalogo", "clientes"]) campo(`aba-${aba}`).addEventListener("click", () => selecionarAba(aba));
   campo("formulario-pdf").addEventListener("change", limparPDF);
   campo("cancelar-pdf").addEventListener("click", limparPDF);
   campo("formulario-pdf").addEventListener("submit", async (evento) => {
