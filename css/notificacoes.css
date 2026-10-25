@@ -1,5 +1,12 @@
 .dipsul-notificacao-area {
   position: fixed;
+  top: auto;
+  right: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
   left: 20px;
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   z-index: 2000;
@@ -15,6 +22,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
   font-size: 14px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 180ms ease, transform 180ms ease;

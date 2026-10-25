@@ -25,8 +25,8 @@
   let ultimaAtividade = Date.now();
 
   function mensagem(id, texto, erro = false) {
-    campo(id).textContent = texto;
-    campo(id).classList.toggle("erro", erro);
+    campo(id).textContent = erro ? "" : texto;
+    if (erro) window.Dipsul.notificar(texto, { tipo: "erro" });
   }
 
   function elemento(tag, texto, classe) {
@@ -136,7 +136,8 @@
     campo("pedidos-mensagem").textContent = "";
     campo("pagina-atual").textContent = "";
     document.querySelectorAll(".dipsul-notificacao").forEach((aviso) => aviso.remove());
-    mensagem("mensagem-acesso", texto);
+    mensagem("mensagem-acesso", "");
+    if (texto) window.Dipsul.notificar(texto);
   }
 
   async function sair(texto = "Sessão encerrada.") {
@@ -179,10 +180,7 @@
     const resposta = await cliente.from("catalogo_televendas").select("id,nome,telefone_whatsapp").order("ordem");
     if (versao !== versaoSessao) return;
     if (resposta.error) throw new Error("Não foi possível carregar os televendas.");
-    vendedores = new Map(resposta.data.map((vendedor) => {
-      const telefone = formatarTelefone(vendedor.telefone_whatsapp);
-      return [String(vendedor.id), `${vendedor.nome}${telefone ? ` / ${telefone}` : ""}`];
-    }));
+    vendedores = new Map(resposta.data.map(vendedor => [String(vendedor.id), window.Dipsul.identificarTelevendas(vendedor)]));
     campo("televendas").replaceChildren(new Option("Todos", ""));
     for (const [id, nome] of vendedores) campo("televendas").add(new Option(nome, id));
   }
@@ -456,10 +454,12 @@
   });
   campo("formulario-login").addEventListener("submit", async (evento) => {
     evento.preventDefault();
-    if (!cliente) return;
+    if (!cliente || campo("entrar").disabled) return;
     campo("entrar").disabled = true;
     mensagem("mensagem-acesso", "Entrando...");
     try {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campo("email").value.trim())) throw new Error("Informe um e-mail válido para acessar a administração.");
+      if (!campo("senha").value) throw new Error("Informe sua senha.");
       const { data, error } = await cliente.auth.signInWithPassword({ email: campo("email").value.trim(), password: campo("senha").value });
       if (error) throw new Error("Não foi possível entrar. Confira o e-mail, a senha e sua conexão.");
       await iniciarSessao(data.session);
@@ -489,6 +489,7 @@
       return;
     }
     if (!validarTamanhoSenha()) {
+      mensagem("senha-mensagem", "Confira o tamanho permitido para a nova senha.", true);
       campo("senha-nova").focus();
       return;
     }
@@ -520,7 +521,6 @@
       if (error) throw new Error(error.code === "weak_password" ? "A nova senha não atende aos requisitos de segurança do Supabase." : "Não foi possível alterar a senha. Confira a conexão e os requisitos da sua conta.");
       const aviso = "Senha alterada. Entre novamente com a nova senha.";
       await sair(aviso).catch(() => {});
-      if (!usuario) mensagem("mensagem-acesso", aviso);
     } catch (erro) {
       if (versao === versaoSessao) mensagem("senha-mensagem", erro.message, true);
     } finally {
@@ -559,7 +559,7 @@
     if (!usuario || !pedidoAberto || campo("salvar-situacao").disabled) return;
     const pedido = pedidoAberto;
     if (campo("nova-situacao").value === pedido.situacao && !campo("observacao").value.trim()) {
-      mensagem("detalhes-mensagem", "Nenhuma alteração para salvar.");
+      window.Dipsul.notificar("Nenhuma alteração para salvar.");
       return;
     }
     const versao = versaoSessao;

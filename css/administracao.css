@@ -59,6 +59,13 @@
 .admin-acoes-pedido { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .admin-acoes-cliente, .conta-navegacao { display: flex; gap: 12px; align-items: center; }
 .conta-navegacao { margin-left: auto; }
+.conta-tipos-login { display: flex; margin-bottom: 20px; }
+.conta-tipos-login button { flex: 1; min-width: 0; min-height: 44px; border: 1px solid #cbd5df; background: #fff; color: #283d50; padding: 8px; }
+.conta-tipos-login button + button { border-left: 0; }
+.conta-tipos-login button:first-child { border-radius: 4px 0 0 4px; }
+.conta-tipos-login button:last-child { border-radius: 0 4px 4px 0; }
+.conta-tipos-login button[aria-pressed="true"] { background: #2b3c67; color: #fff; }
+.admin-mensagem:empty { display: none; }
 .conta-cliente #conta-pagina { margin-right: auto; }
 .conta-cliente #conta-pedidos .admin-tabela { min-width: 540px; }
 .conta-cliente #conta-mensagem { max-width: 400px; margin: 16px auto; }

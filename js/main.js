@@ -36,10 +36,21 @@
       Empresa: cadastro.empresa, CNPJ: formatarCnpj(cadastro.cnpj),
       "E-mail": cadastro.email, Telefone: formatarTelefone(cadastro.telefone),
       CEP: formatarCep(cadastro.cep),
-      Endereço: [cadastro.tipo_logradouro, cadastro.logradouro, cadastro.numero].filter(Boolean).join(" "),
+      Endereço: [logradouroCliente(cadastro), cadastro.numero].filter(Boolean).join(" "),
       Complemento: cadastro.complemento, Bairro: cadastro.bairro,
       Cidade: [cadastro.cidade, cadastro.uf].filter(Boolean).join(" / ")
     };
+  }
+
+  function logradouroCliente(cadastro) {
+    const logradouro = cadastro.logradouro || "", tipo = cadastro.tipo_logradouro || "";
+    return tipo && !logradouro.toLocaleLowerCase("pt-BR").startsWith(tipo.toLocaleLowerCase("pt-BR"))
+      ? `${tipo} ${logradouro}`.trim() : logradouro;
+  }
+
+  function identificarTelevendas(televendas) {
+    const telefone = formatarTelefone(televendas?.telefone_whatsapp);
+    return [televendas?.nome, telefone].filter(Boolean).join(" / ") || "Não informado";
   }
 
   function cnpjValido(valor) {
@@ -97,7 +108,13 @@
       area.className = "dipsul-notificacao-area";
       area.setAttribute("aria-live", "polite");
       area.setAttribute("aria-atomic", "true");
-      document.body.appendChild(area);
+      if (typeof area.showPopover === "function") area.setAttribute("popover", "manual");
+    }
+
+    const destino = Array.from(document.querySelectorAll("dialog[open]")).at(-1) || document.body;
+    if (area.parentNode !== destino) {
+      if (typeof area.hidePopover === "function") area.hidePopover();
+      destino.appendChild(area);
     }
 
     return area;
@@ -110,7 +127,9 @@
 
     window.setTimeout(() => {
       if (notificacao.parentNode) {
-        notificacao.parentNode.removeChild(notificacao);
+        const area = notificacao.parentNode;
+        area.removeChild(notificacao);
+        if (!area.childElementCount && typeof area.hidePopover === "function") area.hidePopover();
       }
     }, 180);
   }
@@ -120,19 +139,18 @@
     if (!texto) return;
 
     const area = obterAreaNotificacao();
-    const notificacaoAnterior = area.querySelector(".dipsul-notificacao");
     const tipo = opcoes.tipo === "erro" ? "erro" : "status";
     const duracao = Number(opcoes.duracao) || DURACAO_NOTIFICACAO;
 
     window.clearTimeout(temporizadorNotificacao);
-    removerNotificacao(notificacaoAnterior);
 
     const notificacao = document.createElement("div");
     notificacao.className = "dipsul-notificacao";
     notificacao.textContent = texto;
     notificacao.setAttribute("role", tipo === "erro" ? "alert" : "status");
 
-    area.appendChild(notificacao);
+    area.replaceChildren(notificacao);
+    if (typeof area.showPopover === "function") area.showPopover();
     window.requestAnimationFrame(() => notificacao.classList.add("esta-visivel"));
 
     temporizadorNotificacao = window.setTimeout(() => {
@@ -175,6 +193,8 @@
     formatarCnpj,
     formatarCep,
     dadosCliente,
+    logradouroCliente,
+    identificarTelevendas,
     cnpjValido,
     mostrarSenha,
     montarMensagemPedido

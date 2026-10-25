@@ -10,14 +10,15 @@
   <link rel="icon" href="../img/favicon.png">
   <link rel="stylesheet" href="../lib/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="../lib/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/botoes.css?v=20261025-2">
-  <link rel="stylesheet" href="../css/catalogo.css?v=20261025-2">
-  <link rel="stylesheet" href="../css/administracao.css?v=20261025-2">
+  <link rel="stylesheet" href="../css/botoes.css?v=20261025-3">
+  <link rel="stylesheet" href="../css/notificacoes.css?v=20261025-3">
+  <link rel="stylesheet" href="../css/catalogo.css?v=20261025-3">
+  <link rel="stylesheet" href="../css/administracao.css?v=20261025-3">
   <script defer src="../lib/supabase/supabase.js"></script>
   <script defer src="../js/configuracao.js"></script>
-  <script defer src="../js/main.js?v=20261025-2"></script>
-  <script defer src="../js/conta.js?v=20261025-2"></script>
-  <script defer src="../js/pedidos.js?v=20261025-2"></script>
+  <script defer src="../js/main.js?v=20261025-3"></script>
+  <script defer src="../js/conta.js?v=20261025-3"></script>
+  <script defer src="../js/pedidos.js?v=20261025-3"></script>
 </head>
 <body class="administracao conta-cliente">
   <header class="admin-cabecalho">
@@ -38,8 +39,13 @@
         <button id="conta-aba-cadastrar" type="button" aria-pressed="false" aria-controls="conta-cadastro">Criar conta</button>
       </nav>
       <form id="conta-login" novalidate>
-        <label for="conta-identificacao">CNPJ ou telefone:</label>
-        <input id="conta-identificacao" class="form-control" type="text" inputmode="numeric" maxlength="20" autocomplete="username" required>
+        <div class="conta-tipos-login" role="group" aria-label="Tipo de login">
+          <button type="button" data-tipo-login="telefone" aria-pressed="true">Telefone</button>
+          <button type="button" data-tipo-login="email" aria-pressed="false">E-mail</button>
+          <button type="button" data-tipo-login="cnpj" aria-pressed="false">CNPJ</button>
+        </div>
+        <label id="conta-identificacao-rotulo" for="conta-identificacao">Telefone:</label>
+        <input id="conta-identificacao" class="form-control" type="tel" inputmode="tel" maxlength="20" placeholder="(00) 00000-0000" autocomplete="username" required>
         <label for="conta-senha">Senha:</label>
         <div class="input-group">
           <input id="conta-senha" class="form-control" type="password" autocomplete="current-password" required>
@@ -63,14 +69,13 @@
         <label for="conta-empresa">Razão social:</label>
         <input id="conta-empresa" class="form-control" maxlength="120" autocomplete="organization" required>
         <div class="form-row mt-3">
-          <div class="form-group col-sm-4"><label for="conta-cep">CEP:</label><input id="conta-cep" class="form-control" inputmode="numeric" maxlength="9" autocomplete="postal-code" placeholder="00000-000" required></div>
-          <div class="form-group col-sm-8"><label for="conta-tipo-logradouro">Tipo de logradouro:</label><select id="conta-tipo-logradouro" class="form-control" data-abrir-ao-clicar required><option value="">Selecione</option><option>Rua</option><option>Avenida</option><option>Rodovia</option><option>Estrada</option><option>Alameda</option><option>Travessa</option><option>Praça</option><option>Outro</option></select></div>
+          <div class="form-group col-12"><label for="conta-cep">CEP:</label><input id="conta-cep" class="form-control" inputmode="numeric" maxlength="9" autocomplete="postal-code" placeholder="00000-000" required></div>
           <div class="form-group col-sm-9"><label for="conta-logradouro">Logradouro:</label><input id="conta-logradouro" class="form-control" maxlength="160" autocomplete="address-line1" required></div>
           <div class="form-group col-sm-3"><label for="conta-numero">Número:</label><input id="conta-numero" class="form-control" maxlength="20" required></div>
           <div class="form-group col-sm-6"><label for="conta-complemento">Complemento (opcional):</label><input id="conta-complemento" class="form-control" maxlength="120" autocomplete="address-line2"></div>
           <div class="form-group col-sm-6"><label for="conta-bairro">Bairro:</label><input id="conta-bairro" class="form-control" maxlength="80" autocomplete="address-level3" required></div>
-          <div class="form-group col-sm-9"><label for="conta-cidade">Cidade:</label><input id="conta-cidade" class="form-control" maxlength="80" autocomplete="address-level2" required></div>
           <div class="form-group col-sm-3"><label for="conta-uf">UF:</label><select id="conta-uf" class="form-control" autocomplete="address-level1" data-abrir-ao-clicar required><option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></div>
+          <div class="form-group col-sm-9"><label for="conta-cidade">Cidade:</label><select id="conta-cidade" class="form-control" autocomplete="address-level2" data-abrir-ao-clicar disabled required><option value="">Selecione a UF</option></select></div>
         </div>
         <label for="conta-nova-senha">Senha:</label>
         <div class="input-group">
@@ -100,7 +105,6 @@
         <div class="admin-titulo"><h1>Meu perfil:</h1><div class="admin-acoes-cliente"><button id="conta-atualizar-perfil" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar perfil" aria-label="Atualizar perfil"><i class="fa fa-refresh" aria-hidden="true"></i></button><button id="conta-editar-perfil" type="button" class="btn btn-outline-secondary botao-icone" title="Editar perfil" aria-label="Editar perfil" disabled><i class="fa fa-pencil" aria-hidden="true"></i></button></div></div>
         <p id="conta-perfil-mensagem" class="admin-mensagem" role="status"></p>
         <dl id="conta-perfil-dados" class="admin-dados"></dl>
-        <button id="conta-editar-telefone" type="button" class="btn btn-outline-secondary" disabled><i class="fa fa-phone" aria-hidden="true"></i> Alterar telefone</button>
       </section>
       <section id="conta-secao-pedidos">
       <div class="admin-titulo mt-4">
@@ -136,19 +140,9 @@
     <div class="admin-dialogo-cabecalho"><h2 id="conta-perfil-titulo">Editar perfil:</h2><button type="button" class="catalogo-pedido-fechar" data-fechar-perfil title="Fechar" aria-label="Fechar edição de perfil">×</button></div>
     <form id="conta-perfil-formulario" novalidate>
       <div id="conta-perfil-campos" class="form-row mt-4"></div>
-      <p class="small text-muted">Alterações de CNPJ, razão social ou e-mail exigem nova aprovação.</p>
+      <p class="small text-muted">Alterações de CNPJ, razão social, e-mail ou telefone exigem nova aprovação.</p>
       <p id="conta-perfil-erro" class="admin-mensagem" role="status"></p>
       <div class="admin-acoes-pedido"><button type="button" class="btn btn-outline-danger" data-fechar-perfil>Cancelar</button><button type="submit" class="btn btn-primary catalogo-botao-primario">Salvar</button></div>
-    </form>
-  </dialog>
-  <dialog id="conta-telefone-dialogo" class="admin-confirmacao" aria-labelledby="conta-telefone-titulo">
-    <div class="admin-dialogo-cabecalho"><h2 id="conta-telefone-titulo">Alterar telefone:</h2><button type="button" class="catalogo-pedido-fechar" data-fechar-telefone title="Fechar" aria-label="Fechar alteração de telefone">×</button></div>
-    <form id="conta-telefone-formulario" class="mt-4" novalidate>
-      <label for="conta-novo-telefone">Telefone:</label>
-      <input id="conta-novo-telefone" class="form-control" type="tel" maxlength="20" autocomplete="tel-national" placeholder="(00) 00000-0000" data-telefone required>
-      <p class="small text-muted mt-2">O novo telefone será usado para entrar na conta. A alteração exige nova aprovação.</p>
-      <p id="conta-telefone-erro" class="admin-mensagem" role="status"></p>
-      <div class="admin-acoes-pedido"><button type="button" class="btn btn-outline-danger" data-fechar-telefone>Cancelar</button><button type="submit" class="btn btn-primary catalogo-botao-primario">Salvar</button></div>
     </form>
   </dialog>
 </body>

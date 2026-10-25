@@ -73,10 +73,9 @@
 
   function avisarPedido(texto, erro = false) {
     if (tela.status) {
-      tela.status.textContent = texto;
-      tela.status.classList.toggle("text-danger", erro);
+      tela.status.textContent = erro ? "" : texto;
     }
-    if (!noCarrinho) window.Dipsul?.notificar(texto, { tipo: erro ? "erro" : "status" });
+    if (!noCarrinho || erro) window.Dipsul?.notificar(texto, { tipo: erro ? "erro" : "status" });
   }
 
   function normalizarItens(itens) {
