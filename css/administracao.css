@@ -29,6 +29,14 @@
 .admin-titulo { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
 .admin-filtros { grid-template-columns: minmax(170px, 1.6fr) minmax(130px, 1fr) minmax(290px, 1fr) 136px 136px 44px 44px; gap: 12px; }
 .admin-filtros > *, .admin-opcoes-pdf > * { min-width: 0; }
+.admin-filtros-clientes { grid-template-columns: minmax(0, 2fr) minmax(160px, 1fr) 44px 44px; gap: 12px; }
+.admin-filtros-clientes > * { min-width: 0; }
+.admin-permissoes { border: 0; padding: 0; }
+.administracao .admin-opcao-permissao { display: flex; align-items: center; gap: 10px; min-height: 36px; font-weight: 400; }
+.admin-opcao-permissao input { width: 18px; height: 18px; flex-shrink: 0; }
+#permissoes-email { overflow-wrap: anywhere; }
+#administradores-pagina { margin-right: auto; }
+#secao-administradores .admin-tabela { min-width: 540px; }
 .administracao .catalogo-resumo .admin-mensagem { margin: 0; }
 .admin-tabela-rolagem { position: relative; overflow-x: auto; }
 .admin-tabela { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -86,6 +94,8 @@
   .admin-cabecalho > .container { min-height: 60px; padding-block: 10px; }
 }
 @media (max-width: 600px) {
+  .admin-filtros-clientes { grid-template-columns: 44px 44px minmax(0, 1fr); }
+  .admin-filtros-clientes > div { grid-column: 1 / -1; }
   .admin-cabecalho > .container { gap: 12px; }
   .conta-cliente .admin-cabecalho > .container { column-gap: 8px; }
   .conta-navegacao { gap: 8px; }

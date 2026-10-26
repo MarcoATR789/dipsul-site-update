@@ -13,7 +13,7 @@
     <!-- CSS BASE -->
     <link rel="stylesheet" href="../../css/style.css?v=20261025-3">
     <link rel="stylesheet" href="../../css/televendas.css?v=20260902-3">
-    <link rel="stylesheet" href="../../css/catalogo.css?v=20261025-3">
+    <link rel="stylesheet" href="../../css/catalogo.css?v=20261026-1">
 
     <!-- BOOTSTRAP CSS -->
     <link rel="stylesheet" href="../../lib/bootstrap/css/bootstrap.min.css">
@@ -59,7 +59,9 @@
     </header>
     <!-- FIM BARRA DE NAVEGAÇÃO FIXA -->
 
+    <!-- INICIO CONTEÚDO CARRINHO -->
     <main id="carrinho" class="container catalogo-main carrinho-main">
+      <div id="carrinho-edicao">
         <div class="carrinho-titulo">
             <h1>Carrinho de compras:</h1>
             <a href="../catalogo/" class="btn btn-outline-secondary">Voltar ao catálogo</a>
@@ -75,7 +77,7 @@
             </section>
             <form id="carrinho-finalizar" novalidate>
                 <h2>Dados da empresa:</h2>
-                <a id="carrinho-conta" class="d-inline-block mt-2" href="../../conta/">Entrar na minha conta</a>
+                <a id="carrinho-conta" class="d-inline-block mt-2" href="../../conta/">Entrar na conta.</a>
                 <fieldset class="catalogo-pedido-cliente" disabled>
                     <legend class="sr-only">Identificação do cliente</legend>
                     <div class="catalogo-pedido-campo">
@@ -95,99 +97,112 @@
                 <p id="catalogo-status" class="mt-3 mb-0" role="status" aria-live="polite"></p>
             </form>
         </div>
+      </div>
+      <section id="carrinho-pedido-concluido" aria-labelledby="pedido-concluido-titulo" hidden>
+        <div class="carrinho-titulo"><h1 id="pedido-concluido-titulo" tabindex="-1">Pedido:</h1><a href="../catalogo/" class="btn btn-outline-secondary">Voltar ao catálogo</a></div>
+        <p id="pedido-concluido-empresa"></p>
+        <p>Registrado em <span id="pedido-concluido-data"></span></p>
+        <p>Televendas: <span id="pedido-concluido-televendas"></span></p>
+        <div class="table-responsive"><table class="table"><thead><tr><th>Código:</th><th>Descrição:</th><th>Quantidade:</th></tr></thead><tbody id="pedido-concluido-itens"></tbody></table></div>
+        <div class="catalogo-pedido-acoes">
+          <a id="pedido-concluido-whatsapp" class="btn btn-outline-success" target="_blank" rel="noopener noreferrer"><i class="fa fa-whatsapp" aria-hidden="true"></i> Reenviar pelo WhatsApp</a>
+          <button id="pedido-voltar-carrinho" type="button" class="btn btn-outline-secondary" hidden>Voltar ao carrinho</button>
+        </div>
+      </section>
         <noscript><p>Ative o JavaScript para visualizar o carrinho.</p></noscript>
     </main>
+    <!-- FIM CONTEÚDO CARRINHO -->
 
     <!-- INICIO RODAPÉ DA PAGINA -->
     <footer id="footer" class="catalogo-footer">
 
-    <div class="footer-top catalogo-footer-top">
-        <div class="container-fluid">
-            <div class="row">
+        <div class="footer-top catalogo-footer-top">
+            <div class="container-fluid">
+                <div class="row">
 
-                <div class="footer-info">
-                    <h3>Dipsul</h3>
-                    <p>
-                    Fundada em 1992, a Dipsul Distribuidora nasceu como uma distribuidora de produtos agropecuários. Com muito esforço, e observando as oportunidades que o mercado apresentou, firmou-se como uma das principais distribuidoras desse ramo.
-                    </p>
+                    <div class="footer-info">
+                        <h3>Dipsul</h3>
+                        <p>
+                        Fundada em 1992, a Dipsul Distribuidora nasceu como uma distribuidora de produtos agropecuários. Com muito esforço, e observando as oportunidades que o mercado apresentou, firmou-se como uma das principais distribuidoras desse ramo.
+                        </p>
+                    </div>
+
+                    <div class="footer-links">
+                        <h4>Links Úteis</h4>
+                        <ul>
+                        <li><a class="ion-ios-arrow-right" href="../../#intro"> Home</a></li>
+                        <li><a class="ion-ios-arrow-right" href="../../#about"> Sobre</a></li>
+                        <li><a class="ion-ios-arrow-right" href="../../#services"> Serviços</a></li>
+                        <li><a class="ion-ios-arrow-right" href="../../#clients"> Parceiros</a></li>
+                        <li><a class="ion-ios-arrow-right" href="../../#mapa"> Localização</a></li>
+                        <li><a class="ion-ios-arrow-right" href="../catalogo/"> Catálogo</a></li>
+                        <li><a class="ion-ios-arrow-right" href="../televendas/"> Televendas</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- INICIO CONTATOS MATRIZ E FILIAIS -->
+                    <div class="col-lg-6 col-md-12 footer-contacts" aria-label="Contatos e redes sociais">
+                        <div class="footer-contact mb-3">
+                        <h4>Contato - Matriz</h4>
+                        <p>
+                            Rodovia SC-370<br>
+                            Nº 3486<br>
+                            Tubarão - SC<br>
+                            Cep 88708-800<br>
+                            <strong>Telefone:</strong> (48) 3301-0700<br>
+                            <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                        </p>
+                        </div>
+
+                        <div class="footer-contact mb-3">
+                        <h4>Contato - Filial RS</h4>
+                        <p>
+                            Rua Dr. Amaury Daudt Lampert<br>
+                            Nº 703<br>
+                            Montenegro - RS<br>
+                            Cep 95780-000<br>
+                            <strong>Telefone:</strong> (48) 9 8842-7017<br>
+                            <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                        </p>
+                        </div>
+
+                        <div class="footer-contact mb-3">
+                        <h4>Contato - Filial PR</h4>
+                        <p>
+                            Rua Rafael Puchetti<br>
+                            Nº 865<br>
+                            São Jose dos Pinhais - PR<br>
+                            Cep 83020-330<br>
+                            <strong>Telefone:</strong> (48) 9 8842-4992<br>
+                            <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
+                        </p>
+                        </div>
+
+                        <div class="footer-social mb-3">
+                        <h4>Redes Sociais</h4>
+                        <div class="social-links">
+                            <a href="https://www.facebook.com/dipsul.distribuidora/" class="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i></a>
+                            <a href="https://www.instagram.com/dipsul.distribuidora/" class="instagram" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
+                            <a href="https://br.linkedin.com/company/dipsul-distribuidora/" class="linkedin" target="_blank" rel="noopener"><i class="fa fa-linkedin"></i></a>
+                        </div>
+                        </div>
+                    </div>
+                    <!-- FIM CONTATOS MATRIZ E FILIAIS -->
+
                 </div>
-
-                <div class="footer-links">
-                    <h4>Links Úteis</h4>
-                    <ul>
-                    <li><a class="ion-ios-arrow-right" href="../../#intro"> Home</a></li>
-                    <li><a class="ion-ios-arrow-right" href="../../#about"> Sobre</a></li>
-                    <li><a class="ion-ios-arrow-right" href="../../#services"> Serviços</a></li>
-                    <li><a class="ion-ios-arrow-right" href="../../#clients"> Parceiros</a></li>
-                    <li><a class="ion-ios-arrow-right" href="../../#mapa"> Localização</a></li>
-                    <li><a class="ion-ios-arrow-right" href="../catalogo/"> Catálogo</a></li>
-                    <li><a class="ion-ios-arrow-right" href="../televendas/"> Televendas</a></li>
-                    </ul>
-                </div>
-
-                <!-- CONTATOS - ajustado para ser responsivo -->
-                <div class="col-lg-6 col-md-12 footer-contacts" aria-label="Contatos e redes sociais">
-                    <div class="footer-contact mb-3">
-                    <h4>Contato - Matriz</h4>
-                    <p>
-                        Rodovia SC-370<br>
-                        Nº 3486<br>
-                        Tubarão - SC<br>
-                        Cep 88708-800<br>
-                        <strong>Telefone:</strong> (48) 3301-0700<br>
-                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
-                    </p>
-                    </div>
-
-                    <div class="footer-contact mb-3">
-                    <h4>Contato - Filial RS</h4>
-                    <p>
-                        Rua Dr. Amaury Daudt Lampert<br>
-                        Nº 703<br>
-                        Montenegro - RS<br>
-                        Cep 95780-000<br>
-                        <strong>Telefone:</strong> (48) 9 8842-7017<br>
-                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
-                    </p>
-                    </div>
-
-                    <div class="footer-contact mb-3">
-                    <h4>Contato - Filial PR</h4>
-                    <p>
-                        Rua Rafael Puchetti<br>
-                        Nº 865<br>
-                        São Jose dos Pinhais - PR<br>
-                        Cep 83020-330<br>
-                        <strong>Telefone:</strong> (48) 9 8842-4992<br>
-                        <strong>E-Mail:</strong> vendas@dipsul.com.br<br>
-                    </p>
-                    </div>
-
-                    <div class="footer-social mb-3">
-                    <h4>Redes Sociais</h4>
-                    <div class="social-links">
-                        <a href="https://www.facebook.com/dipsul.distribuidora/" class="facebook" target="_blank" rel="noopener"><i class="fa fa-facebook"></i></a>
-                        <a href="https://www.instagram.com/dipsul.distribuidora/" class="instagram" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
-                        <a href="https://br.linkedin.com/company/dipsul-distribuidora/" class="linkedin" target="_blank" rel="noopener"><i class="fa fa-linkedin"></i></a>
-                    </div>
-                    </div>
-                </div>
-                <!-- FIM CONTATOS -->
-
             </div>
         </div>
-    </div>
 
-    <div class="container-fluid catalogo-footer-spacer"></div>
-        <div class="copyright">
-        &copy; Copyright <strong>Dipsul Distribuidora LTDA</strong>. Todos os direitos Reservados <br>
-        <a href="https://cnpj.biz/85222446000113" target="_blank" rel="noopener noreferrer">CNPJ: 85.222.446/0001-13</a>
-      </div>
-
-        <div class="credits">
-            Desenvolvido na base de: <a href="https://bootstrapmade.com/" target="_blank" rel="noopener noreferrer">BootstrapMade</a>
+        <div class="container-fluid catalogo-footer-spacer"></div>
+            <div class="copyright">
+            &copy; Copyright <strong>Dipsul Distribuidora LTDA</strong>. Todos os direitos Reservados <br>
+            <a href="https://cnpj.biz/85222446000113" target="_blank" rel="noopener noreferrer">CNPJ: 85.222.446/0001-13</a>
         </div>
-    </div>
+
+            <div class="credits">
+                Desenvolvido na base de: <a href="https://bootstrapmade.com/" target="_blank" rel="noopener noreferrer">BootstrapMade</a>
+            </div>
+        </div>
 
     </footer>
     <!-- FIM RODAPÉ DA PAGINA -->
@@ -204,11 +219,11 @@
     <script src="../../lib/waypoints/waypoints.min.js"></script>
     <script src="../../lib/counterup/counterup.min.js"></script>
     <script src="../../js/main.js?v=20261025-3"></script>
-    <script src="../../js/pedidos.js?v=20261025-3"></script>
+    <script src="../../js/pedidos.js?v=20261026-1"></script>
     <script src="../../js/cookies.js"></script>
     <script src="../../js/configuracao.js?v=20261021"></script>
     <script src="../../lib/supabase/supabase.js"></script>
-    <script src="../../js/conta.js?v=20261025-3"></script>
+    <script src="../../js/conta.js?v=20261026-1"></script>
 
 </body>
 <!-- FIM DO BODY -->

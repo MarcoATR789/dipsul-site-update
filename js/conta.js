@@ -353,7 +353,17 @@
     campo("conta-painel").hidden = campo("conta-sair").hidden = false;
     selecionarSecao(location.hash === "#perfil" ? "perfil" : "pedidos");
     mensagem("conta-mensagem", "");
+    const sessaoAtual = versao;
     await carregarPedidos();
+    const endereco = new URL(location.href), idPedido = endereco.searchParams.get("pedido");
+    if (sessaoAtual === versao && perfil?.situacao === "aprovado" && /^[1-9]\d*$/.test(idPedido || "")) {
+      selecionarSecao("pedidos");
+      await abrirPedido(idPedido);
+      if (sessaoAtual === versao && String(pedidoAberto) === idPedido) {
+        endereco.searchParams.delete("pedido"); endereco.hash = "pedidos";
+        history.replaceState(null, "", endereco.href);
+      }
+    }
   }
 
   function selecionarAcesso(cadastro) {

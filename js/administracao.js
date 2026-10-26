@@ -6,6 +6,10 @@
   const nomesSituacao = { novo: "Novo", em_atendimento: "Em atendimento", concluido: "Concluído", cancelado: "Cancelado" };
   const nomesSituacaoCliente = { pendente: "Pendente", aprovado: "Aprovado", bloqueado: "Bloqueado" };
   const porPagina = 25;
+  const abas = ["pedidos", "clientes", "administradores", "catalogo"];
+  const nomesMenus = { pedidos: "Pedidos", clientes: "Clientes", catalogo: "Catálogo" };
+  let permissoes = null, abaAtual = null;
+  let paginaAdministradores = 0, consultaAdministradores = 0, administradorAberto = null;
   let cliente;
   let usuario = null;
   let versaoSessao = 0;
@@ -100,6 +104,13 @@
     consultaClientes++;
     detalheAtual++;
     usuario = null;
+    permissoes = null;
+    consultaAdministradores++;
+    paginaAdministradores = 0;
+    campo("dialogo-permissoes").close();
+    campo("administradores-lista").replaceChildren();
+    campo("administradores-pagina").textContent = "";
+    mensagem("administradores-mensagem", "");
     pedidoAberto = null;
     produtos = null;
     vendedores.clear();
@@ -123,7 +134,7 @@
     campo("clientes-lista").replaceChildren();
     campo("clientes-pagina").textContent = "";
     campo("clientes-mensagem").textContent = "";
-    campo("clientes-situacao").value = "pendente";
+    campo("clientes-filtros").reset();
     paginaClientes = 0;
     for (const id of ["pedidos-lista", "detalhes-dados", "detalhes-itens", "pedido-data"]) campo(id).replaceChildren();
     campo("televendas").replaceChildren(new Option("Todos", ""));
@@ -149,13 +160,49 @@
     await cliente.auth.signOut({ scope: "local" });
   }
 
-  async function confirmarAcesso() {
-    const resposta = await cliente.rpc("catalogo_admin_autorizado");
-    if (resposta.error) throw new Error("Não foi possível verificar a autorização. Confira a conexão e a configuração do Supabase.");
-    if (resposta.data !== true) {
+  function podeAcessar(menu) {
+    return abas.includes(menu) && !!permissoes && (menu === "administradores" ? permissoes.absoluto : permissoes.absoluto || permissoes.menus.includes(menu));
+  }
+
+  function mostrarAbas() {
+    if (!podeAcessar(abaAtual)) abaAtual = abas.find(podeAcessar) || null;
+    for (const nome of abas) {
+      campo(`aba-${nome}`).hidden = !podeAcessar(nome);
+      campo(`secao-${nome}`).hidden = nome !== abaAtual;
+      campo(`aba-${nome}`).classList.toggle("ativa", nome === abaAtual);
+      campo(`aba-${nome}`).setAttribute("aria-pressed", String(nome === abaAtual));
+    }
+    campo("sem-menus").hidden = !!abaAtual;
+  }
+
+  async function confirmarAcesso(menu) {
+    const versao = versaoSessao;
+    const resposta = await cliente.rpc("catalogo_admin_perfil");
+    if (versao !== versaoSessao) throw new Error("Sessão alterada.");
+    if (resposta.error) {
+      permissoes = null;
+      mostrarAbas();
+      throw new Error("Não foi possível verificar as permissões. Confira a conexão e a aplicação do SQL catalogo-admin-menus.sql.");
+    }
+    if (!resposta.data || !Array.isArray(resposta.data.menus)) {
       await sair("Usuário sem autorização administrativa.");
       throw new Error("Usuário sem autorização administrativa.");
     }
+    permissoes = { absoluto: resposta.data.absoluto === true, menus: resposta.data.menus };
+    if (!podeAcessar("pedidos")) {
+      consultaAtual++; detalheAtual++;
+      campo("pedidos-lista").replaceChildren();
+      campo("detalhes").close(); vendedores.clear();
+    }
+    if (!podeAcessar("clientes")) {
+      consultaClientes++; fecharCliente(); campo("clientes-lista").replaceChildren();
+    }
+    if (!podeAcessar("catalogo")) { leituraCatalogo?.abort(); produtos = null; limparPDF(); }
+    if (!podeAcessar("administradores")) {
+      consultaAdministradores++; campo("dialogo-permissoes").close(); campo("administradores-lista").replaceChildren();
+    }
+    mostrarAbas();
+    if (menu && !podeAcessar(menu)) throw new Error("Este menu não está liberado para seu administrador.");
   }
 
   async function iniciarSessao(sessao) {
@@ -171,12 +218,7 @@
     campo("admin-senha").value = "";
     mostrarSenha(false);
     pagina = 0;
-    try {
-      await carregarVendedores();
-      if (versao === versaoSessao) await carregarPedidos();
-    } catch (erro) {
-      if (versao === versaoSessao) mensagem("pedidos-mensagem", erro.message, true);
-    }
+    selecionarAba(abas.find(podeAcessar));
   }
 
   async function carregarVendedores() {
@@ -190,7 +232,7 @@
   }
 
   async function carregarPedidos() {
-    if (!usuario) return;
+    if (!usuario || !podeAcessar("pedidos")) return;
     const consulta = ++consultaAtual;
     const versao = versaoSessao;
     campo("pedidos-lista").replaceChildren();
@@ -201,7 +243,7 @@
       const inicio = campo("data-inicio").value;
       const fim = campo("data-fim").value;
       if (inicio && fim && inicio > fim) throw new Error("A data inicial deve ser anterior à data final.");
-      await confirmarAcesso();
+      await confirmarAcesso("pedidos");
       if (!vendedores.size) await carregarVendedores();
       let consultaPedidos = cliente.from("catalogo_pedidos_log")
         .select("id,cnpj,empresa,televendas_id,situacao,created_at", { count: "exact" })
@@ -256,6 +298,7 @@
   }
 
   async function abrirPedido(id) {
+    if (!usuario || !podeAcessar("pedidos")) return;
     const versao = versaoSessao;
     const detalhe = ++detalheAtual;
     pedidoAberto = null;
@@ -264,7 +307,7 @@
     if (!campo("detalhes").open) campo("detalhes").showModal();
     mensagem("detalhes-mensagem", "Carregando detalhes...");
     try {
-      await confirmarAcesso();
+      await confirmarAcesso("pedidos");
       const resposta = await cliente.from("catalogo_pedidos_log")
         .select("id,cnpj,empresa,telefone,televendas_id,created_at,updated_at,situacao,itens").eq("id", id).single();
       if (resposta.error) throw new Error("Não foi possível carregar os detalhes do pedido.");
@@ -294,12 +337,14 @@
   }
 
   async function carregarCatalogo() {
-    if (produtos || leituraCatalogo) return;
+    if (!usuario || !podeAcessar("catalogo") || produtos || leituraCatalogo) return;
     const leitura = new AbortController();
     leituraCatalogo = leitura;
     const categoriaSelecionada = campo("categoria-pdf").value;
     mensagem("pdf-mensagem", "Carregando catálogo...");
     try {
+      await confirmarAcesso("catalogo");
+      leitura.signal.throwIfAborted();
       const catalogo = await window.DipsulCatalogoPDF.carregarProdutos(raiz, leitura.signal);
       leitura.signal.throwIfAborted();
       produtos = catalogo;
@@ -318,14 +363,20 @@
   }
 
   async function carregarClientes() {
-    if (!usuario) return;
+    if (!usuario || !podeAcessar("clientes")) return;
     const consulta = ++consultaClientes, versao = versaoSessao;
     campo("clientes-lista").replaceChildren();
     campo("clientes-anterior").disabled = campo("clientes-proxima").disabled = true;
+    campo("clientes-pagina").textContent = "";
     mensagem("clientes-mensagem", "Carregando cadastros...");
     try {
+      await confirmarAcesso("clientes");
       let busca = cliente.from("catalogo_clientes").select("usuario_id,empresa,cnpj,telefone,situacao,created_at", { count: "exact" })
         .order("created_at", { ascending: false }).order("usuario_id");
+      const termo = campo("clientes-busca").value.trim();
+      if (termo) busca = /^[\d.\/\-\s]+$/.test(termo)
+        ? busca.like("cnpj", `%${termo.replace(/\D/g, "")}%`)
+        : busca.ilike("empresa", `%${termo.replace(/[\\%_]/g, "\\$&")}%`);
       if (campo("clientes-situacao").value) busca = busca.eq("situacao", campo("clientes-situacao").value);
       const resposta = await busca.range(paginaClientes * porPagina, (paginaClientes + 1) * porPagina - 1);
       if (versao !== versaoSessao || consulta !== consultaClientes) return;
@@ -380,7 +431,7 @@
   }
 
   async function abrirCliente(usuarioId, destino = null) {
-    if (!usuario) return;
+    if (!usuario || !podeAcessar("clientes")) return;
     limparDetalhesCliente();
     const versao = versaoSessao, detalhe = detalheClienteAtual;
     campo("titulo-cliente").textContent = destino === "aprovado" ? "Aprovar cadastro:" : destino === "bloqueado" ? "Bloquear cadastro:" : "Ver cadastro:";
@@ -392,6 +443,7 @@
     if (!campo("confirmacao-cliente").open) campo("confirmacao-cliente").showModal();
     campo("cancelar-cliente").focus();
     try {
+      await confirmarAcesso("clientes");
       const resposta = await cliente.from("catalogo_clientes")
         .select("usuario_id,empresa,cnpj,telefone,email,cep,tipo_logradouro,logradouro,numero,complemento,bairro,cidade,uf,situacao,created_at,updated_at")
         .eq("usuario_id", usuarioId).single();
@@ -420,6 +472,8 @@
   }
 
   campo("atualizar-clientes").addEventListener("click", carregarClientes);
+  campo("clientes-filtros").addEventListener("submit", evento => { evento.preventDefault(); paginaClientes = 0; carregarClientes(); });
+  campo("clientes-limpar").addEventListener("click", () => { campo("clientes-filtros").reset(); paginaClientes = 0; carregarClientes(); });
   campo("clientes-situacao").addEventListener("change", () => { paginaClientes = 0; carregarClientes(); });
   campo("clientes-anterior").addEventListener("click", () => { paginaClientes = Math.max(0, paginaClientes - 1); carregarClientes(); });
   campo("clientes-proxima").addEventListener("click", () => { paginaClientes++; carregarClientes(); });
@@ -450,6 +504,83 @@
         controles.forEach(id => { campo(id).disabled = false; });
         campo("confirmacao-cliente").removeAttribute("aria-busy");
       }
+    }
+  });
+
+  async function carregarAdministradores() {
+    if (!usuario || !podeAcessar("administradores")) return;
+    const versao = versaoSessao, consulta = ++consultaAdministradores;
+    campo("administradores-lista").replaceChildren();
+    campo("administradores-pagina").textContent = "";
+    campo("administradores-anterior").disabled = campo("administradores-proxima").disabled = true;
+    mensagem("administradores-mensagem", "Carregando administradores...");
+    try {
+      await confirmarAcesso("administradores");
+      const resposta = await cliente.rpc("catalogo_admin_listar_administradores", { p_pagina: paginaAdministradores });
+      if (versao !== versaoSessao || consulta !== consultaAdministradores) return;
+      if (resposta.error) throw new Error("Não foi possível carregar os administradores.");
+      const { administradores, total } = resposta.data;
+      if (paginaAdministradores && paginaAdministradores * porPagina >= total) { paginaAdministradores = 0; return carregarAdministradores(); }
+      for (const admin of administradores) {
+        const linha = elemento("tr"), acoes = elemento("td");
+        if (!admin.absoluto) {
+          const botao = elemento("button", null, "btn btn-outline-secondary botao-icone");
+          botao.type = "button"; botao.title = "Editar permissões"; botao.setAttribute("aria-label", `Editar permissões de ${admin.email}`);
+          const icone = elemento("i", null, "fa fa-pencil"); icone.setAttribute("aria-hidden", "true"); botao.append(icone);
+          botao.addEventListener("click", () => {
+            if (!podeAcessar("administradores")) return;
+            administradorAberto = admin;
+            campo("permissoes-email").textContent = admin.email;
+            campo("permissoes-ativo").checked = admin.ativo;
+            campo("formulario-permissoes").querySelectorAll('[name="menus"]').forEach(opcao => { opcao.checked = admin.menus.includes(opcao.value); });
+            campo("dialogo-permissoes").showModal();
+          });
+          acoes.append(botao);
+        }
+        linha.append(elemento("td", admin.email || "Não informado"), elemento("td", admin.absoluto ? "Absoluto" : admin.ativo ? "Ativo" : "Inativo"),
+          elemento("td", admin.absoluto ? "Todos" : admin.menus.map(menu => nomesMenus[menu]).filter(Boolean).join(", ") || "Nenhum"), acoes);
+        campo("administradores-lista").append(linha);
+      }
+      mensagem("administradores-mensagem", `${total} administrador(es) encontrado(s).`);
+      campo("administradores-pagina").textContent = total ? `Página ${paginaAdministradores + 1} de ${Math.ceil(total / porPagina)}` : "";
+      campo("administradores-anterior").disabled = paginaAdministradores === 0;
+      campo("administradores-proxima").disabled = (paginaAdministradores + 1) * porPagina >= total;
+    } catch (erro) {
+      if (versao === versaoSessao && consulta === consultaAdministradores) mensagem("administradores-mensagem", erro.message, true);
+    }
+  }
+
+  campo("atualizar-administradores").addEventListener("click", carregarAdministradores);
+  campo("administradores-anterior").addEventListener("click", () => { paginaAdministradores = Math.max(0, paginaAdministradores - 1); carregarAdministradores(); });
+  campo("administradores-proxima").addEventListener("click", () => { paginaAdministradores++; carregarAdministradores(); });
+  for (const id of ["cancelar-permissoes", "fechar-permissoes"]) campo(id).addEventListener("click", () => campo("dialogo-permissoes").close());
+  campo("dialogo-permissoes").addEventListener("cancel", evento => { if (campo("salvar-permissoes").disabled) evento.preventDefault(); });
+  campo("dialogo-permissoes").addEventListener("close", () => {
+    administradorAberto = null;
+    campo("permissoes-email").textContent = "";
+    campo("formulario-permissoes").reset();
+  });
+  campo("formulario-permissoes").addEventListener("submit", async evento => {
+    evento.preventDefault();
+    if (!usuario || !podeAcessar("administradores") || !administradorAberto || campo("salvar-permissoes").disabled) return;
+    const versao = versaoSessao, admin = administradorAberto;
+    const dados = { p_usuario_id: admin.usuario_id, p_ativo: campo("permissoes-ativo").checked,
+      p_menus: new FormData(campo("formulario-permissoes")).getAll("menus"), p_updated_at: admin.updated_at };
+    const controles = campo("dialogo-permissoes").querySelectorAll("input, button");
+    controles.forEach(controle => { controle.disabled = true; });
+    campo("dialogo-permissoes").setAttribute("aria-busy", "true");
+    try {
+      await confirmarAcesso("administradores");
+      const resposta = await cliente.rpc("catalogo_admin_salvar_permissoes", dados);
+      if (versao !== versaoSessao) return;
+      if (resposta.error) throw new Error(resposta.error.message || "Não foi possível salvar as permissões.");
+      campo("dialogo-permissoes").close();
+      window.Dipsul.notificar("Permissões atualizadas.");
+      await carregarAdministradores();
+    } catch (erro) { if (versao === versaoSessao) window.Dipsul.notificar(erro.message, { tipo: "erro" }); }
+    finally {
+      controles.forEach(controle => { controle.disabled = false; });
+      campo("dialogo-permissoes").removeAttribute("aria-busy");
     }
   });
 
@@ -629,15 +760,16 @@
     }
   });
   function selecionarAba(aba) {
-    for (const nome of ["pedidos", "catalogo", "clientes"]) {
-      campo(`secao-${nome}`).hidden = nome !== aba;
-      campo(`aba-${nome}`).classList.toggle("ativa", nome === aba);
-      campo(`aba-${nome}`).setAttribute("aria-pressed", String(nome === aba));
-    }
+    abaAtual = podeAcessar(aba) ? aba : abas.find(podeAcessar) || null;
+    mostrarAbas();
+    if (!usuario || !abaAtual) return;
+    aba = abaAtual;
+    if (aba === "pedidos") carregarPedidos();
     if (aba === "catalogo") carregarCatalogo();
-    if (aba === "clientes") carregarClientes();
+    if (aba === "clientes") { campo("clientes-filtros").reset(); paginaClientes = 0; carregarClientes(); }
+    if (aba === "administradores") carregarAdministradores();
   }
-  for (const aba of ["pedidos", "catalogo", "clientes"]) campo(`aba-${aba}`).addEventListener("click", () => selecionarAba(aba));
+  for (const aba of abas) campo(`aba-${aba}`).addEventListener("click", () => selecionarAba(aba));
   campo("formulario-pdf").addEventListener("change", limparPDF);
   campo("cancelar-pdf").addEventListener("click", limparPDF);
   campo("formulario-pdf").addEventListener("submit", async (evento) => {
@@ -651,7 +783,7 @@
     campo("cancelar-pdf").hidden = false;
     campo("previa-pdf").hidden = false;
     try {
-      await confirmarAcesso();
+      await confirmarAcesso("catalogo");
       geracao.signal.throwIfAborted();
       const resultado = await window.DipsulCatalogoPDF.preparar({ iframe: campo("previa-pdf"), raiz, produtos, categoria: campo("categoria-pdf").value, formato: new FormData(campo("formulario-pdf")).get("formato"), sinal: geracao.signal, progresso: (texto) => { if (!geracao.signal.aborted) mensagem("pdf-mensagem", texto); } });
       geracao.signal.throwIfAborted();
@@ -663,10 +795,15 @@
       if (geracaoPDF === geracao) { campo("preparar-pdf").disabled = false; campo("cancelar-pdf").hidden = true; }
     }
   });
-  campo("imprimir-pdf").addEventListener("click", () => {
+  campo("imprimir-pdf").addEventListener("click", async () => {
     if (!usuario || campo("imprimir-pdf").disabled) return;
-    campo("previa-pdf").contentWindow.focus();
-    campo("previa-pdf").contentWindow.print();
+    try {
+      await confirmarAcesso("catalogo");
+      if (campo("imprimir-pdf").disabled) return;
+      window.DipsulCatalogoPDF.atualizarDataExportacao(campo("previa-pdf").contentDocument);
+      campo("previa-pdf").contentWindow.focus();
+      campo("previa-pdf").contentWindow.print();
+    } catch (erro) { mensagem("pdf-mensagem", erro.message, true); }
   });
 
   for (const evento of ["pointerdown", "keydown"]) document.addEventListener(evento, () => { ultimaAtividade = Date.now(); }, { passive: true });

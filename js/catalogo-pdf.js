@@ -62,6 +62,12 @@
     });
   }
 
+  function atualizarDataExportacao(documento) {
+    preencherTexto(documento, "data_exportacao", new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo"
+    }).format(new Date()));
+  }
+
   function imagemParaPDF(imagem) {
     const escala = Math.min(1, 500 / imagem.naturalWidth, 320 / imagem.naturalHeight);
     const tela = imagem.ownerDocument.createElement("canvas");
@@ -93,7 +99,7 @@
     documento.title = `Catálogo Dipsul - ${categoria || "Completo"}`;
     const estilo = documento.createElement("link");
     estilo.rel = "stylesheet";
-    estilo.href = new URL("css/catalogo-impressao.css", raiz).href;
+    estilo.href = new URL("css/catalogo-impressao.css?v=20261026-1", raiz).href;
     const estiloPronto = new Promise((resolver, rejeitar) => {
       const cancelar = () => terminar(new DOMException("Geração cancelada", "AbortError"));
       const terminar = (erro) => {
@@ -118,7 +124,7 @@
       const folha = documento.importNode(folhaModelo, true);
       folha.setAttribute("aria-label", `Página ${indice + 1}`);
       preencherTexto(folha, "ct_descri", pagina.categoria);
-      preencherTexto(folha, "numero_pagina", String(indice + 1).padStart(3, "0"));
+      preencherTexto(folha, "numero_pagina", indice + 1);
       preencherTexto(folha, "total_paginas", paginas.length);
       const logo = folha.querySelector(".folha-logo");
       logo.removeAttribute("src");
@@ -141,6 +147,7 @@
         await new Promise((resolver) => setTimeout(resolver, 0));
       }
     }
+    atualizarDataExportacao(documento);
     let proxima = 0;
     let carregadas = 0;
     let ausentes = 0;
@@ -177,7 +184,7 @@
     return { paginas: paginas.length, itens: paginas.reduce((total, pagina) => total + pagina.itens.length, 0), ausentes };
   }
 
-  const api = { carregarProdutos, organizarPaginas, enderecoImagem, preparar };
+  const api = { carregarProdutos, organizarPaginas, enderecoImagem, preparar, atualizarDataExportacao };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.DipsulCatalogoPDF = api;
 })(typeof window === "undefined" ? globalThis : window);
