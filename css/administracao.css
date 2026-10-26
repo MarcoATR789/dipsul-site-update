@@ -68,6 +68,8 @@
 .admin-mensagem:empty { display: none; }
 .conta-cliente #conta-pagina { margin-right: auto; }
 .conta-cliente #conta-pedidos .admin-tabela { min-width: 540px; }
+.conta-resumo-itens { list-style: none; padding: 0; margin: 0; }
+.conta-resumo-itens li + li { margin-top: 6px; }
 .conta-cliente #conta-mensagem { max-width: 400px; margin: 16px auto; }
 .conta-cliente .conta-cadastro-completo { width: min(720px, 100%); }
 .conta-cliente #conta-cadastro .admin-acoes-pedido > button { width: auto; }

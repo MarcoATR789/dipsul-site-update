@@ -13,11 +13,11 @@
   <link rel="stylesheet" href="../css/botoes.css?v=20261025-3">
   <link rel="stylesheet" href="../css/notificacoes.css?v=20261025-3">
   <link rel="stylesheet" href="../css/catalogo.css?v=20261025-3">
-  <link rel="stylesheet" href="../css/administracao.css?v=20261025-3">
+  <link rel="stylesheet" href="../css/administracao.css?v=20261025-4">
   <script defer src="../lib/supabase/supabase.js"></script>
   <script defer src="../js/configuracao.js"></script>
   <script defer src="../js/main.js?v=20261025-3"></script>
-  <script defer src="../js/conta.js?v=20261025-3"></script>
+  <script defer src="../js/conta.js?v=20261025-4"></script>
   <script defer src="../js/pedidos.js?v=20261025-3"></script>
 </head>
 <body class="administracao conta-cliente">
@@ -38,21 +38,21 @@
         <button id="conta-aba-entrar" type="button" class="ativa" aria-pressed="true" aria-controls="conta-login">Entrar</button>
         <button id="conta-aba-cadastrar" type="button" aria-pressed="false" aria-controls="conta-cadastro">Criar conta</button>
       </nav>
-      <form id="conta-login" novalidate>
+      <form id="conta-login" name="cliente-login" novalidate>
         <div class="conta-tipos-login" role="group" aria-label="Tipo de login">
           <button type="button" data-tipo-login="telefone" aria-pressed="true">Telefone</button>
           <button type="button" data-tipo-login="email" aria-pressed="false">E-mail</button>
           <button type="button" data-tipo-login="cnpj" aria-pressed="false">CNPJ</button>
         </div>
         <label id="conta-identificacao-rotulo" for="conta-identificacao">Telefone:</label>
-        <input id="conta-identificacao" class="form-control" type="tel" inputmode="tel" maxlength="20" placeholder="(00) 00000-0000" autocomplete="username" required>
+        <input id="conta-identificacao" name="cliente-identificacao" class="form-control" type="tel" inputmode="tel" maxlength="20" placeholder="(00) 00000-0000" autocomplete="section-cliente username" required>
         <label for="conta-senha">Senha:</label>
         <div class="input-group">
-          <input id="conta-senha" class="form-control" type="password" autocomplete="current-password" required>
+          <input id="conta-senha" name="cliente-senha" class="form-control" type="password" autocomplete="section-cliente current-password" required>
           <div class="input-group-append"><button type="button" class="btn btn-outline-secondary botao-icone" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="conta-senha" data-conta-senha><i class="fa fa-eye" aria-hidden="true"></i></button></div>
         </div>
         <button type="submit" class="btn btn-primary catalogo-botao-primario mt-4">Entrar</button>
-        <a class="d-inline-block mt-3" href="../pages/televendas/">Esqueci minha senha</a>
+        <button id="conta-esqueci-senha" type="button" class="btn btn-link p-0 mt-3" aria-haspopup="dialog" aria-controls="conta-recuperar-dialogo">Esqueci minha senha</button>
       </form>
       <form id="conta-cadastro" hidden novalidate>
         <div id="conta-cadastro-inicio">
@@ -114,7 +114,7 @@
       <p id="conta-situacao" class="admin-mensagem" role="status"></p>
       <div id="conta-pedidos" hidden>
         <div class="admin-tabela-rolagem" tabindex="0" aria-label="Meus pedidos">
-          <table class="admin-tabela"><thead><tr><th>Pedido / data:</th><th>Empresa:</th><th>Situação:</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="conta-lista"></tbody></table>
+          <table class="admin-tabela"><thead><tr><th>Pedido / data:</th><th>Itens:</th><th>Situação:</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="conta-lista"></tbody></table>
         </div>
         <div class="admin-paginacao">
           <span id="conta-pagina"></span>
@@ -126,6 +126,17 @@
     </section>
     <noscript><p>Ative o JavaScript para acessar sua conta.</p></noscript>
   </main>
+  <dialog id="conta-recuperar-dialogo" class="admin-confirmacao" aria-labelledby="conta-recuperar-titulo">
+    <div class="admin-dialogo-cabecalho"><h2 id="conta-recuperar-titulo">Redefinir senha:</h2><button type="button" class="catalogo-pedido-fechar" data-fechar-recuperacao title="Fechar" aria-label="Fechar solicitação de redefinição">×</button></div>
+    <form id="conta-recuperar-formulario" class="mt-4" novalidate>
+      <label for="conta-recuperar-cnpj">CNPJ:</label>
+      <input id="conta-recuperar-cnpj" name="recuperacao-cnpj" class="form-control" inputmode="numeric" maxlength="18" placeholder="00.000.000/0000-00" autocomplete="off" required>
+      <div class="admin-acoes-pedido mt-4">
+        <button type="button" class="btn btn-outline-danger" data-fechar-recuperacao>Cancelar</button>
+        <button type="submit" class="btn btn-outline-success"><i class="fa fa-whatsapp" aria-hidden="true"></i> Solicitar pelo WhatsApp</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="conta-detalhes" aria-labelledby="conta-titulo-pedido">
     <div class="admin-dialogo-cabecalho"><h2 id="conta-titulo-pedido">Pedido:</h2><button id="conta-fechar" type="button" class="catalogo-pedido-fechar" title="Fechar" aria-label="Fechar pedido">×</button></div>
     <p id="conta-detalhes-mensagem" class="admin-mensagem" role="status"></p>

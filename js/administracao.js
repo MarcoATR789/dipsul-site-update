@@ -40,6 +40,11 @@
     window.Dipsul.mostrarSenha(botao, visivel);
   }
 
+  function limparLogin() {
+    campo("formulario-login").reset();
+    mostrarSenha(false);
+  }
+
   function validarTamanhoSenha() {
     const senha = campo("senha-nova");
     const valido = senha.value.length >= senha.minLength && senha.value.length <= senha.maxLength;
@@ -104,8 +109,7 @@
     campo("painel").hidden = campo("sessao").hidden = true;
     campo("acesso").hidden = false;
     campo("usuario-email").textContent = "";
-    campo("senha").value = "";
-    mostrarSenha(false);
+    limparLogin();
     campo("dialogo-senha").close();
     limparFormularioSenha();
     campo("confirmacao-exclusao").close();
@@ -164,7 +168,7 @@
     campo("usuario-email").textContent = usuario.email;
     campo("acesso").hidden = true;
     campo("painel").hidden = campo("sessao").hidden = false;
-    campo("senha").value = "";
+    campo("admin-senha").value = "";
     mostrarSenha(false);
     pagina = 0;
     try {
@@ -458,13 +462,13 @@
     campo("entrar").disabled = true;
     mensagem("mensagem-acesso", "Entrando...");
     try {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campo("email").value.trim())) throw new Error("Informe um e-mail válido para acessar a administração.");
-      if (!campo("senha").value) throw new Error("Informe sua senha.");
-      const { data, error } = await cliente.auth.signInWithPassword({ email: campo("email").value.trim(), password: campo("senha").value });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campo("admin-email").value.trim())) throw new Error("Informe um e-mail válido para acessar a administração.");
+      if (!campo("admin-senha").value) throw new Error("Informe sua senha.");
+      const { data, error } = await cliente.auth.signInWithPassword({ email: campo("admin-email").value.trim(), password: campo("admin-senha").value });
       if (error) throw new Error("Não foi possível entrar. Confira o e-mail, a senha e sua conexão.");
       await iniciarSessao(data.session);
     } catch (erro) { mensagem("mensagem-acesso", erro.message, true); }
-    finally { campo("senha").value = ""; mostrarSenha(false); campo("entrar").disabled = false; }
+    finally { campo("admin-senha").value = ""; mostrarSenha(false); campo("entrar").disabled = false; }
   });
   campo("sair").addEventListener("click", () => sair());
   campo("trocar-senha").addEventListener("click", () => {
@@ -668,7 +672,10 @@
   for (const evento of ["pointerdown", "keydown"]) document.addEventListener(evento, () => { ultimaAtividade = Date.now(); }, { passive: true });
   setInterval(() => { if (usuario && Date.now() - ultimaAtividade > 30 * 60 * 1000) sair("Sessão encerrada por inatividade."); }, 30000);
 
+  window.addEventListener("pageshow", evento => { if (evento.persisted) limparLogin(); });
+
   async function iniciar() {
+    limparLogin();
     try {
       const configuracao = window.DipsulConfiguracao;
       cliente = window.supabase.createClient(configuracao.supabaseUrl, configuracao.supabaseChavePublica, { auth: { storage: window.sessionStorage, storageKey: "dipsul_admin_sessao", persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });

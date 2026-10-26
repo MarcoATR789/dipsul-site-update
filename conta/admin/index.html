@@ -13,12 +13,12 @@
   <link rel="stylesheet" href="../../css/notificacoes.css?v=20261025-3">
   <link rel="stylesheet" href="../../css/botoes.css?v=20261025-3">
   <link rel="stylesheet" href="../../css/catalogo.css?v=20261025-3">
-  <link rel="stylesheet" href="../../css/administracao.css?v=20261025-3">
+  <link rel="stylesheet" href="../../css/administracao.css?v=20261025-4">
   <script defer src="../../lib/supabase/supabase.js"></script>
   <script defer src="../../js/configuracao.js"></script>
   <script defer src="../../js/main.js?v=20261025-3"></script>
   <script defer src="../../js/catalogo-pdf.js?v=20261024-1"></script>
-  <script defer src="../../js/administracao.js?v=20261025-3"></script>
+  <script defer src="../../js/administracao.js?v=20261025-4"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -34,18 +34,18 @@
   <main class="container">
     <section id="acesso" class="admin-acesso" aria-labelledby="titulo-acesso">
       <h1 id="titulo-acesso">AUTENTICAÇÃO - ADM:</h1>
-      <form id="formulario-login" novalidate>
-        <label for="email">E-mail:</label>
-        <input class="form-control" id="email" type="email" autocomplete="username" required maxlength="254">
-        <label for="senha">Senha:</label>
+      <form id="formulario-login" name="administracao-login" autocomplete="off" novalidate>
+        <label for="admin-email">E-mail:</label>
+        <input class="form-control" id="admin-email" name="administracao-email" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" required maxlength="254">
+        <label for="admin-senha">Senha:</label>
         <div class="input-group">
-          <input class="form-control" id="senha" type="password" autocomplete="current-password" required>
+          <input class="form-control" id="admin-senha" name="administracao-senha" type="password" autocomplete="off" required>
           <div class="input-group-append">
-            <button id="alternar-senha" class="btn btn-outline-secondary botao-icone" type="button" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="senha" data-visualizar-senha><i class="fa fa-eye" aria-hidden="true"></i></button>
+            <button id="alternar-senha" class="btn btn-outline-secondary botao-icone" type="button" title="Mostrar senha" aria-label="Mostrar senha" aria-controls="admin-senha" data-visualizar-senha><i class="fa fa-eye" aria-hidden="true"></i></button>
           </div>
         </div>
         <p id="mensagem-acesso" class="admin-mensagem" role="status" aria-live="polite">Verificando sessão...</p>
-        <button id="entrar" class="btn btn-primary catalogo-botao-primario" type="submit" disabled>Entrar</button>
+        <button id="entrar" class="btn btn-primary catalogo-botao-primario mt-4" type="submit" disabled>Entrar</button>
       </form>
       <noscript>Ative o JavaScript para acessar a administração.</noscript>
     </section>

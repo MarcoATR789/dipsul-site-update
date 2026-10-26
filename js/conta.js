@@ -96,6 +96,42 @@
     });
   }
 
+  const dialogoRecuperacao = campo("conta-recuperar-dialogo");
+  campo("conta-esqueci-senha").addEventListener("click", () => {
+    const identificacao = campo("conta-identificacao").value;
+    campo("conta-recuperar-formulario").reset();
+    campo("conta-recuperar-cnpj").value = tipoLogin === "cnpj" && cnpjValido(identificacao) ? formatarCnpj(identificacao) : "";
+    dialogoRecuperacao.showModal();
+    campo("conta-recuperar-cnpj").focus();
+  });
+  dialogoRecuperacao.querySelectorAll("[data-fechar-recuperacao]").forEach(botao => botao.addEventListener("click", () => dialogoRecuperacao.close()));
+  dialogoRecuperacao.addEventListener("close", () => {
+    campo("conta-recuperar-formulario").reset();
+    campo("conta-recuperar-cnpj").removeAttribute("aria-invalid");
+  });
+  campo("conta-recuperar-cnpj").addEventListener("input", evento => {
+    evento.target.value = formatarCnpj(evento.target.value);
+    evento.target.removeAttribute("aria-invalid");
+  });
+  campo("conta-recuperar-formulario").addEventListener("submit", evento => {
+    evento.preventDefault();
+    const cnpj = campo("conta-recuperar-cnpj");
+    if (!cnpjValido(cnpj.value)) {
+      cnpj.setAttribute("aria-invalid", "true"); cnpj.focus();
+      window.Dipsul.notificar("Informe um CNPJ válido para solicitar a redefinição de senha.", { tipo: "erro" });
+      return;
+    }
+    const guia = window.open("about:blank", "_blank");
+    if (!guia) {
+      window.Dipsul.notificar("Permita abrir uma nova guia para solicitar a redefinição pelo WhatsApp.", { tipo: "erro" });
+      return;
+    }
+    guia.opener = null;
+    const texto = `Olá! Solicito a redefinição da senha da minha conta no site da Dipsul.\nCNPJ para identificação: ${formatarCnpj(cnpj.value)}.`;
+    guia.location.replace(`https://wa.me/5555991434780?text=${encodeURIComponent(texto)}`);
+    dialogoRecuperacao.close();
+  });
+
   function limparSessao() {
     versao++; consulta++; detalhe++;
     usuario = null;
@@ -103,6 +139,7 @@
     pedidoAberto = null;
     campo("conta-detalhes").close();
     campo("conta-perfil-dialogo").close();
+    dialogoRecuperacao.close();
     campo("conta-perfil-dados").replaceChildren();
     mensagem("conta-perfil-mensagem", "");
     campo("conta-acesso").hidden = false;
@@ -138,7 +175,7 @@
         mensagem("conta-situacao", perfil.situacao === "pendente" ? "Cadastro aguardando aprovação." : "Cadastro bloqueado. Entre em contato com o televendas.");
         return true;
       }
-      const resposta = await cliente.from("catalogo_pedidos_log").select("id,empresa,situacao,created_at", { count: "exact" })
+      const resposta = await cliente.from("catalogo_pedidos_log").select("id,itens,situacao,created_at", { count: "exact" })
         .eq("usuario_id", usuario.id).order("created_at", { ascending: false }).order("id", { ascending: false })
         .range(pagina * porPagina, (pagina + 1) * porPagina - 1);
       if (sessao !== versao || leitura !== consulta) return;
@@ -153,7 +190,15 @@
         botao.type = "button"; botao.title = `Ver pedido ${pedido.id}`; botao.setAttribute("aria-label", botao.title);
         const icone = elemento("i", null, "fa fa-eye"); icone.setAttribute("aria-hidden", "true"); botao.append(icone);
         botao.addEventListener("click", () => abrirPedido(pedido.id));
-        acao.append(botao); linha.append(data, elemento("td", pedido.empresa), situacao, acao);
+        const itens = elemento("td"), lista = elemento("ul", null, "conta-resumo-itens");
+        for (const item of Array.isArray(pedido.itens) ? pedido.itens : []) {
+          if (!item || typeof item !== "object") continue;
+          const produto = elemento("li");
+          produto.append(elemento("strong", `${item.quantidade ?? 0} × `), elemento("span", item.descricao || item.codigo || "Produto não informado"));
+          lista.append(produto);
+        }
+        itens.append(lista.childElementCount ? lista : elemento("span", "Itens não informados"));
+        acao.append(botao); linha.append(data, itens, situacao, acao);
         campo("conta-lista").append(linha);
       }
       campo("conta-pedidos").hidden = false;
@@ -356,7 +401,7 @@
   campo("conta-voltar-cadastro").addEventListener("click", () => { definirEtapaCadastro(false); limparSenhas(); mensagem("conta-mensagem", ""); campo("conta-cnpj").focus(); });
   const tiposLogin = {
     telefone: { rotulo: "Telefone:", tipo: "tel", teclado: "tel", limite: 20, exemplo: "(00) 00000-0000" },
-    email: { rotulo: "E-mail:", tipo: "email", teclado: "email", limite: 254, exemplo: "nome@empresa.com.br" },
+    email: { rotulo: "E-mail:", tipo: "email", teclado: "email", limite: 254, exemplo: "nome@gmail.com.br" },
     cnpj: { rotulo: "CNPJ:", tipo: "text", teclado: "numeric", limite: 18, exemplo: "00.000.000/0000-00" }
   };
   document.querySelectorAll("[data-tipo-login]").forEach(botao => botao.addEventListener("click", () => {
