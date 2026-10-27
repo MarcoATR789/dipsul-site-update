@@ -7,7 +7,7 @@
   const nomesSituacaoCliente = { pendente: "Pendente", aprovado: "Aprovado", bloqueado: "Bloqueado" };
   const porPagina = 25;
   const abas = ["pedidos", "clientes", "catalogo", "administradores"];
-  const nomesMenus = { pedidos: "Pedidos", clientes: "Clientes", catalogo: "Catálogo" };
+  const nomesMenus = { pedidos: "Pedidos", clientes: "Clientes", catalogo: "Catálogo", administradores: "Permissão" };
   let permissoes = null, abaAtual = null;
   let paginaAdministradores = 0, consultaAdministradores = 0, administradorAberto = null;
   let cliente;
@@ -161,7 +161,7 @@
   }
 
   function podeAcessar(menu) {
-    return abas.includes(menu) && !!permissoes && (menu === "administradores" ? permissoes.absoluto : permissoes.absoluto || permissoes.menus.includes(menu));
+    return abas.includes(menu) && !!permissoes && (permissoes.absoluto || permissoes.menus.includes(menu));
   }
 
   function mostrarAbas() {
@@ -522,7 +522,7 @@
       const { administradores, total } = resposta.data;
       if (paginaAdministradores && paginaAdministradores * porPagina >= total) { paginaAdministradores = 0; return carregarAdministradores(); }
       for (const admin of administradores) {
-        if (admin.usuario_id === usuario.id) continue;
+        if (admin.absoluto || admin.usuario_id === usuario.id) continue;
         const linha = elemento("tr"), acoes = elemento("td");
         if (!admin.absoluto) {
           const botao = elemento("button", null, "btn btn-outline-secondary botao-icone");

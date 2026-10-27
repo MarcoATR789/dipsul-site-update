@@ -21,6 +21,18 @@
   transition: none !important;
 }
 
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+input::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .btn:focus,
 .btn:active,
 .form-control:focus {
