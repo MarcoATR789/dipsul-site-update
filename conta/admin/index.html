@@ -18,7 +18,7 @@
   <script defer src="../../js/configuracao.js"></script>
   <script defer src="../../js/main.js?v=20261025-3"></script>
   <script defer src="../../js/catalogo-pdf.js?v=20261026-1"></script>
-  <script defer src="../../js/administracao.js?v=20261026-1"></script>
+  <script defer src="../../js/administracao.js?v=20261027-1"></script>
 </head>
 <body class="administracao">
   <header class="admin-cabecalho">
@@ -54,8 +54,8 @@
       <nav class="admin-abas" aria-label="Administração">
         <button type="button" id="aba-pedidos" class="ativa" aria-pressed="true" aria-controls="secao-pedidos">PEDIDOS</button>
         <button type="button" id="aba-clientes" aria-pressed="false" aria-controls="secao-clientes">CLIENTES</button>
-        <button type="button" id="aba-administradores" aria-pressed="false" aria-controls="secao-administradores" hidden>ADMINISTRADORES</button>
         <button type="button" id="aba-catalogo" aria-pressed="false" aria-controls="secao-catalogo">CATÁLOGO</button>
+        <button type="button" id="aba-administradores" aria-pressed="false" aria-controls="secao-administradores" hidden>PERMISSÃO</button>
       </nav>
       <p id="sem-menus" class="admin-mensagem" hidden>Nenhum menu liberado para este administrador.</p>
       <section id="secao-pedidos" aria-labelledby="titulo-pedidos">
@@ -113,11 +113,11 @@
       </section>
       <section id="secao-administradores" aria-labelledby="titulo-administradores" hidden>
         <div class="admin-titulo">
-          <h1 id="titulo-administradores">ADMINISTRADORES:</h1>
-          <button id="atualizar-administradores" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar administradores" aria-label="Atualizar administradores"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+          <h1 id="titulo-administradores">PERMISSÃO:</h1>
+          <button id="atualizar-administradores" type="button" class="btn btn-outline-secondary botao-icone" title="Atualizar permissões" aria-label="Atualizar permissões"><i class="fa fa-refresh" aria-hidden="true"></i></button>
         </div>
         <p id="administradores-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
-        <div class="admin-tabela-rolagem" tabindex="0" aria-label="Administradores">
+        <div class="admin-tabela-rolagem" tabindex="0" aria-label="Permissões administrativas">
           <table class="admin-tabela"><thead><tr><th>E-mail:</th><th>Situação:</th><th>Menus:</th><th><span class="sr-only">Permissões</span></th></tr></thead><tbody id="administradores-lista"></tbody></table>
         </div>
         <div class="admin-paginacao">
