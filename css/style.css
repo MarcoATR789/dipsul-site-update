@@ -1,5 +1,4 @@
 @import url('notificacoes.css?v=20261025-3');
-@import url('botoes.css?v=20261027-2');
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i&display=swap");
 
@@ -1521,13 +1520,6 @@ h6 {
   font-size: 13px;
 }
 
-#contact .form input,
-#contact .form textarea {
-  border-radius: 0;
-  box-shadow: none;
-  font-size: 14px;
-}
-
 #contact .form button[type="submit"] {
   background: #007bff;
   border: 0;
@@ -1972,18 +1964,18 @@ h6 {
 #curriculum .was-validated select.form-control:invalid,
 #curriculum select.form-control.is-valid,
 #curriculum select.form-control.is-invalid {
-  padding-right: 1.75rem;
+  padding-right: 32px;
 }
 
 #curriculum input[type="file"].form-control {
-  height: 38px;
+  height: 44px;
   padding: 0;
-  line-height: 36px;
+  line-height: 42px;
   overflow: hidden;
 }
 
 #curriculum input[type="file"].form-control::file-selector-button {
-  height: 38px;
+  height: 44px;
   margin: -1px 12px -1px -1px;
   padding: 0 14px;
   border: 0;
@@ -1993,7 +1985,7 @@ h6 {
 }
 
 #curriculum input[type="file"].form-control::-webkit-file-upload-button {
-  height: 38px;
+  height: 44px;
   margin: -1px 12px -1px -1px;
   padding: 0 14px;
   border: 0;

@@ -215,35 +215,6 @@
       });
       campo.addEventListener("change", () => { campo.value = formatarTelefone(campo.value); });
     });
-    if (CSS.supports("(appearance: base-select) and selector(::picker(select))")) return;
-
-    document.querySelectorAll("select[data-abrir-ao-clicar]").forEach((seletor) => {
-      if (typeof seletor.showPicker !== "function") return;
-      let abrirComClique = false;
-
-      // Abre após soltar o mouse; teclado e toque mantêm o comportamento nativo.
-      function prepararClique(evento) {
-        abrirComClique = evento.pointerType === "mouse" && evento.button === 0 && !seletor.disabled;
-        if (!abrirComClique) return;
-        evento.preventDefault();
-        seletor.focus({ preventScroll: true });
-      }
-
-      function abrirSeletor(evento) {
-        if (!abrirComClique) return;
-        abrirComClique = false;
-        evento.preventDefault();
-        try {
-          seletor.showPicker();
-        } catch {
-          seletor.removeEventListener("pointerdown", prepararClique);
-          seletor.removeEventListener("click", abrirSeletor);
-        }
-      }
-
-      seletor.addEventListener("pointerdown", prepararClique);
-      seletor.addEventListener("click", abrirSeletor);
-    });
   });
 
 })();

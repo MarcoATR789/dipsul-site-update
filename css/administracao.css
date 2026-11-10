@@ -10,8 +10,6 @@
 .administracao h2 { font-size: 22px; font-weight: 700; margin: 0; }
 .administracao h3 { font-size: 17px; font-weight: 700; margin: 24px 0 12px; }
 .administracao label, .administracao legend { display: block; font-size: 14px; font-weight: 700; margin: 0 0 6px; }
-.administracao .form-control { font: inherit; min-width: 0; height: 44px; }
-.administracao textarea.form-control { height: auto; resize: vertical; }
 .administracao button { cursor: pointer; }
 .administracao button:disabled { opacity: .5; cursor: not-allowed; }
 .administracao .btn { min-height: 44px; font-size: 14px; }
@@ -99,7 +97,7 @@
   .admin-cabecalho > .container { gap: 12px; }
   .conta-cliente .admin-cabecalho > .container { column-gap: 8px; }
   .conta-navegacao { gap: 8px; }
-  .conta-navegacao .catalogo-nav-link { padding-inline: 12px; }
+  .conta-cliente .conta-navegacao .catalogo-nav-link { padding-inline: 12px; }
   .admin-sessao { width: 100%; justify-content: space-between; }
   .administracao h1 { font-size: 22px; }
   .admin-acesso { margin-top: 48px; }

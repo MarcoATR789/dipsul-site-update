@@ -112,7 +112,7 @@
 }
 
 .catalogo-pedido-acoes .btn {
-  min-height: 38px;
+  min-height: 44px;
 }
 
 .catalogo-pedido-cliente {
@@ -132,7 +132,7 @@
 }
 
 .catalogo-pedido-campo .form-control {
-  min-height: 38px;
+  min-height: 44px;
 }
 
 #catalogo-pedido-enviar {
@@ -221,7 +221,7 @@
 
 .catalogo-pedido-quantidade {
   flex: 0 1 80px;
-  min-height: 38px;
+  min-height: 44px;
   min-width: 0;
   text-align: center;
   width: 80px;
@@ -252,7 +252,7 @@
 .catalogo-pedido-passo {
   flex: 0 0 36px;
   width: 36px;
-  min-height: 38px;
+  min-height: 44px;
   padding: 0;
   color: #2b3c67;
   font-size: 18px;
@@ -442,12 +442,12 @@
 }
 
 .catalogo-produto-quantidade {
-  min-height: 38px;
+  min-height: 44px;
 }
 
 .btn.catalogo-produto-adicionar,
 .btn.catalogo-botao-primario {
-  min-height: 38px;
+  min-height: 44px;
   background-color: #2b3c67;
   border-color: #2b3c67;
   color: #fff;

@@ -21,6 +21,103 @@
   transition: none !important;
 }
 
+.form-control {
+  min-width: 0;
+  height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #495057;
+  font: 15px/1.5 Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 88px;
+  resize: vertical;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: #e9ecef;
+  opacity: 1;
+}
+
+.form-control:disabled { cursor: not-allowed; }
+.form-control:focus { border-color: #80bdff; }
+.form-control:focus-visible { outline: 1px solid #007bff; outline-offset: 1px; }
+
+.campo-selecao {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+
+.campo-selecao::after {
+  content: "\f107";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #495057;
+  font: 14px/1 FontAwesome;
+  pointer-events: none;
+}
+
+.campo-selecao > select.form-control {
+  appearance: none;
+  padding-right: 32px;
+  background-image: none;
+  text-overflow: ellipsis;
+}
+
+.input-group > .campo-selecao { flex: 1 1 auto; width: 1%; }
+.input-group > .campo-selecao:not(:last-child) > select {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.was-validated .campo-selecao:has(> select:invalid) ~ .invalid-feedback,
+.campo-selecao:has(> select.is-invalid) ~ .invalid-feedback,
+.was-validated .campo-selecao:has(> select:valid) ~ .valid-feedback,
+.campo-selecao:has(> select.is-valid) ~ .valid-feedback {
+  display: block;
+}
+
+.campo-selecao-lista {
+  position: fixed;
+  inset: auto;
+  z-index: 1100;
+  margin: 0;
+  padding: 4px;
+  min-width: 0;
+  max-height: min(320px, 50dvh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: #fff;
+  color: #495057;
+  font: 15px/1.5 Arial, Helvetica, sans-serif;
+  letter-spacing: 0;
+}
+
+.campo-selecao-opcao {
+  padding: 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.campo-selecao-opcao:hover,
+.campo-selecao-opcao.ativa { background: #e5f1fd; color: #004289; }
+.campo-selecao-opcao[aria-selected="true"] { background: #007bff; color: #fff; }
+.campo-selecao-opcao[aria-disabled="true"] { color: #6c757d; cursor: not-allowed; }
+.campo-selecao-grupo { padding: 8px; font-weight: 700; }
+
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;
@@ -117,19 +214,21 @@ button:focus-visible,
 .conta-navegacao .catalogo-nav-link:hover { background: #007bff; color: #fff; }
 
 @supports (appearance: base-select) and selector(::picker(select)) {
-  select[data-abrir-ao-clicar],
-  select[data-abrir-ao-clicar]::picker(select) {
+  .campo-selecao > select.form-control,
+  select.form-control:not([multiple]):not([size])::picker(select) {
     appearance: base-select;
   }
 
-  select[data-abrir-ao-clicar] {
+  .campo-selecao > select.form-control {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
   }
 
-  select[data-abrir-ao-clicar]::picker(select) {
+  .campo-selecao > select::picker-icon { display: none; }
+
+  select.form-control:not([multiple]):not([size])::picker(select) {
     inset: auto;
     position-area: bottom span-right;
     position-try-fallbacks: flip-block;
@@ -144,25 +243,27 @@ button:focus-visible,
     border-radius: 4px;
     background: #fff;
     color: #495057;
+    font: 15px/1.5 Arial, Helvetica, sans-serif;
+    overscroll-behavior: contain;
   }
 
-  select[data-abrir-ao-clicar] option {
+  .campo-selecao option {
     padding: 8px;
     white-space: normal;
     overflow-wrap: anywhere;
   }
 
-  select[data-abrir-ao-clicar] option::checkmark {
+  .campo-selecao option::checkmark {
     display: none;
   }
 
-  select[data-abrir-ao-clicar] option:hover,
-  select[data-abrir-ao-clicar] option:focus-visible {
+  .campo-selecao option:hover,
+  .campo-selecao option:focus-visible {
     background: #e5f1fd;
     color: #004289;
   }
 
-  select[data-abrir-ao-clicar] option:checked {
+  .campo-selecao option:checked {
     background: #007bff;
     color: #fff;
   }
