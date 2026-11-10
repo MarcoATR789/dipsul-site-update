@@ -18,6 +18,23 @@
     return paginas;
   }
 
+  function organizarIndice(paginas) {
+    const categorias = new Map();
+    paginas.forEach((pagina, indice) => {
+      if (!categorias.has(pagina.categoria)) categorias.set(pagina.categoria, indice + 1);
+    });
+    return Array.from(categorias, ([categoria, pagina]) => ({ categoria, pagina }));
+  }
+
+  async function carregarModelo(nome, raiz, sinal) {
+    const resposta = await fetch(new URL(`pages/catalogo-${nome}.html`, raiz), { signal: sinal });
+    if (!resposta.ok) throw new Error(`Não foi possível carregar o modelo ${nome}.`);
+    const modelo = new DOMParser().parseFromString(await resposta.text(), "text/html");
+    const folha = modelo.querySelector("main > section");
+    if (!folha) throw new Error(`Modelo ${nome} inválido.`);
+    return folha;
+  }
+
   async function carregarProdutos(raiz, sinal) {
     const resposta = await fetch(new URL("data/catalogo/produtos.json", raiz), { signal: sinal, cache: "no-cache" });
     if (!resposta.ok) throw new Error("Não foi possível carregar os produtos.");
@@ -62,10 +79,33 @@
     });
   }
 
+  function carregarFontes(documento, fontes, sinal) {
+    return new Promise((resolver, rejeitar) => {
+      sinal.throwIfAborted();
+      const erro = new Error("Não foi possível carregar as fontes da capa ou do índice.");
+      const terminar = falha => {
+        clearTimeout(tempo);
+        sinal.removeEventListener("abort", cancelar);
+        if (falha) rejeitar(falha); else resolver();
+      };
+      const cancelar = () => terminar(new DOMException("Geração cancelada", "AbortError"));
+      const tempo = setTimeout(() => terminar(erro), 20000);
+      sinal.addEventListener("abort", cancelar, { once: true });
+      Promise.all(fontes.map(fonte => documento.fonts.load(fonte))).then(
+        grupos => terminar(grupos.some(grupo => !grupo.length) ? erro : null),
+        () => terminar(erro)
+      );
+    });
+  }
+
   function atualizarDataExportacao(documento) {
+    const agora = new Date();
     preencherTexto(documento, "data_exportacao", new Intl.DateTimeFormat("pt-BR", {
       timeZone: "America/Sao_Paulo"
-    }).format(new Date()));
+    }).format(agora));
+    preencherTexto(documento, "ano_exportacao", new Intl.DateTimeFormat("pt-BR", {
+      year: "numeric", timeZone: "America/Sao_Paulo"
+    }).format(agora));
   }
 
   function imagemParaPDF(imagem) {
@@ -84,11 +124,11 @@
     const paginas = organizarPaginas(produtos, categoria);
     if (!paginas.length) throw new Error("Nenhum produto nessa categoria.");
     if (!["publico", "impressao"].includes(formato)) throw new Error("Formato inválido.");
-    const resposta = await fetch(new URL(`pages/catalogo-${formato}.html`, raiz), { signal: sinal });
-    if (!resposta.ok) throw new Error("Não foi possível carregar o modelo de impressão.");
-    const modelo = new DOMParser().parseFromString(await resposta.text(), "text/html");
-    const folhaModelo = modelo.querySelector(".folha-catalogo");
-    if (!folhaModelo || folhaModelo.querySelectorAll(".produto-impresso").length !== 16) {
+    const [folhaModelo, capaModelo, fundoModelo, indiceModelo] = await Promise.all(
+      [formato, "capa-frente", "capa-fundo", ...(!categoria ? ["indice"] : [])]
+        .map(nome => carregarModelo(nome, raiz, sinal))
+    );
+    if (!folhaModelo.matches(".folha-catalogo") || folhaModelo.querySelectorAll(".produto-impresso").length !== 16) {
       throw new Error("O modelo deve conter 16 espaços de produtos por folha.");
     }
     sinal.throwIfAborted();
@@ -99,7 +139,7 @@
     documento.title = `Catálogo Dipsul - ${categoria || "Completo"}`;
     const estilo = documento.createElement("link");
     estilo.rel = "stylesheet";
-    estilo.href = new URL("css/catalogo-impressao.css?v=20261026-1", raiz).href;
+    estilo.href = new URL("css/catalogo-impressao.css?v=20261110-2", raiz).href;
     const estiloPronto = new Promise((resolver, rejeitar) => {
       const cancelar = () => terminar(new DOMException("Geração cancelada", "AbortError"));
       const terminar = (erro) => {
@@ -119,6 +159,31 @@
     principal.className = `catalogo-impressao ${formato === "impressao" ? "catalogo-espelhado" : "catalogo-publico"}`;
     documento.body.append(principal);
     const imagens = [];
+    function adicionarApoio(modelo, arquivo) {
+      const folha = documento.importNode(modelo, true);
+      const imagem = folha.querySelector(".folha-apoio-fundo");
+      if (!folha.matches(".folha-apoio") || !imagem) throw new Error("Modelo de capa ou índice inválido.");
+      imagem.removeAttribute("src");
+      imagens.push([imagem, new URL(`img/catalogo/apoio/${arquivo}.png`, raiz).href, true]);
+      principal.append(folha);
+      return folha;
+    }
+    adicionarApoio(capaModelo, "capa-frente");
+    if (indiceModelo) {
+      const entradas = organizarIndice(paginas);
+      for (let inicio = 0; inicio < entradas.length; inicio += 28) {
+        const folha = adicionarApoio(indiceModelo, "indice");
+        const lista = folha.querySelector('[data-lista="categorias"]');
+        const linhaModelo = lista?.querySelector(".indice-linha");
+        if (!linhaModelo) throw new Error("O modelo de índice deve conter uma linha de categoria.");
+        lista.replaceChildren(...entradas.slice(inicio, inicio + 28).map(entrada => {
+          const linha = linhaModelo.cloneNode(true);
+          preencherTexto(linha, "ct_descri", entrada.categoria);
+          preencherTexto(linha, "numero_pagina", entrada.pagina);
+          return linha;
+        }));
+      }
+    }
     for (const [indice, pagina] of paginas.entries()) {
       sinal.throwIfAborted();
       const folha = documento.importNode(folhaModelo, true);
@@ -147,6 +212,14 @@
         await new Promise((resolver) => setTimeout(resolver, 0));
       }
     }
+    // A contracapa ocupa o verso da última folha na impressão pela borda longa.
+    if (formato === "impressao" && (principal.children.length + 1) % 2 !== 0) {
+      const verso = documento.createElement("section");
+      verso.className = "folha-apoio folha-em-branco";
+      verso.setAttribute("aria-label", "Página em branco para impressão frente e verso");
+      principal.append(verso);
+    }
+    adicionarApoio(fundoModelo, "capa-fundo");
     atualizarDataExportacao(documento);
     let proxima = 0;
     let carregadas = 0;
@@ -155,8 +228,9 @@
     async function carregarFila() {
       while (proxima < imagens.length) {
         sinal.throwIfAborted();
-        const [imagem, endereco] = imagens[proxima++];
+        const [imagem, endereco, obrigatoria] = imagens[proxima++];
         if (!await carregarImagem(imagem, endereco, sinal)) {
+          if (obrigatoria) throw new Error("Não foi possível carregar uma das imagens BASE HTML de capa ou índice. Tente novamente.");
           ausentes++;
           if (!await carregarImagem(imagem, reserva, sinal)) throw new Error("Não foi possível carregar as imagens. Tente novamente.");
         }
@@ -168,8 +242,18 @@
       }
     }
     await Promise.all(Array.from({ length: Math.min(8, imagens.length) }, carregarFila));
+    const fontes = ['28pt "Kresson Catalogo"', ...(indiceModelo ? ['19.8pt "Corbel Catalogo"', '19.8pt "Courier Catalogo"'] : [])];
+    await carregarFontes(documento, fontes, sinal);
     await documento.fonts.ready;
     sinal.throwIfAborted();
+    for (const nome of principal.querySelectorAll(".indice-categoria")) {
+      let tamanho = 19.8;
+      while (nome.scrollWidth > nome.clientWidth + 1 && tamanho > 12) {
+        tamanho = Math.max(12, tamanho - 0.25);
+        nome.style.fontSize = `${tamanho}pt`;
+      }
+      if (nome.scrollWidth > nome.clientWidth + 1) throw new Error(`Categoria excede o espaço do índice: ${nome.textContent}.`);
+    }
     for (const corpo of principal.querySelectorAll(".produto-corpo")) {
       const descricao = corpo.querySelector(".produto-descricao");
       let tamanho = 8;
@@ -181,10 +265,10 @@
         throw new Error(`Descrição excede o espaço do produto ${corpo.querySelector('[data-campo="pr_produto"]').textContent}. Revise o texto antes de imprimir.`);
       }
     }
-    return { paginas: paginas.length, itens: paginas.reduce((total, pagina) => total + pagina.itens.length, 0), ausentes };
+    return { paginas: principal.children.length, paginasProdutos: paginas.length, itens: paginas.reduce((total, pagina) => total + pagina.itens.length, 0), ausentes };
   }
 
-  const api = { carregarProdutos, organizarPaginas, enderecoImagem, preparar, atualizarDataExportacao };
+  const api = { carregarProdutos, organizarPaginas, organizarIndice, enderecoImagem, preparar, atualizarDataExportacao };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.DipsulCatalogoPDF = api;
 })(typeof window === "undefined" ? globalThis : window);

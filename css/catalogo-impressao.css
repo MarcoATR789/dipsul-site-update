@@ -1,3 +1,18 @@
+@font-face {
+  font-family: "Kresson Catalogo";
+  src: url("../lib/catalogo/kresson-black.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Corbel Catalogo";
+  src: url("../lib/catalogo/corbel.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Courier Catalogo";
+  src: url("../lib/catalogo/cour.ttf") format("truetype");
+}
+
 :root {
   --folha-largura: 210mm;
   --folha-altura: 297mm;
@@ -32,18 +47,82 @@ body {
   overflow-x: auto;
 }
 
+.folha-catalogo,
+.folha-apoio {
+  width: var(--folha-largura);
+  height: var(--folha-altura);
+  margin-inline: auto;
+  background: #fff;
+  box-shadow: 0 2px 12px #00000014;
+  break-inside: avoid;
+}
+
 .folha-catalogo {
   display: grid;
   grid-template-rows: 21mm 10mm minmax(0, 1fr) 8mm;
   gap: 3mm;
-  width: var(--folha-largura);
-  height: var(--folha-altura);
-  margin-inline: auto;
   padding: var(--margem-externa);
   padding-left: var(--margem-interna);
-  background: #fff;
-  box-shadow: 0 2px 12px #00000014;
-  break-inside: avoid;
+}
+
+.folha-apoio {
+  position: relative;
+  overflow: hidden;
+}
+
+.folha-apoio-fundo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.capa-ano {
+  position: absolute;
+  top: 3.4%;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  color: #fff;
+  font: 28pt/1 "Kresson Catalogo", serif;
+  text-align: center;
+  text-shadow: 1mm 1mm 1.5mm #002e51;
+}
+
+/* Coordenadas da BASE HTML de 3508 x 4961px: 28 faixas de 140px. */
+.indice-lista {
+  position: absolute;
+  top: calc(100% * 923 / 4961);
+  left: calc(100% * 108 / 3508);
+  width: calc(100% * 3302 / 3508);
+  height: calc(100% * 3920 / 4961);
+  display: grid;
+  grid-template-rows: repeat(28, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #fff;
+}
+
+.indice-linha {
+  display: grid;
+  grid-template-columns: minmax(0, 2110fr) minmax(0, 908fr) minmax(0, 284fr);
+  align-items: center;
+  min-height: 0;
+  font: 19.8pt/1.05 "Corbel Catalogo", Arial, sans-serif;
+}
+
+.indice-categoria {
+  min-width: 0;
+  padding-inline: 2mm;
+  white-space: nowrap;
+}
+
+.indice-pagina {
+  grid-column: 3;
+  min-width: 0;
+  font-family: "Courier Catalogo", monospace;
+  text-align: center;
 }
 
 .folha-cabecalho,
@@ -234,13 +313,15 @@ body {
     overflow: visible;
   }
 
-  .folha-catalogo {
+  .folha-catalogo,
+  .folha-apoio {
     margin: 0;
     box-shadow: none;
     break-after: page;
   }
 
-  .folha-catalogo:last-child {
+  .folha-catalogo:last-child,
+  .folha-apoio:last-child {
     break-after: auto;
   }
 }
