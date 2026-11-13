@@ -103,21 +103,23 @@
     preencherTexto(documento, "data_exportacao", new Intl.DateTimeFormat("pt-BR", {
       timeZone: "America/Sao_Paulo"
     }).format(agora));
-    preencherTexto(documento, "ano_exportacao", new Intl.DateTimeFormat("pt-BR", {
+    const ano = new Intl.DateTimeFormat("pt-BR", {
       year: "numeric", timeZone: "America/Sao_Paulo"
-    }).format(agora));
+    }).format(agora);
+    preencherTexto(documento, "ano_exportacao", ano);
+    documento.title = `Catálogo Dipsul ${ano} - ${documento.body.dataset.categoria || "COMPLETO"}`;
   }
 
-  function imagemParaPDF(imagem) {
-    const escala = Math.min(1, 500 / imagem.naturalWidth, 320 / imagem.naturalHeight);
+  function imagemParaPDF(imagem, largura = 500, altura = 320, qualidade = 0.92, fundo = "#f8fbff") {
+    const escala = Math.min(1, largura / imagem.naturalWidth, altura / imagem.naturalHeight);
     const tela = imagem.ownerDocument.createElement("canvas");
     tela.width = Math.max(1, Math.round(imagem.naturalWidth * escala));
     tela.height = Math.max(1, Math.round(imagem.naturalHeight * escala));
     const desenho = tela.getContext("2d");
-    desenho.fillStyle = "#f8fbff";
+    desenho.fillStyle = fundo;
     desenho.fillRect(0, 0, tela.width, tela.height);
     desenho.drawImage(imagem, 0, 0, tela.width, tela.height);
-    return tela.toDataURL("image/jpeg", 0.92);
+    return tela.toDataURL("image/jpeg", qualidade);
   }
 
   async function preparar({ iframe, raiz, produtos, categoria, formato, sinal, progresso }) {
@@ -136,10 +138,11 @@
     documento.head.replaceChildren();
     documento.body.replaceChildren();
     documento.documentElement.lang = "pt-BR";
-    documento.title = `Catálogo Dipsul - ${categoria || "Completo"}`;
+    documento.body.dataset.categoria = categoria || "";
+    atualizarDataExportacao(documento);
     const estilo = documento.createElement("link");
     estilo.rel = "stylesheet";
-    estilo.href = new URL("css/catalogo-impressao.css?v=20261110-2", raiz).href;
+    estilo.href = new URL("css/catalogo-impressao.css?v=20261113-1", raiz).href;
     const estiloPronto = new Promise((resolver, rejeitar) => {
       const cancelar = () => terminar(new DOMException("Geração cancelada", "AbortError"));
       const terminar = (erro) => {
@@ -180,6 +183,9 @@
           const linha = linhaModelo.cloneNode(true);
           preencherTexto(linha, "ct_descri", entrada.categoria);
           preencherTexto(linha, "numero_pagina", entrada.pagina);
+          linha.querySelectorAll("a").forEach(link => {
+            link.href = new URL(`#catalogo-pagina-${entrada.pagina}`, documento.URL).href;
+          });
           return linha;
         }));
       }
@@ -187,6 +193,7 @@
     for (const [indice, pagina] of paginas.entries()) {
       sinal.throwIfAborted();
       const folha = documento.importNode(folhaModelo, true);
+      folha.id = `catalogo-pagina-${indice + 1}`;
       folha.setAttribute("aria-label", `Página ${indice + 1}`);
       preencherTexto(folha, "ct_descri", pagina.categoria);
       preencherTexto(folha, "numero_pagina", indice + 1);
@@ -234,8 +241,16 @@
           ausentes++;
           if (!await carregarImagem(imagem, reserva, sinal)) throw new Error("Não foi possível carregar as imagens. Tente novamente.");
         }
-        if (imagem.dataset.campo === "imagem_src") {
-          if (!await carregarImagem(imagem, imagemParaPDF(imagem), sinal)) throw new Error("Não foi possível preparar uma imagem para o PDF.");
+        let compactada;
+        if (formato === "publico") {
+          compactada = imagem.matches(".folha-apoio-fundo")
+            ? imagemParaPDF(imagem, 1240, 1754, 0.84, "#fff")
+            : imagem.matches(".folha-logo")
+              ? imagemParaPDF(imagem, 420, 160, 0.9, "#fff")
+              : imagemParaPDF(imagem, 320, 220, 0.76);
+        } else if (imagem.dataset.campo === "imagem_src") compactada = imagemParaPDF(imagem);
+        if (compactada) {
+          if (!await carregarImagem(imagem, compactada, sinal)) throw new Error("Não foi possível preparar uma imagem para o PDF.");
         }
         carregadas++;
         progresso(`Carregando imagens: ${carregadas} de ${imagens.length}...`);
@@ -268,7 +283,7 @@
     return { paginas: principal.children.length, paginasProdutos: paginas.length, itens: paginas.reduce((total, pagina) => total + pagina.itens.length, 0), ausentes };
   }
 
-  const api = { carregarProdutos, organizarPaginas, organizarIndice, enderecoImagem, preparar, atualizarDataExportacao };
+  const api = { carregarProdutos, organizarPaginas, organizarIndice, enderecoImagem, preparar, atualizarDataExportacao, imagemParaPDF };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else global.DipsulCatalogoPDF = api;
 })(typeof window === "undefined" ? globalThis : window);

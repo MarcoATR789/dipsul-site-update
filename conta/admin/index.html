@@ -17,8 +17,10 @@
   <script defer src="../../js/configuracao.js"></script>
   <script defer src="../../js/main.js?v=20261110-1"></script>
   <script defer src="../../js/seletores.js?v=20261110-1"></script>
-  <script defer src="../../js/catalogo-pdf.js?v=20261110-2"></script>
-  <script defer src="../../js/administracao.js?v=20261027-2"></script>
+  <script defer src="../../lib/jspdf/jspdf.umd.min.js?v=4.2.1"></script>
+  <script defer src="../../js/catalogo-pdf.js?v=20261113-1"></script>
+  <script defer src="../../js/catalogo-download.js?v=20261113-1"></script>
+  <script defer src="../../js/administracao.js?v=20261113-1"></script>
   <link rel="stylesheet" href="../../css/botoes.css?v=20261110-1">
 </head>
 <body class="administracao">
@@ -146,7 +148,7 @@
           </div>
           <button id="cancelar-pdf" type="button" class="btn btn-outline-danger" hidden>Cancelar</button>
           <button id="preparar-pdf" type="submit" class="btn btn-primary catalogo-botao-primario" disabled>Gerar</button>
-          <button id="imprimir-pdf" type="button" class="btn btn-outline-secondary botao-icone" title="Imprimir / Salvar PDF" aria-label="Imprimir / Salvar PDF" disabled><i class="fa fa-print" aria-hidden="true"></i></button>
+          <button id="imprimir-pdf" type="button" class="btn btn-outline-secondary botao-icone" title="Baixar PDF" aria-label="Baixar PDF" disabled><i class="fa fa-download" aria-hidden="true"></i></button>
         </form>
         <p id="pdf-mensagem" class="admin-mensagem" role="status" aria-live="polite"></p>
         <iframe id="previa-pdf" title="Prévia do catálogo" sandbox="allow-same-origin allow-modals" hidden></iframe>

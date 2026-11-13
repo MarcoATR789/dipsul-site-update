@@ -93,6 +93,10 @@
     campo("previa-pdf").hidden = true;
     campo("previa-pdf").contentDocument?.body.replaceChildren();
     campo("imprimir-pdf").disabled = true;
+    const publico = campo("formato-pdf").value === "publico";
+    campo("imprimir-pdf").title = publico ? "Baixar PDF" : "Imprimir / Salvar PDF";
+    campo("imprimir-pdf").setAttribute("aria-label", campo("imprimir-pdf").title);
+    campo("imprimir-pdf").querySelector("i").className = publico ? "fa fa-download" : "fa fa-print";
     campo("preparar-pdf").disabled = !produtos;
     campo("cancelar-pdf").hidden = true;
     mensagem("pdf-mensagem", "");
@@ -797,14 +801,44 @@
     }
   });
   campo("imprimir-pdf").addEventListener("click", async () => {
-    if (!usuario || campo("imprimir-pdf").disabled) return;
+    if (!usuario || campo("imprimir-pdf").disabled || !geracaoPDF) return;
+    const geracao = geracaoPDF;
+    const resumo = campo("pdf-mensagem").textContent;
+    campo("imprimir-pdf").disabled = true;
+    campo("preparar-pdf").disabled = true;
+    campo("cancelar-pdf").hidden = false;
     try {
       await confirmarAcesso("catalogo");
-      if (campo("imprimir-pdf").disabled) return;
-      window.DipsulCatalogoPDF.atualizarDataExportacao(campo("previa-pdf").contentDocument);
-      campo("previa-pdf").contentWindow.focus();
-      campo("previa-pdf").contentWindow.print();
-    } catch (erro) { mensagem("pdf-mensagem", erro.message, true); }
+      geracao.signal.throwIfAborted();
+      const previa = campo("previa-pdf");
+      if (campo("formato-pdf").value === "publico") {
+        const resultado = await window.DipsulPDFPublico.gerar({ documento: previa.contentDocument, raiz,
+          sinal: geracao.signal, progresso: texto => { if (!geracao.signal.aborted) mensagem("pdf-mensagem", texto); } });
+        geracao.signal.throwIfAborted();
+        window.DipsulPDFPublico.baixar(resultado);
+        mensagem("pdf-mensagem", resumo);
+        window.Dipsul.notificar(`PDF baixado: ${(resultado.arquivo.size / 1000000).toLocaleString("pt-BR", { maximumFractionDigits: 1 })} MB.`);
+      } else {
+        window.DipsulCatalogoPDF.atualizarDataExportacao(previa.contentDocument);
+        const titulo = document.title;
+        const restaurarTitulo = () => {
+          document.title = titulo;
+          previa.contentWindow.removeEventListener("afterprint", restaurarTitulo);
+          window.removeEventListener("afterprint", restaurarTitulo);
+        };
+        document.title = previa.contentDocument.title;
+        previa.contentWindow.addEventListener("afterprint", restaurarTitulo, { once: true });
+        window.addEventListener("afterprint", restaurarTitulo, { once: true });
+        try { previa.contentWindow.focus(); previa.contentWindow.print(); }
+        catch (erro) { restaurarTitulo(); throw erro; }
+      }
+    } catch (erro) { if (!geracao.signal.aborted) mensagem("pdf-mensagem", erro.message, true); }
+    finally {
+      if (geracaoPDF === geracao && !geracao.signal.aborted) {
+        campo("imprimir-pdf").disabled = campo("preparar-pdf").disabled = false;
+        campo("cancelar-pdf").hidden = true;
+      }
+    }
   });
 
   for (const evento of ["pointerdown", "keydown"]) document.addEventListener(evento, () => { ultimaAtividade = Date.now(); }, { passive: true });

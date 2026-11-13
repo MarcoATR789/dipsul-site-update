@@ -118,6 +118,16 @@ body {
   white-space: nowrap;
 }
 
+.indice-linha a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.indice-linha a:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: -1px;
+}
+
 .indice-pagina {
   grid-column: 3;
   min-width: 0;
@@ -270,6 +280,15 @@ body {
 .folha-numero {
   color: var(--cor-codigo);
   font-weight: 700;
+}
+
+.catalogo-publico .folha-catalogo {
+  padding-inline: 12mm;
+}
+
+.catalogo-publico .folha-cabecalho,
+.catalogo-publico .folha-rodape {
+  border: 0;
 }
 
 .catalogo-espelhado > .folha-catalogo:nth-child(even) {
