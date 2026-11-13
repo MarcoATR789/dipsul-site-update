@@ -277,9 +277,11 @@ body {
   padding-left: var(--margem-externa);
 }
 
+/*
 .catalogo-espelhado .produto-codigo {
   transform: rotate(180deg);
 }
+*/
 
 .catalogo-espelhado > .folha-catalogo:nth-child(even) .folha-cabecalho,
 .catalogo-espelhado > .folha-catalogo:nth-child(even) .folha-rodape {
